@@ -1,9 +1,10 @@
-import { useRef, useState, useSyncExternalStore } from 'react'
-import { motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react'
-import { ArrowDown, ArrowRight, Check, FileText, MessageSquare, PenLine } from 'lucide-react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react'
+import { ArrowRight, Check, FileText, MessageSquare, Pause, PenLine, Play, RotateCcw } from 'lucide-react'
 import PlatformIcon from '@/components/campaign/PlatformIcon'
 import CampaignArtwork from './CampaignArtwork'
-import { STORY_STAGES, STORY_TRACKS, storyStageAt } from './campaignStory'
+import { STORY_STAGES, STORY_TRACKS, remainingStoryDuration, storyStageAt } from './campaignStory'
+import { createStoryPlayback } from './storyPlayback'
 import './campaign-story.css'
 
 // A short/mobile viewport or reduced-motion preference gets the complete static story.
@@ -15,6 +16,19 @@ const subscribe = callback => {
 }
 const getSnapshot = () => window.matchMedia(ANIMATED_QUERY).matches
 const getServerSnapshot = () => false
+const subscribeVisibility = callback => {
+  document.addEventListener('visibilitychange', callback)
+  return () => document.removeEventListener('visibilitychange', callback)
+}
+const getVisibility = () => document.visibilityState !== 'hidden'
+const getServerVisibility = () => true
+const PLAYBACK_LABELS = {
+  ready: 'Lista para comenzar',
+  playing: 'Reproducción automática · 14 s',
+  paused: 'En pausa',
+  suspended: 'Se reanudará al volver',
+  finished: 'Recorrido completo',
+}
 const CHANNELS = [
   ['facebook', 'Facebook', 'Página del negocio'],
   ['instagram', 'Instagram', 'Cuenta profesional'],
@@ -127,24 +141,39 @@ function StoryChannel({ progress, index, platform, label, detail }) {
 function AnimatedStory() {
   const target = useRef(null)
   const [active, setActive] = useState(0)
-  const { scrollYProgress } = useScroll({ target, offset: ['start 64px', 'end end'] })
-  useMotionValueEvent(scrollYProgress, 'change', value => setActive(previous => {
+  const progress = useMotionValue(0)
+  const inView = useInView(target, { amount: 0.6 })
+  const documentVisible = useSyncExternalStore(subscribeVisibility, getVisibility, getServerVisibility)
+  const [playback] = useState(() => createStoryPlayback({
+    getProgress: () => progress.get(),
+    setProgress: value => progress.set(value),
+    animateToEnd: onComplete => animate(progress, 1, {
+      duration: remainingStoryDuration(progress.get()), ease: 'linear', onComplete,
+    }),
+  }))
+  const status = useSyncExternalStore(playback.subscribe, playback.getSnapshot, playback.getSnapshot)
+
+  useEffect(() => {
+    playback.setVisible(inView && documentVisible)
+    // Stop on exit, hidden tab, reduced-motion switch or unmount, retaining position.
+    return () => playback.setVisible(false)
+  }, [playback, inView, documentVisible])
+
+  useMotionValueEvent(progress, 'change', value => setActive(previous => {
     const next = storyStageAt(value)
     return previous === next ? previous : next
   }))
 
   function goToStage(index) {
-    const rect = target.current.getBoundingClientRect()
-    const distance = rect.height - window.innerHeight + 64
-    // Native scrolling stays interruptible; there is no wheel/touch interception.
-    window.scrollTo({ top: window.scrollY + rect.top - 64 + distance * STORY_STAGES[index].position, behavior: 'smooth' })
+    // Manual inspection pauses autoplay without moving the page or losing focus.
+    playback.seek(STORY_STAGES[index].position)
   }
 
   return <section ref={target} id="como-funciona" className="campaign-story campaign-story--animated" aria-labelledby="campaign-story-title">
-    <div className="story-sticky">
+    <div className="story-playback-layout">
       <div className="story-inner">
         <div className="story-editorial">
-          <StoryIntro progress={scrollYProgress} />
+          <StoryIntro progress={progress} />
           <ol className="story-chapters" aria-label="Etapas del ejemplo">
             {STORY_STAGES.map((stage, index) => <li key={stage.id}>
               <button type="button" onClick={() => goToStage(index)} aria-current={active === index ? 'step' : undefined} aria-label={`Ver etapa ${index + 1}: ${stage.title}`}>
@@ -152,15 +181,22 @@ function AnimatedStory() {
               </button>
             </li>)}
           </ol>
-          <p className="story-scroll-hint"><ArrowDown size={14} aria-hidden="true" /> Desplázate o elige una etapa</p>
+          <div className="story-player-controls" aria-label="Controles de la animación">
+            <button type="button" disabled={status === 'finished'} onClick={status === 'playing' ? playback.pause : playback.play}>
+              {status === 'playing' ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}
+              {status === 'playing' ? 'Pausar' : status === 'finished' ? 'Finalizada' : status === 'ready' ? 'Reproducir' : 'Reanudar'}
+            </button>
+            <button type="button" onClick={playback.replay}><RotateCcw size={14} aria-hidden="true" /> Volver a ver</button>
+          </div>
+          <p className="story-playback-status" role="status">{PLAYBACK_LABELS[status]}</p>
         </div>
         <div className="story-demonstration">
           <div className="story-scene-heading"><span>NEXOMARK · UN PROCESO CONECTADO</span><span>0{active + 1} / 04</span></div>
-          <div className="story-canvas"><StoryScene progress={scrollYProgress} /></div>
+          <div className="story-canvas"><StoryScene progress={progress} /></div>
           <div className="story-explanation">
             {STORY_STAGES.map((stage, index) => <p key={stage.id} hidden={active !== index}><span>{stage.label}</span>{stage.description}</p>)}
           </div>
-          <div className="story-progress" aria-hidden="true"><motion.span style={{ scaleX: scrollYProgress }} /></div>
+          <div className="story-progress" aria-hidden="true"><motion.span style={{ scaleX: progress }} /></div>
           <p className="story-disclaimer">Demostración ilustrativa. No genera contenido ni realiza publicaciones.</p>
         </div>
       </div>

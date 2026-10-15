@@ -101,11 +101,13 @@ alta sobre fondo claro (fondo container suave + texto del mismo tono).
 - Portada: composición editorial de la identidad de NexoMark y relato en `Cómo funciona`.
   No se muestran ni se consultan campañas guardadas o marcas de clientes.
   Brief → Texto e imagen → Revisión del cliente → Conexión con las redes.
-  En escritorio (≥1100 × 700px), escena sticky de 320svh con tarjetas que se separan,
+  En escritorio (≥1100 × 700px), reproducción automática de 14 segundos con tarjetas que se separan,
   se alinean para aprobación y conectan a los canales. Tipografía por etapa: comienzo,
-  forma, aprobación y canales. El desplazamiento nativo controla
-  `useScroll`/`useTransform` en ambos sentidos; no se interceptan rueda ni gestos.
-  También se pueden elegir las cuatro etapas mediante botones accesibles por teclado.
+  forma, aprobación y canales. Inicia al estar visible el 60% de la sección,
+  se detiene al terminar y no se repite sola. Sin sticky ni dependencia del scroll.
+  Pausar/Reanudar y Volver a ver son accesibles por teclado; elegir una etapa pausa
+  la reproducción para inspeccionarla sin mover la página. Se suspende fuera de
+  pantalla o al ocultar la pestaña, y continúa desde su posición al volver.
   Móvil, ventanas pequeñas y movimiento reducido: los cuatro pasos en lectura normal,
   sin sticky ni animación. Todos los datos son ilustrativos, no llama a IA ni publica.
   TikTok indica que se termina en su app; no promete publicación directa automática.
@@ -145,8 +147,8 @@ fondo = tinte ~10% del color, texto = color pleno.
 ## Animación (motion/react)
 
 Movimiento con propósito, sutil (evitar sensación "AI-generated" por exceso):
-- **Portada:** entrada breve del texto y composición estática de campaña.
-- **Relato de campaña:** separación de capas, alineación y conexiones SVG ligadas al scroll.
+- **Portada:** entrada breve del texto y composición estática de la identidad de NexoMark.
+- **Relato de NexoMark:** separación de capas, alineación y conexiones SVG en una secuencia automática controlable.
 - **Scroll-reveal** en las demás secciones (fade + translateY al entrar en viewport).
 - Galería estática, sin marquee infinito; sin rebote ni escala en botones.
 - Respetar `prefers-reduced-motion` siempre.

@@ -11,7 +11,7 @@ test('all chapter destinations land in their own reading interval', () => {
   })
 })
 
-test('scroll chapters are reversible, clamped and deterministic at transitions', () => {
+test('timeline chapters are clamped and deterministic at transitions', () => {
   assert.deepEqual([0, .219, .22, .499, .50, .759, .76, 1].map(storyStageAt), [0, 0, 1, 1, 2, 2, 3, 3])
   assert.deepEqual([1, .61, .35, .04].map(storyStageAt), [3, 2, 1, 0])
   assert.equal(storyStageAt(-1), 0)
@@ -46,6 +46,13 @@ test('static fallback preserves all stages and the actual TikTok handoff', () =>
   assert.match(story, /story-static-steps/)
   assert.match(STORY_STAGES[3].description, /TikTok.*en su app/)
   assert.match(styles, /focus-visible/)
+  assert.match(story, /useInView\(target, \{ amount: 0\.6 \}\)/)
+  assert.match(story, /visibilitychange/)
+  assert.match(story, /playback\.setVisible\(false\)/)
+  assert.match(story, /Volver a ver/)
+  assert.match(story, /Pausar/)
+  assert.doesNotMatch(story, /useScroll|scrollTo/)
+  assert.doesNotMatch(styles, /320svh|position: sticky/)
   assert.doesNotMatch(story, /addEventListener\(['"](?:wheel|touchmove)|fetch\(|axios/)
 })
 

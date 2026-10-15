@@ -1,4 +1,10 @@
-// Scroll positions leave a reading interval for each phase, including both ends.
+// Timeline positions leave a reading interval for each phase, including both ends.
+export const STORY_DURATION_SECONDS = 14
+
+export function remainingStoryDuration(progress) {
+  const value = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0
+  return STORY_DURATION_SECONDS * (1 - value)
+}
 export const STORY_STAGES = [
   { id: 'brief', title: 'Brief del negocio', label: 'La idea', headline: ['Es el', 'comienzo.'], position: 0.04,
     description: 'Define tu producto, tu público y lo que quieres comunicar. El negocio marca el punto de partida.' },

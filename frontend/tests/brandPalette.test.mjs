@@ -52,14 +52,15 @@ test('mobile themes, legal pages and PDF export use the same brand', () => {
   }
 })
 
-test('campaign demonstration is scroll-linked, labelled, and never calls a service', () => {
+test('campaign demonstration is automatic, labelled, and never calls a service', () => {
   const hero = readFileSync(new URL('../src/components/landing/HeroSection.jsx', import.meta.url), 'utf8')
   const story = readFileSync(new URL('../src/components/landing/HowItWorks.jsx', import.meta.url), 'utf8')
   const gallery = readFileSync(new URL('../src/components/landing/ShowcaseMarquee.jsx', import.meta.url), 'utf8')
   assert.match(hero, /El flujo de NexoMark/)
   assert.match(story, /Brief del negocio/)
   assert.match(story, /Revisión del cliente/)
-  assert.match(story, /useScroll/)
+  assert.match(story, /useInView/)
+  assert.doesNotMatch(story, /useScroll|scrollTo/)
   assert.match(story, /prefers-reduced-motion: no-preference/)
   assert.doesNotMatch(story, /fetch\(|axios|setInterval|setTimeout|preventDefault/)
   assert.doesNotMatch(hero, /fetch\(|axios|useEffect|98%|heroImg/)

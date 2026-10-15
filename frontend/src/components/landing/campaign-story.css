@@ -20,8 +20,8 @@
 .hero-preview-footer svg { color: #79ddd3; }
 .story-eyebrow { display: block; margin: 0; color: var(--color-primary); font-size: 10px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
 .campaign-story { background: var(--color-surface-container-low); scroll-margin-top: 64px; }
-.campaign-story--animated { height: 320svh; position: relative; }
-.story-sticky { position: sticky; top: 64px; height: calc(100svh - 64px); display: flex; align-items: center; }
+.campaign-story--animated { position: relative; }
+.story-playback-layout { min-height: calc(100svh - 64px); display: flex; align-items: center; }
 .story-inner { max-width: 1440px; width: 100%; margin: 0 auto; padding: 40px; display: grid; grid-template-columns: minmax(250px, 1fr) minmax(640px, 1.8fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
 .story-editorial h2 { margin: 20px 0; font-size: clamp(40px, 4.1vw, 60px); font-weight: 600; line-height: 1.05; letter-spacing: -.045em; color: var(--color-on-surface); }
 .story-editorial h2 > span { color: var(--color-primary); }
@@ -38,7 +38,12 @@
 .story-chapter-index { font-size: 10px; font-variant-numeric: tabular-nums; color: var(--color-primary); letter-spacing: .08em; }
 .story-chapters button > svg { margin-left: auto; opacity: 0; }
 .story-chapters button[aria-current='step'] > svg { opacity: 1; }
-.story-scroll-hint { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--color-on-surface-variant); }
+.story-player-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.story-player-controls button { display: inline-flex; gap: 8px; align-items: center; padding: 10px 12px; font-size: 12px; border-radius: 4px; border: 0; cursor: pointer; background: var(--color-surface-container-high); color: var(--color-on-surface); }
+.story-player-controls button:first-child { background: var(--color-primary); color: var(--color-on-primary); }
+.story-player-controls button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.story-player-controls button:disabled { opacity: .6; cursor: default; }
+.story-playback-status { margin: 12px 0 0; font-size: 10px; line-height: 1.5; color: var(--color-on-surface-variant); }
 .story-demonstration { min-width: 0; }
 .story-scene-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--color-on-surface-variant); font-size: 10px; letter-spacing: .12em; }
 .story-scene-heading > span:last-child { color: var(--color-primary); font-variant-numeric: tabular-nums; }
@@ -125,6 +130,6 @@
 }
 @media print {
   .campaign-story--animated { height: auto; }
-  .story-sticky { position: static; height: auto; }
-  .story-chapters button > svg, .story-scroll-hint { display: none; }
+  .story-playback-layout { min-height: 0; }
+  .story-chapters button > svg, .story-player-controls, .story-playback-status { display: none; }
 }
