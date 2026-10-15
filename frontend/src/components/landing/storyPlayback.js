@@ -1,4 +1,4 @@
-/** Visibility-aware, one-shot playback. Animation and progress are injected for testing. */
+/** Visibility-aware looping playback. Animation and progress are injected for testing. */
 export function createStoryPlayback({ getProgress, setProgress, animateToEnd }) {
   let status = 'ready'
   let visible = false
@@ -20,22 +20,19 @@ export function createStoryPlayback({ getProgress, setProgress, animateToEnd }) 
   }
 
   function play() {
-    if (getProgress() >= 1) {
-      publish('finished')
-      return
-    }
     if (!visible) {
       publish('suspended')
       return
     }
     stop()
+    if (getProgress() >= 1) setProgress(0)
     const currentGeneration = generation
     publish('playing')
     animation = animateToEnd(() => {
       if (currentGeneration !== generation) return
       animation = null
-      setProgress(1)
-      publish('finished')
+      setProgress(0)
+      play()
     })
   }
 
@@ -57,19 +54,14 @@ export function createStoryPlayback({ getProgress, setProgress, animateToEnd }) 
     },
     pause() {
       stop()
-      publish(getProgress() >= 1 ? 'finished' : 'paused')
+      publish('paused')
     },
     play,
-    replay() {
-      stop()
-      setProgress(0)
-      play()
-    },
     seek(value) {
       stop()
       const progress = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0
       setProgress(progress)
-      publish(progress >= 1 ? 'finished' : 'paused')
+      publish('paused')
     },
   }
 }

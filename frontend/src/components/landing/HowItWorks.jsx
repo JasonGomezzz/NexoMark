@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react'
-import { ArrowRight, Check, FileText, MessageSquare, Pause, PenLine, Play, RotateCcw } from 'lucide-react'
+import { ArrowRight, Check, FileText, MessageSquare, PenLine } from 'lucide-react'
 import PlatformIcon from '@/components/campaign/PlatformIcon'
 import CampaignArtwork from './CampaignArtwork'
-import { STORY_STAGES, STORY_TRACKS, remainingStoryDuration, storyStageAt } from './campaignStory'
+import { STORY_STAGES, STORY_TRACKS, storyCycleTiming, storyStageAt } from './campaignStory'
 import { createStoryPlayback } from './storyPlayback'
 import './campaign-story.css'
 
@@ -24,10 +24,9 @@ const getVisibility = () => document.visibilityState !== 'hidden'
 const getServerVisibility = () => true
 const PLAYBACK_LABELS = {
   ready: 'Lista para comenzar',
-  playing: 'Reproducción automática · 14 s',
+  playing: 'Reproducción automática continua',
   paused: 'En pausa',
   suspended: 'Se reanudará al volver',
-  finished: 'Recorrido completo',
 }
 const CHANNELS = [
   ['facebook', 'Facebook', 'Página del negocio'],
@@ -147,8 +146,8 @@ function AnimatedStory() {
   const [playback] = useState(() => createStoryPlayback({
     getProgress: () => progress.get(),
     setProgress: value => progress.set(value),
-    animateToEnd: onComplete => animate(progress, 1, {
-      duration: remainingStoryDuration(progress.get()), ease: 'linear', onComplete,
+    animateToEnd: onComplete => animate(progress, [progress.get(), 1, 1], {
+      ...storyCycleTiming(progress.get()), ease: 'linear', onComplete,
     }),
   }))
   const status = useSyncExternalStore(playback.subscribe, playback.getSnapshot, playback.getSnapshot)
@@ -165,8 +164,9 @@ function AnimatedStory() {
   }))
 
   function goToStage(index) {
-    // Manual inspection pauses autoplay without moving the page or losing focus.
+    // Selecting a chapter continues the automatic sequence without moving the page.
     playback.seek(STORY_STAGES[index].position)
+    playback.play()
   }
 
   return <section ref={target} id="como-funciona" className="campaign-story campaign-story--animated" aria-labelledby="campaign-story-title">
@@ -181,13 +181,6 @@ function AnimatedStory() {
               </button>
             </li>)}
           </ol>
-          <div className="story-player-controls" aria-label="Controles de la animación">
-            <button type="button" disabled={status === 'finished'} onClick={status === 'playing' ? playback.pause : playback.play}>
-              {status === 'playing' ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}
-              {status === 'playing' ? 'Pausar' : status === 'finished' ? 'Finalizada' : status === 'ready' ? 'Reproducir' : 'Reanudar'}
-            </button>
-            <button type="button" onClick={playback.replay}><RotateCcw size={14} aria-hidden="true" /> Volver a ver</button>
-          </div>
           <p className="story-playback-status" role="status">{PLAYBACK_LABELS[status]}</p>
         </div>
         <div className="story-demonstration">

@@ -101,12 +101,12 @@ alta sobre fondo claro (fondo container suave + texto del mismo tono).
 - Portada: composición editorial de la identidad de NexoMark y relato en `Cómo funciona`.
   No se muestran ni se consultan campañas guardadas o marcas de clientes.
   Brief → Texto e imagen → Revisión del cliente → Conexión con las redes.
-  En escritorio (≥1100 × 700px), reproducción automática de 14 segundos con tarjetas que se separan,
+  En escritorio (≥1100 × 700px), reproducción automática continua de 14 segundos con tarjetas que se separan,
   se alinean para aprobación y conectan a los canales. Tipografía por etapa: comienzo,
   forma, aprobación y canales. Inicia al estar visible el 60% de la sección,
-  se detiene al terminar y no se repite sola. Sin sticky ni dependencia del scroll.
-  Pausar/Reanudar y Volver a ver son accesibles por teclado; elegir una etapa pausa
-  la reproducción para inspeccionarla sin mover la página. Se suspende fuera de
+  mantiene el resultado 2 segundos y vuelve al inicio sin intervención. Sin sticky ni dependencia del scroll.
+  Sin botones de reproducción, pausa ni repetición. Elegir una etapa continúa
+  la secuencia desde ese punto sin mover la página. Se suspende fuera de
   pantalla o al ocultar la pestaña, y continúa desde su posición al volver.
   Móvil, ventanas pequeñas y movimiento reducido: los cuatro pasos en lectura normal,
   sin sticky ni animación. Todos los datos son ilustrativos, no llama a IA ni publica.

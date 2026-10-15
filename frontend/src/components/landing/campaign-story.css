@@ -38,11 +38,6 @@
 .story-chapter-index { font-size: 10px; font-variant-numeric: tabular-nums; color: var(--color-primary); letter-spacing: .08em; }
 .story-chapters button > svg { margin-left: auto; opacity: 0; }
 .story-chapters button[aria-current='step'] > svg { opacity: 1; }
-.story-player-controls { display: flex; flex-wrap: wrap; gap: 10px; }
-.story-player-controls button { display: inline-flex; gap: 8px; align-items: center; padding: 10px 12px; font-size: 12px; border-radius: 4px; border: 0; cursor: pointer; background: var(--color-surface-container-high); color: var(--color-on-surface); }
-.story-player-controls button:first-child { background: var(--color-primary); color: var(--color-on-primary); }
-.story-player-controls button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
-.story-player-controls button:disabled { opacity: .6; cursor: default; }
 .story-playback-status { margin: 12px 0 0; font-size: 10px; line-height: 1.5; color: var(--color-on-surface-variant); }
 .story-demonstration { min-width: 0; }
 .story-scene-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--color-on-surface-variant); font-size: 10px; letter-spacing: .12em; }
@@ -131,5 +126,5 @@
 @media print {
   .campaign-story--animated { height: auto; }
   .story-playback-layout { min-height: 0; }
-  .story-chapters button > svg, .story-player-controls, .story-playback-status { display: none; }
+  .story-chapters button > svg, .story-playback-status { display: none; }
 }

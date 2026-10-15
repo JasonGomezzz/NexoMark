@@ -1,9 +1,16 @@
 // Timeline positions leave a reading interval for each phase, including both ends.
 export const STORY_DURATION_SECONDS = 14
+export const STORY_END_HOLD_SECONDS = 2
 
 export function remainingStoryDuration(progress) {
   const value = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0
   return STORY_DURATION_SECONDS * (1 - value)
+}
+
+export function storyCycleTiming(progress) {
+  const remaining = remainingStoryDuration(progress)
+  const duration = remaining + STORY_END_HOLD_SECONDS
+  return { duration, times: [0, remaining / duration, 1] }
 }
 export const STORY_STAGES = [
   { id: 'brief', title: 'Brief del negocio', label: 'La idea', headline: ['Es el', 'comienzo.'], position: 0.04,

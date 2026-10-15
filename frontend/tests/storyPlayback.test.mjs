@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createStoryPlayback } from '../src/components/landing/storyPlayback.js'
-import { remainingStoryDuration } from '../src/components/landing/campaignStory.js'
+import { remainingStoryDuration, storyCycleTiming } from '../src/components/landing/campaignStory.js'
 
 function fixture() {
   let progress = 0
@@ -67,20 +67,21 @@ test('a deliberate pause survives leaving and re-entering the section', () => {
   assert.equal(animations.length, 1)
 })
 
-test('completed playback never loops; only replay resets to the beginning', () => {
+test('completed cycles restart automatically while the section remains visible', () => {
   const { player, animations, getProgress } = fixture()
   player.setVisible(true)
   animations[0].finish()
-  assert.equal(player.getSnapshot(), 'finished')
-  assert.equal(getProgress(), 1)
-  player.setVisible(false)
-  player.setVisible(true)
-  player.play()
-  assert.equal(animations.length, 1)
-  player.replay()
   assert.equal(player.getSnapshot(), 'playing')
   assert.equal(getProgress(), 0)
   assert.equal(animations.length, 2)
+  animations[1].finish()
+  assert.equal(animations.length, 3)
+  assert.equal(getProgress(), 0)
+  player.setVisible(false)
+  assert.equal(animations[2].stopped, true)
+  player.setVisible(true)
+  assert.equal(player.getSnapshot(), 'playing')
+  assert.equal(animations.length, 4)
 })
 
 test('manual chapter selection pauses at that position and ignores stale completion', () => {
@@ -118,4 +119,26 @@ test('resuming uses only the remaining part of the fourteen-second timeline', ()
   assert.equal(remainingStoryDuration(2), 0)
   assert.equal(remainingStoryDuration(-1), 14)
   assert.equal(remainingStoryDuration(NaN), 14)
+})
+
+test('each cycle holds the completed scene for two seconds before restarting', () => {
+  assert.deepEqual(storyCycleTiming(0), { duration: 16, times: [0, .875, 1] })
+  assert.deepEqual(storyCycleTiming(.5), { duration: 9, times: [0, 7 / 9, 1] })
+})
+
+test('pausing at the end prevents another cycle until explicitly resumed', () => {
+  const { player, animations, tick, getProgress } = fixture()
+  player.setVisible(true)
+  tick(1)
+  player.pause()
+  animations[0].finish()
+  assert.equal(player.getSnapshot(), 'paused')
+  assert.equal(animations.length, 1)
+  player.setVisible(false)
+  player.setVisible(true)
+  assert.equal(player.getSnapshot(), 'paused')
+  player.play()
+  assert.equal(player.getSnapshot(), 'playing')
+  assert.equal(getProgress(), 0)
+  assert.equal(animations.length, 2)
 })
