@@ -399,54 +399,13 @@ html[data-theme='dark'] .landing-hero {
   .landing-hero { background-position: 62% bottom; }
 }
 
-.workflow-demo {
-  padding: 32px;
-  border-radius: 4px;
-  background: #14283f;
-  color: #ffffff;
-}
-.workflow-steps { margin: 0; padding: 0; list-style: none; }
-.workflow-step { display: flex; gap: 16px; padding-block: 12px; }
-.workflow-step-number {
-  width: 24px;
-  flex-shrink: 0;
-  padding-top: 12px;
-  color: #79ddd3;
-  font-size: 12px;
-  font-weight: 600;
-}
-.workflow-step-content {
-  flex: 1;
-  min-width: 0;
-  padding: 16px;
-  background: rgb(255 255 255 / 0.06);
-  border-radius: 4px;
-  animation: workflow-arrive 0.5s ease both;
-  animation-delay: calc(var(--step) * 0.7s + 0.2s);
-}
-.workflow-step-progress { height: 2px; margin-top: 14px; background: rgb(255 255 255 / 0.12); }
-.workflow-step-progress span {
-  display: block;
-  height: 100%;
-  background: #17b8ad;
-  transform-origin: left;
-  animation: workflow-progress 0.75s ease both;
-  animation-delay: calc(var(--step) * 0.7s + 0.5s);
-}
 .hero-introduction { animation: workflow-arrive 0.6s ease both; }
 @keyframes workflow-arrive {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes workflow-progress {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-@media (max-width: 640px) {
-  .workflow-demo { padding: 20px; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .workflow-step-content, .workflow-step-progress span, .hero-introduction {
+  .hero-introduction {
     animation: none;
     transform: none;
     opacity: 1;

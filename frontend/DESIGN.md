@@ -98,9 +98,17 @@ alta sobre fondo claro (fondo container suave + texto del mismo tono).
 - Se mantienen bordes de campos editables, anillos de foco y estados de selección.
 - Nombres CSS históricos `glass-*` / `liquid-*` se conservan por compatibilidad,
   pero ya no aplican transparencias ni desenfoque ornamental.
-- Portada: demostración del flujo Brief → Contenido → Revisión → Publicación.
-  Animación de entrada de 8px y barras turquesa, una sola ejecución (menos de 5s).
-  Es un ejemplo visible, no llama a IA ni publica. Desactivada con movimiento reducido.
+- Portada: composición editorial de la identidad de NexoMark y relato en `Cómo funciona`.
+  No se muestran ni se consultan campañas guardadas o marcas de clientes.
+  Brief → Texto e imagen → Revisión del cliente → Conexión con las redes.
+  En escritorio (≥1100 × 700px), escena sticky de 320svh con tarjetas que se separan,
+  se alinean para aprobación y conectan a los canales. Tipografía por etapa: comienzo,
+  forma, aprobación y canales. El desplazamiento nativo controla
+  `useScroll`/`useTransform` en ambos sentidos; no se interceptan rueda ni gestos.
+  También se pueden elegir las cuatro etapas mediante botones accesibles por teclado.
+  Móvil, ventanas pequeñas y movimiento reducido: los cuatro pasos en lectura normal,
+  sin sticky ni animación. Todos los datos son ilustrativos, no llama a IA ni publica.
+  TikTok indica que se termina en su app; no promete publicación directa automática.
 - Galería estática, sin carrusel infinito. Botones sin rebote ni escala al pulsar.
 - Logos de redes sociales y fotografías no se recolorean.
 - Toaster usa superficie sólida del tema, sin borde, radio4px y sombra suave.
@@ -137,10 +145,10 @@ fondo = tinte ~10% del color, texto = color pleno.
 ## Animación (motion/react)
 
 Movimiento con propósito, sutil (evitar sensación "AI-generated" por exceso):
-- **Zoom-in de entrada** en el mockup del hero (scale 0.92→1, opacity 0→1).
-- **Scroll-reveal** en secciones (fade + translateY al entrar en viewport).
-- **Marquee** infinito en la galería (pausa en hover).
-- Micro-interacciones hover en tarjetas (`shadow` + leve `scale`).
+- **Portada:** entrada breve del texto y composición estática de campaña.
+- **Relato de campaña:** separación de capas, alineación y conexiones SVG ligadas al scroll.
+- **Scroll-reveal** en las demás secciones (fade + translateY al entrar en viewport).
+- Galería estática, sin marquee infinito; sin rebote ni escala en botones.
 - Respetar `prefers-reduced-motion` siempre.
 
 ## Idioma

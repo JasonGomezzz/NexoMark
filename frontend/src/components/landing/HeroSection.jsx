@@ -1,15 +1,9 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Check, FileText, Image as ImageIcon, Send } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import PlatformIcon from '@/components/campaign/PlatformIcon'
 import heroBackground from '@/assets/landing/hero-business-background-v1.png'
-
-const WORKFLOW = [
-  { title: 'Brief del negocio', detail: 'Producto, público y objetivo', icon: FileText },
-  { title: 'Contenido de campaña', detail: 'Texto e imagen para cada canal', icon: ImageIcon },
-  { title: 'Revisión del cliente', detail: 'Feedback y aprobación antes de publicar', icon: Check },
-  { title: 'Publicación', detail: 'Entrega según el flujo de cada plataforma', icon: Send },
-]
+import CampaignArtwork from './CampaignArtwork'
 
 /** Demonstration only: no API calls, generated assets or publication actions. */
 export default function HeroSection() {
@@ -33,7 +27,7 @@ export default function HeroSection() {
               <Button className="shadow-sm">Crear mi campaña <ArrowRight className="h-4 w-4" /></Button>
             </Link>
             <a href="#como-funciona">
-              <Button variant="ghost">Conocer el proceso</Button>
+              <Button variant="ghost">Ver el proceso <ArrowDown className="h-4 w-4" /></Button>
             </a>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -43,32 +37,11 @@ export default function HeroSection() {
             ))}
           </div>
         </div>
-        <div className="workflow-demo" aria-label="Ejemplo ilustrativo del flujo de una campaña">
-          <div className="flex items-center justify-between gap-4 pb-6">
-            <div className="flex items-center gap-3">
-              <img src="/nexomark-icon.png" alt="" className="h-8 w-8" />
-              <span className="text-sm font-semibold">Un proceso conectado</span>
-            </div>
-            <span className="text-xs text-white/70">Ejemplo de flujo</span>
-          </div>
-          <ol className="workflow-steps">
-            {WORKFLOW.map(({ title, detail, icon: Icon }, index) => (
-              <li key={title} className="workflow-step" style={{ '--step': index }}>
-                <span className="workflow-step-number" aria-hidden="true">0{index + 1}</span>
-                <div className="workflow-step-content">
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span className="text-sm font-semibold">{title}</span>
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-white/75">{detail}</p>
-                  <div className="workflow-step-progress" aria-hidden="true"><span /></div>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-6 text-xs leading-relaxed text-white/70">
-            Tú creas. Tu cliente revisa. NexoMark conecta el proceso.
-          </p>
+        <div className="hero-campaign-preview" aria-label="NexoMark: de la idea al contenido aprobado">
+          <div className="hero-preview-caption"><span>CREACIÓN CONECTADA</span><span>NEXOMARK</span></div>
+          <div className="hero-campaign-art"><CampaignArtwork /></div>
+          <div className="hero-preview-brief"><span className="story-eyebrow">Tu próximo paso</span><p>Una idea.<br />Todo conectado.</p></div>
+          <div className="hero-preview-footer"><span><Check size={15} aria-hidden="true" /> La última palabra es tuya.</span><span>El flujo de NexoMark</span></div>
         </div>
       </div>
     </section>

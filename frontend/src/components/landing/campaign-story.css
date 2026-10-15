@@ -1,0 +1,130 @@
+/* Campaign narrative: local UI only, semantic theme tokens and native scrolling. */
+.campaign-artwork { position: relative; width: 100%; height: 100%; overflow: hidden; background: #14283f; color: #fff; }
+.campaign-artwork img { position: absolute; width: 112px; height: 112px; object-fit: contain; top: 20px; right: 20px; z-index: 1; }
+.campaign-artwork-lines { position: absolute; top: 0; right: 0; width: 74%; height: 68%; overflow: hidden; }
+.campaign-artwork-lines span { position: absolute; width: 100%; height: 100%; background: #17b8ad; opacity: .13; transform: translate(50%, -50%) rotate(45deg); }
+.campaign-artwork-lines span:nth-child(2) { transform: translate(28%, -28%) rotate(45deg); opacity: .09; }
+.campaign-artwork-lines span:nth-child(3) { transform: translate(6%, -6%) rotate(45deg); opacity: .05; }
+.campaign-artwork-caption { position: absolute; inset: auto 24px 24px; z-index: 1; }
+.campaign-artwork-caption span { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.campaign-artwork-caption p { margin: 12px 0 0; font-size: 32px; font-weight: 600; line-height: 1.08; letter-spacing: -.04em; }
+.hero-campaign-preview { position: relative; max-width: 530px; width: 100%; justify-self: end; padding: 24px; background: #14283f; color: #fff; border-radius: 4px; }
+.hero-preview-caption { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 20px; font-size: 9px; letter-spacing: .13em; color: #c5dedf; }
+.hero-campaign-art { height: 315px; margin-left: 70px; }
+.hero-campaign-art .campaign-artwork-caption p { font-size: 36px; }
+.hero-campaign-art .campaign-artwork img { width: 132px; height: 132px; }
+.hero-preview-brief { position: absolute; top: 100px; left: 0; width: 205px; padding: 22px; background: var(--color-surface-container-lowest); color: var(--color-on-surface); box-shadow: 0 12px 28px rgb(0 0 0 / .12); }
+.hero-preview-brief p { margin-top: 14px; font-size: 21px; font-weight: 600; line-height: 1.3; letter-spacing: -.03em; }
+.hero-preview-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; font-size: 10px; color: #c5dedf; }
+.hero-preview-footer > span:first-child { display: flex; gap: 8px; align-items: center; }
+.hero-preview-footer svg { color: #79ddd3; }
+.story-eyebrow { display: block; margin: 0; color: var(--color-primary); font-size: 10px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
+.campaign-story { background: var(--color-surface-container-low); scroll-margin-top: 64px; }
+.campaign-story--animated { height: 320svh; position: relative; }
+.story-sticky { position: sticky; top: 64px; height: calc(100svh - 64px); display: flex; align-items: center; }
+.story-inner { max-width: 1440px; width: 100%; margin: 0 auto; padding: 40px; display: grid; grid-template-columns: minmax(250px, 1fr) minmax(640px, 1.8fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+.story-editorial h2 { margin: 20px 0; font-size: clamp(40px, 4.1vw, 60px); font-weight: 600; line-height: 1.05; letter-spacing: -.045em; color: var(--color-on-surface); }
+.story-editorial h2 > span { color: var(--color-primary); }
+.story-editorial h2 > .story-title-first { display: block; color: var(--color-on-surface); }
+.story-editorial h2 > .story-title-frames { display: block; position: relative; height: 2.15em; color: var(--color-on-surface); }
+.story-title-frame { display: block; position: absolute; inset: 0; }
+.story-title-frame > span { color: var(--color-primary); }
+.story-intro-description { max-width: 280px; margin: 0; color: var(--color-on-surface-variant); font-size: 14px; line-height: 1.7; }
+.story-chapters { list-style: none; padding: 0; margin: 28px 0 22px; }
+.story-chapters button { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 10px; background: transparent; color: var(--color-on-surface-variant); font-size: 13px; text-align: left; cursor: pointer; transition: background-color .2s, color .2s; border: 0; border-radius: 4px; }
+.story-chapters button[aria-current='step'] { background: var(--color-surface-container-high); color: var(--color-primary); font-weight: 600; }
+.story-chapters button:hover { background: var(--color-surface-container); }
+.story-chapters button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.story-chapter-index { font-size: 10px; font-variant-numeric: tabular-nums; color: var(--color-primary); letter-spacing: .08em; }
+.story-chapters button > svg { margin-left: auto; opacity: 0; }
+.story-chapters button[aria-current='step'] > svg { opacity: 1; }
+.story-scroll-hint { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--color-on-surface-variant); }
+.story-demonstration { min-width: 0; }
+.story-scene-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--color-on-surface-variant); font-size: 10px; letter-spacing: .12em; }
+.story-scene-heading > span:last-child { color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.story-canvas { position: relative; height: 440px; margin: 16px 0 12px; overflow: hidden; background-image: radial-gradient(var(--color-outline-variant) .65px, transparent .65px); background-size: 24px 24px; }
+.story-scene { width: 640px; height: 440px; position: absolute; top: 50%; left: 50%; margin: -220px 0 0 -320px; }
+.story-content-pair, .story-connectors { position: absolute; inset: 0; width: 100%; height: 100%; }
+.story-card { position: absolute; top: 50%; left: 50%; width: 228px; height: 312px; margin: -156px 0 0 -114px; padding: 22px; border-radius: 4px; color: var(--color-on-surface); background: var(--color-surface-container-lowest); box-shadow: 0 14px 35px rgb(0 0 0 / .09); }
+.story-brief { z-index: 3; width: 300px; height: 344px; margin: -172px 0 0 -150px; padding: 26px; background: var(--color-surface); }
+.story-card-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 27px; font-size: 10px; color: var(--color-on-surface-variant); }
+.story-card-heading > span:last-child:not(:nth-child(2)) { margin-left: auto; color: var(--color-primary); }
+.story-card h3 { font-size: 26px; font-weight: 600; letter-spacing: -.04em; line-height: 1.16; margin: 12px 0 20px; }
+.story-brief-fields { margin: 0; }
+.story-brief-fields > div { display: grid; grid-template-columns: 60px 1fr; gap: 10px; font-size: 10px; margin: 12px 0; }
+.story-brief-fields dt { color: var(--color-on-surface-variant); }
+.story-brief-fields dd { margin: 0; }
+.story-card-signature { display: block; margin-top: 24px; color: var(--color-primary); font-size: 9px; }
+.story-copy-body { color: var(--color-on-surface-variant); font-size: 12px; line-height: 1.6; }
+.story-copy .story-card-heading { margin-bottom: 22px; }
+.story-image { padding: 0; overflow: hidden; }
+.story-image .campaign-artwork-caption { inset-inline: 20px; }
+.story-image .campaign-artwork-caption p { font-size: 30px; }
+.story-image .campaign-artwork-caption span { font-size: 8px; }
+.story-approval { position: absolute; width: 300px; top: 50%; left: 50%; margin: 158px 0 0 -150px; padding: 12px; border-radius: 4px; background: var(--color-surface-container-lowest); color: var(--color-on-surface); box-shadow: 0 8px 24px rgb(0 0 0 / .06); }
+.story-approval-content { display: flex; gap: 12px; align-items: center; }
+.story-approval-check { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 4px; background: var(--color-success-container); color: var(--color-success); }
+.story-approval-content > div > span { display: block; font-size: 9px; margin-bottom: 4px; color: var(--color-on-surface-variant); }
+.story-approval-content strong { display: block; font-size: 12px; font-weight: 600; }
+.story-approval-message { margin-left: auto; color: var(--color-on-surface-variant); }
+.story-channel { position: absolute; left: 496px; width: 142px; min-height: 52px; padding: 12px; display: flex; gap: 10px; align-items: center; border-radius: 4px; background: var(--color-surface-container-lowest); color: var(--color-on-surface); }
+.story-channel strong { display: block; font-size: 12px; font-weight: 600; }
+.story-channel span { display: block; margin-top: 3px; font-size: 9px; color: var(--color-on-surface-variant); }
+.story-explanation { min-height: 88px; padding: 8px 0 0; max-width: 570px; }
+.story-explanation p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--color-on-surface-variant); }
+.story-explanation p > span { display: block; margin-bottom: 6px; color: var(--color-on-surface); font-weight: 600; font-size: 14px; }
+.story-progress { height: 2px; margin: 16px 0; background: var(--color-surface-container-highest); }
+.story-progress span { display: block; height: 100%; background: var(--color-primary); transform-origin: left; }
+.story-disclaimer { margin: 0; font-size: 10px; line-height: 1.6; color: var(--color-on-surface-variant); }
+.campaign-story--static { padding: 64px 0; }
+.campaign-story--static .story-inner { align-items: start; grid-template-columns: minmax(240px, 1fr) minmax(0, 1.5fr); gap: 64px; }
+.campaign-story--static .story-editorial > .story-disclaimer { margin-top: 24px; }
+.story-static-steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 20px; }
+.story-static-steps > li { background: var(--color-surface-container-lowest); padding: 24px; border-radius: 4px; }
+.story-static-heading { display: flex; align-items: center; gap: 12px; }
+.story-static-heading h3 { font-size: 18px; font-weight: 600; margin: 0; }
+.story-static-steps > li > p { font-size: 14px; line-height: 1.65; color: var(--color-on-surface-variant); margin-top: 12px; }
+.story-static-brief { margin-top: 20px; padding: 14px; font-size: 12px; line-height: 1.7; background: var(--color-surface-container-low); color: var(--color-primary); }
+.story-static-art { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+.story-static-art .campaign-artwork { height: 240px; border-radius: 4px; }
+.story-static-art .campaign-artwork-caption { inset-inline: 16px; }
+.story-static-art .campaign-artwork-caption p { font-size: 24px; }
+.story-static-art .campaign-artwork-caption span { font-size: 7px; }
+.story-static-art blockquote { font-size: 16px; line-height: 1.6; letter-spacing: -.02em; margin: 0; }
+.story-static-approval { margin-top: 20px; }
+.story-static-channels { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+.story-static-channels > span { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.story-static-disclaimer { max-width: 1440px; padding: 0 40px; margin: 16px auto 0; }
+@media (min-width: 1100px) and (max-height: 810px) {
+  .story-inner { padding-block: 16px; }
+  .story-canvas { height: 400px; margin-block: 8px; }
+  .story-scene { transform: scale(.9); }
+  .story-editorial h2 { font-size: 44px; }
+  .story-explanation { min-height: 82px; }
+  .story-chapters { margin-block: 20px; }
+}
+@media (max-width: 767px) {
+  .hero-campaign-preview { max-width: none; padding: 20px; }
+  .hero-campaign-art { height: 290px; margin-left: 0; }
+  .hero-campaign-art .campaign-artwork-caption p { font-size: 28px; }
+  .hero-campaign-art .campaign-artwork img { width: 112px; height: 112px; }
+  .hero-preview-brief { position: static; width: auto; padding: 18px; margin-top: 16px; }
+  .hero-preview-brief p { font-size: 18px; }
+  .hero-preview-caption { font-size: 8px; }
+  .hero-preview-footer { font-size: 9px; gap: 8px; }
+  .campaign-story--static .story-inner { display: block; padding: 0 24px; }
+  .story-editorial h2 { font-size: 44px; }
+  .story-intro-description { max-width: 360px; }
+  .story-static-steps { margin-top: 36px; }
+  .story-static-steps > li { padding: 24px 20px; }
+  .story-static-art { grid-template-columns: 1fr; gap: 16px; }
+  .story-static-art .campaign-artwork { height: 250px; }
+  .story-static-art .campaign-artwork-caption p { font-size: 28px; }
+  .story-static-art blockquote { font-size: 14px; }
+  .story-static-disclaimer { padding-inline: 24px; }
+}
+@media print {
+  .campaign-story--animated { height: auto; }
+  .story-sticky { position: static; height: auto; }
+  .story-chapters button > svg, .story-scroll-hint { display: none; }
+}

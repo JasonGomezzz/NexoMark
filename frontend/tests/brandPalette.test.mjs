@@ -52,17 +52,21 @@ test('mobile themes, legal pages and PDF export use the same brand', () => {
   }
 })
 
-test('campaign demonstration is bounded motion, labelled, and never calls a service', () => {
+test('campaign demonstration is scroll-linked, labelled, and never calls a service', () => {
   const hero = readFileSync(new URL('../src/components/landing/HeroSection.jsx', import.meta.url), 'utf8')
+  const story = readFileSync(new URL('../src/components/landing/HowItWorks.jsx', import.meta.url), 'utf8')
   const gallery = readFileSync(new URL('../src/components/landing/ShowcaseMarquee.jsx', import.meta.url), 'utf8')
-  assert.match(hero, /Ejemplo de flujo/)
-  assert.match(hero, /Brief del negocio/)
-  assert.match(hero, /Revisión del cliente/)
+  assert.match(hero, /El flujo de NexoMark/)
+  assert.match(story, /Brief del negocio/)
+  assert.match(story, /Revisión del cliente/)
+  assert.match(story, /useScroll/)
+  assert.match(story, /prefers-reduced-motion: no-preference/)
+  assert.doesNotMatch(story, /fetch\(|axios|setInterval|setTimeout|preventDefault/)
   assert.doesNotMatch(hero, /fetch\(|axios|useEffect|98%|heroImg/)
   assert.doesNotMatch(gallery, /useAnimationFrame|repeat: Infinity/)
   assert.match(css, /--radius-xl: 0\.25rem/)
   assert.match(css, /prefers-reduced-motion: reduce/)
-  assert.match(css, /animation: workflow-progress 0\.75s ease both/)
+  assert.doesNotMatch(css, /animation: workflow-progress/)
 })
 
 test('monthly charts and public theme toggle follow the active theme', () => {
