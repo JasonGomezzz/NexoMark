@@ -13,9 +13,12 @@ const TONOS = {
   neutral: 'bg-surface-container-high text-on-surface-variant',
 }
 
-/** Estado de publicación por cuenta destino, con "Publicar ahora / Reintentar" para el marketero. */
+/**
+ * Estado de publicación por cuenta destino, con "Publicar ahora / Reintentar" para el marketero.
+ * Las publicaciones en X se muestran en "Versión para X" (XVariantPanel): no se publican al aprobar.
+ */
 export default function PublicationsPanel({ campaignId, estadoCampana }) {
-  const [publicaciones, setPublicaciones] = useState([])
+  const [todas, setPublicaciones] = useState([])
   const [publicando, setPublicando] = useState(null)
   const [recarga, setRecarga] = useState(0)
 
@@ -30,6 +33,7 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
     }
   }, [campaignId, estadoCampana, recarga])
 
+  const publicaciones = todas.filter((p) => p.red !== 'x')
   if (!publicaciones.length) return null
 
   async function publicar(publicacion) {

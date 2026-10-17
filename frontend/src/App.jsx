@@ -20,6 +20,7 @@ import AccountSettingsPage from './pages/AccountSettingsPage'
 import PromptGuidePage from './pages/PromptGuidePage'
 import CreditsDetailPage from './pages/CreditsDetailPage'
 import MetaRetornoPage from './pages/MetaRetornoPage'
+import XRetornoPage from './pages/XRetornoPage'
 import PrivateRoute from './components/PrivateRoute'
 import RoleRoute from './components/RoleRoute'
 import AppLayout from './components/AppLayout'
@@ -61,6 +62,7 @@ export default function App() {
               <Route path="/settings" element={<AccountSettingsPage />} />
               <Route path="/prompt-guide" element={<PromptGuideRouter />} />
               <Route path="/redes/meta-retorno" element={<MetaRetornoPage />} />
+              <Route path="/redes/x-retorno" element={<XRetornoPage />} />
 
               <Route element={<RoleRoute roles={STAFF} />}>
                 <Route path="/campaigns" element={<CampaignListPage />} />

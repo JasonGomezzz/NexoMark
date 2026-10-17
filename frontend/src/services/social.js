@@ -3,7 +3,7 @@
  * Las llamadas a la API están en socialApi.js.
  */
 
-const REDES = { instagram: 'Instagram', facebook: 'Facebook' }
+const REDES = { instagram: 'Instagram', facebook: 'Facebook', x: 'X' }
 
 export function etiquetaRed(red) {
   return REDES[red] ?? red
@@ -30,9 +30,12 @@ export function publicacionAtascada(publicacion, ahora = new Date()) {
   return ahora - new Date(publicacion.publicando_desde) > MARGEN_ATASCADA_MS
 }
 
-/** ¿Puede el marketero pulsar "Publicar ahora / Reintentar"? */
+/**
+ * ¿Puede el marketero pulsar "Publicar ahora / Reintentar"? Nunca en X: allí se
+ * publica desde la versión para X, confirmando el costo.
+ */
 export function puedeReintentar(publicacion, estadoCampana, ahora = new Date()) {
-  if (estadoCampana !== 'aprobado') return false
+  if (estadoCampana !== 'aprobado' || publicacion.red === 'x') return false
   if (publicacionAtascada(publicacion, ahora)) return true
   return (
     ['fallido', 'esperando_aprobacion'].includes(publicacion.estado) && (publicacion.intentos ?? 0) < 3
@@ -63,6 +66,18 @@ const MOTIVOS_RETORNO_META = {
 
 export function mensajeMotivoRetornoMeta(motivo) {
   return MOTIVOS_RETORNO_META[motivo] ?? 'No se pudo conectar la cuenta.'
+}
+
+const MOTIVOS_RETORNO_X = {
+  cancelado: 'Cancelaste la conexión con X. No se conectó ninguna cuenta.',
+  sesion: 'El enlace de conexión caducó o ya se usó. Vuelve a conectar la cuenta desde Redes conectadas.',
+  sin_codigo: 'X no devolvió la autorización. Vuelve a intentarlo.',
+  sin_datos: 'No llegaron los datos de X. Vuelve a conectar la cuenta desde Redes conectadas.',
+  desactivado: 'X está desactivado en este servidor.',
+}
+
+export function mensajeMotivoRetornoX(motivo) {
+  return MOTIVOS_RETORNO_X[motivo] ?? 'No se pudo conectar la cuenta de X.'
 }
 
 export function textoCuentasConectadas(cantidad) {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import PublicationsPanel from '@/components/social/PublicationsPanel'
+import XVariantPanel from '@/components/social/XVariantPanel'
 import RedIcon from '@/components/social/RedIcon'
 import { socialApi } from '../services/socialApi'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -479,6 +480,9 @@ export default function CampaignDetailPage() {
 
           {/* Publicación en redes: estado por cuenta y "Publicar ahora / Reintentar" */}
           <PublicationsPanel campaignId={campaign.id} estadoCampana={campaign.estado} />
+
+          {/* X opcional: versión corta que el cliente aprueba aparte (no se muestra si X está apagada) */}
+          {campaign.estado === 'aprobado' && <XVariantPanel campaign={campaign} />}
 
           {/* Imagen generada — HU22 */}
           <div className="mt-4 rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
