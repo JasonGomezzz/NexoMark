@@ -43,6 +43,12 @@ if N8N_WEBHOOK_TOKEN == "dev-n8n-webhook-token" or len(N8N_WEBHOOK_TOKEN) < 32:
         "N8N_WEBHOOK_TOKEN debe definirse en producción con un valor propio de al menos 32 caracteres."
     )
 
+# X es opcional: solo si se enciende exige sus credenciales y un retorno HTTPS.
+if X_HABILITADO and not (X_CLIENT_ID and X_CLIENT_SECRET and X_REDIRECT_URI.startswith("https://")):  # noqa: F405
+    raise ImproperlyConfigured(
+        "Con X_HABILITADO=True hay que definir X_CLIENT_ID, X_CLIENT_SECRET y un X_REDIRECT_URI con https."
+    )
+
 # ─────────────────────────────────────────────
 # LOGGING — errores a archivo en producción
 # ─────────────────────────────────────────────

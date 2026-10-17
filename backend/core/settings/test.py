@@ -51,3 +51,12 @@ META_LOGIN_CONFIG_ID = ""  # los tests no deben depender del .env local
 PUBLIC_BASE_URL = ""
 META_APP_SECRET = "test-secret"
 FRONTEND_URL = "http://frontend.test"
+
+# ── X: apagada por defecto; cada test la enciende con la fixture `settings` ──
+X_HABILITADO = False
+X_CLIENT_ID = "test-x-client"
+X_CLIENT_SECRET = "test-x-secret"
+X_REDIRECT_URI = "http://testserver/api/social/x/callback/"
+X_COSTO_POST_USD = "0.015"
+X_COSTO_LECTURA_USD = "0.010"
+X_TOPE_MENSUAL_USD = "0.30"

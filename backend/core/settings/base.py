@@ -334,3 +334,27 @@ META_OAUTH_SCOPES = [
 SOCIAL_TOKEN_KEY = config("SOCIAL_TOKEN_KEY", default="")
 # Meta descarga la imagen desde una URL pública firmada que caduca.
 PUBLIC_MEDIA_MAX_AGE = 3600
+
+# ─────────────────────────────────────────────
+# X (Twitter) — red OPCIONAL, apagada por defecto
+# ─────────────────────────────────────────────
+# Decisión del 16/10: X no entra en la publicación automática al aprobar. Su
+# texto es una variante que el cliente aprueba aparte y el marketero publica
+# confirmando el costo. La API de X es de pago por uso (sin plan gratis para
+# desarrolladores nuevos): https://docs.x.com/x-api/getting-started/pricing
+# (17/10/2026: Post: Create US$0.015; con URL US$0.200; User: Read US$0.010).
+X_HABILITADO = config("X_HABILITADO", cast=bool, default=False)
+# Credenciales OAuth 2.0 (cliente confidencial) de la app en console.x.com.
+X_CLIENT_ID = config("X_CLIENT_ID", default="")
+X_CLIENT_SECRET = config("X_CLIENT_SECRET", default="")
+# Debe coincidir exactamente con una callback URL registrada en la app de X.
+X_REDIRECT_URI = config("X_REDIRECT_URI", default=f"{DJANGO_BASE_URL}/api/social/x/callback/")
+X_API_BASE_URL = "https://api.x.com"
+# https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code
+X_OAUTH_SCOPES = ["tweet.read", "tweet.write", "users.read", "media.write", "offline.access"]
+# Costos estimados (USD) y tope de gasto mensual que se aplica en el servidor.
+# 0.30 / 0.015 = 20 publicaciones al mes. Conviene fijar además un "spending
+# limit" en la consola de X: este tope protege a NexoMark, el de X a la tarjeta.
+X_COSTO_POST_USD = config("X_COSTO_POST_USD", default="0.015")
+X_COSTO_LECTURA_USD = config("X_COSTO_LECTURA_USD", default="0.010")
+X_TOPE_MENSUAL_USD = config("X_TOPE_MENSUAL_USD", default="0.30")
