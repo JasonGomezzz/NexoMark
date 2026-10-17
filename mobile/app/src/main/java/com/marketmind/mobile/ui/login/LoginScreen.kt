@@ -3,7 +3,6 @@ package com.marketmind.mobile.ui.login
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,10 +29,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -176,25 +173,6 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(34.dp))
 
                 Text(
-                    text = "SEGURIDAD IA GARANTIZADA",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 2.sp,
-                    textAlign = TextAlign.Center,
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(18.dp),
-                    modifier = Modifier.padding(top = 17.dp),
-                ) {
-                    SecurityBadge(Icons.Filled.Shield)
-                    SecurityBadge(Icons.Filled.VerifiedUser)
-                    SecurityBadge(Icons.Filled.Fingerprint)
-                }
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                Text(
                     text = "© 2026 NexoMark IA",
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 10.sp,
@@ -274,7 +252,7 @@ private fun LoginCard(
                 )
             }
 
-            FieldLabel("Correo Electronico")
+            FieldLabel("Correo electrónico")
             StyledTextField(
                 value = email,
                 onValueChange = onEmailChange,
@@ -353,7 +331,7 @@ private fun LoginCard(
                     )
                 } else {
                     Text(
-                        text = if (mode == AuthMode.Login) "Iniciar Sesion" else "Crear cuenta",
+                        text = if (mode == AuthMode.Login) "Iniciar sesión" else "Crear cuenta",
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp,
                     )
@@ -385,7 +363,7 @@ private fun LoginCard(
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = if (mode == AuthMode.Login) "Registrate ahora" else "Ingresa",
+                    text = if (mode == AuthMode.Login) "Regístrate ahora" else "Ingresa",
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -660,22 +638,4 @@ private fun StyledTextField(
             .fillMaxWidth()
             .height(58.dp),
     )
-}
-
-@Composable
-private fun SecurityBadge(icon: ImageVector) {
-    Box(
-        modifier = Modifier
-            .size(26.dp)
-            .clip(CircleShape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(14.dp),
-        )
-    }
 }
