@@ -1,7 +1,8 @@
 """
-Quita de los logs los secretos que viajan en URLs del OAuth de Meta.
+Quita de los logs los secretos que viajan en URLs del OAuth de Meta y de X.
 
-El callback llega como GET /api/social/meta/callback/?code=...&state=... y
+El callback llega como GET /api/social/meta/callback/?code=...&state=... (o
+/api/social/x/callback/ en X) y
 runserver (django.server) y gunicorn (--access-logfile, gunicorn.access)
 registran la línea de la petición completa. httpx también registra las URLs
 de la Graph API, que llevan client_secret, code y access_token como parámetros.
@@ -14,7 +15,11 @@ sigue siendo inútil sin el state ligado al usuario y sin el secreto de la app.
 import logging
 import re
 
-PARAMETROS_SECRETOS = ("code", "state", "access_token", "client_secret", "fb_exchange_token", "input_token")
+PARAMETROS_SECRETOS = (
+    "code", "state", "access_token", "client_secret", "fb_exchange_token", "input_token",
+    # X (OAuth 2.0 con PKCE): van en el cuerpo del POST, pero se filtran por si alguien las registra.
+    "code_verifier", "code_challenge", "refresh_token",
+)
 _PATRON = re.compile(
     r"(?<![A-Za-z0-9_])(?P<clave>" + "|".join(PARAMETROS_SECRETOS) + r")=[^&#\s\"']+"
 )

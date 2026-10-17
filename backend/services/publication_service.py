@@ -66,12 +66,17 @@ class PublicacionNoPermitida(Exception):
 
 
 def conexiones_disponibles(marketero: User, cliente_email: str | None) -> list[SocialConnection]:
-    """Cuentas activas donde el marketero puede publicar: las del cliente y las suyas."""
+    """
+    Cuentas activas de Meta donde se publica al aprobar: las del cliente y las del marketero.
+    X nunca entra aquí: su texto es una variante aparte que el cliente aprueba (ver x_publication_service).
+    """
     filtro = Q(usuario=marketero)
     if cliente_email:
         filtro |= Q(usuario__email__iexact=cliente_email, usuario__rol=UserRole.CLIENTE)
     return list(
-        SocialConnection.objects.filter(filtro, estado=ConexionEstado.ACTIVA).select_related("usuario")
+        SocialConnection.objects.filter(filtro, estado=ConexionEstado.ACTIVA)
+        .exclude(red=RedSocial.X)
+        .select_related("usuario")
     )
 
 
@@ -107,6 +112,11 @@ def programar_publicaciones(campaign: Campaign, conexion_ids: list[int], markete
     """
     if not conexion_ids:
         return []
+    if SocialConnection.objects.filter(id__in=conexion_ids, red=RedSocial.X).exists():
+        raise DestinoInvalido(
+            "Las cuentas de X no se publican al aprobar: cuando la campaña esté aprobada, "
+            "prepara su versión para X."
+        )
     permitidas = {c.id: c for c in conexiones_disponibles(marketero, campaign.cliente_email)}
     desconocidas = [cid for cid in conexion_ids if cid not in permitidas]
     if desconocidas:
@@ -146,7 +156,9 @@ def publicar_campana_aprobada(campaign_id: int) -> ResumenPublicacion:
     ids = list(
         Publication.objects.filter(
             campaign_id=campaign_id, estado=PublicacionEstado.ESPERANDO_APROBACION
-        ).values_list("id", flat=True)
+        )
+        .exclude(red=RedSocial.X)
+        .values_list("id", flat=True)
     )
     for publication_id in ids:
         resultado = _publicar(publication_id, desde=(PublicacionEstado.ESPERANDO_APROBACION,))
@@ -166,6 +178,10 @@ def reintentar_publicacion(publication: Publication, usuario: User) -> Publicati
     """'Publicar ahora / Reintentar' del marketero dueño de la campaña."""
     if publication.campaign.marketero_id != usuario.id:
         raise PublicacionNoPermitida("Solo el marketero de la campaña puede publicarla.")
+    if publication.red == RedSocial.X:
+        raise PublicacionNoPermitida(
+            "Las publicaciones en X se hacen desde la versión para X de la campaña, confirmando el costo."
+        )
     if publication.campaign.estado != CampaignStatus.APROBADO:
         raise PublicacionNoPermitida("La campaña todavía no fue aprobada por el cliente.")
     atascada = publicacion_atascada(publication)

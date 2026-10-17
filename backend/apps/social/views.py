@@ -248,6 +248,9 @@ class SocialConnectionViewSet(viewsets.GenericViewSet):
 
     def list(self, request: Request) -> Response:
         conexiones = self.get_queryset().filter(estado=ConexionEstado.ACTIVA)
+        if not settings.X_HABILITADO:
+            # X apagada: la UI no muestra nada de X (las conexiones quedan guardadas).
+            conexiones = conexiones.exclude(red=RedSocial.X)
         return Response(api_response(True, "Cuentas conectadas.", {
             "conexiones": SocialConnectionSerializer(conexiones, many=True).data,
         }))
@@ -261,7 +264,7 @@ class SocialConnectionViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["get"], url_path="destinos")
     def destinos(self, request: Request) -> Response:
-        """Cuentas donde el marketero puede publicar una campaña de ese cliente."""
+        """Cuentas donde se publica automáticamente al aprobar. Nunca incluye X (va aparte, con su variante)."""
         if request.user.rol != UserRole.MARKETERO:
             return Response(
                 api_response(False, "Solo el marketero elige destinos.", {}),

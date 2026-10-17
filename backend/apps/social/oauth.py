@@ -16,6 +16,11 @@ OAuth de Meta a prueba de CSRF y de vinculación cruzada de cuentas.
 Así un atacante no puede hacer que la víctima termine el flujo con un state
 ajeno (vincularía la cuenta de Meta del atacante a la víctima) ni usar el
 código de la víctima con su propio state.
+
+X usa el mismo flujo con PKCE (RFC 7636): `iniciar` recibe además el
+code_verifier, que se guarda cifrado en la autorización (nunca viaja por el
+navegador; solo su sha256, el code_challenge). `reclamar` lo borra de la base
+en el mismo UPDATE que marca el state usado.
 """
 
 import hashlib
@@ -25,6 +30,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from apps.authentication.models import User
+from services.social_tokens import cifrar, descifrar
 
 from .models import OAuthAutorizacion, ProveedorOAuth
 
@@ -37,8 +43,10 @@ def hash_state(state: str) -> str:
     return hashlib.sha256(state.encode()).hexdigest()
 
 
-def iniciar(usuario: User, redirect_uri: str, proveedor: str = ProveedorOAuth.META) -> str:
-    """Crea la autorización y devuelve el state en claro (solo viaja en la URL de Meta)."""
+def iniciar(
+    usuario: User, redirect_uri: str, proveedor: str = ProveedorOAuth.META, code_verifier: str = ""
+) -> str:
+    """Crea la autorización y devuelve el state en claro (solo viaja en la URL del proveedor)."""
     ahora = timezone.now()
     OAuthAutorizacion.objects.filter(usuario=usuario, expira_at__lt=ahora - RETENCION).delete()
     state = secrets.token_urlsafe(32)
@@ -48,9 +56,17 @@ def iniciar(usuario: User, redirect_uri: str, proveedor: str = ProveedorOAuth.ME
         state_hash=hash_state(state),
         token_version=usuario.token_version,
         redirect_uri=redirect_uri,
+        code_verifier_cifrado=cifrar(code_verifier) if code_verifier else "",
         expira_at=ahora + VIGENCIA,
     )
     return state
+
+
+def leer_code_verifier(autorizacion: OAuthAutorizacion) -> str:
+    """El code_verifier (PKCE) de una autorización reclamada. Lanza TokenIlegible si no se puede leer."""
+    if not autorizacion.code_verifier_cifrado:
+        return ""
+    return descifrar(autorizacion.code_verifier_cifrado)
 
 
 def vigente_para_callback(state: str, proveedor: str = ProveedorOAuth.META) -> OAuthAutorizacion | None:
@@ -112,9 +128,10 @@ def reclamar(usuario: User, state: str, proveedor: str = ProveedorOAuth.META) ->
             403,
         )
     # Un solo uso aunque lleguen dos peticiones a la vez: solo una actualiza la fila.
+    # El code_verifier (PKCE) sale de la base en el mismo UPDATE; queda solo en memoria.
     reclamada = OAuthAutorizacion.objects.filter(
         pk=autorizacion.pk, usada_at__isnull=True, expira_at__gt=ahora
-    ).update(usada_at=ahora)
+    ).update(usada_at=ahora, code_verifier_cifrado="")
     if not reclamada:
         raise AutorizacionInvalida(
             "usada", "Este enlace de conexión ya se usó. Si falta alguna cuenta, vuelve a conectarla.", 409
