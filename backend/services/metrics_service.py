@@ -5,7 +5,11 @@ MarketMind Voice — Estadísticas de publicaciones (Fase 4).
   foto (PublicationMetric). Respeta un intervalo mínimo para no gastar el
   límite de llamadas de la API.
 - resumen_por_red: lo que muestra el dashboard: publicaciones por red,
-  totales de la última foto de cada una y serie mensual.
+  totales de la última foto de cada una y serie mensual. Con `anio`, todo se
+  limita a las publicaciones de ese año (por fecha de publicación o, si no
+  llegó a publicarse, de creación).
+- serie_anual: los 12 meses de un año por red: publicaciones (conteo propio,
+  0 es real) y me gusta (suma de la última foto; None si ninguna tiene dato).
 
 Un dato que Meta no entrega es None; los totales lo ignoran y si ninguna
 publicación tiene el dato, el total también es None.
@@ -14,9 +18,8 @@ publicación tiene el dato, el total también es None.
 from collections import defaultdict
 from datetime import timedelta
 
-from django.db.models import Prefetch, QuerySet
-from django.db.models.functions import TruncMonth
-from django.db.models import Count
+from django.db.models import Count, Prefetch, QuerySet
+from django.db.models.functions import Coalesce, ExtractYear, TruncMonth
 from django.utils import timezone
 
 from apps.social.models import (
@@ -108,10 +111,83 @@ def refrescar_recientes(qs: QuerySet[Publication], limite: int = 20) -> dict:
     return {"actualizadas": actualizadas, "sin_datos": sin_datos}
 
 
-def resumen_por_red(qs: QuerySet[Publication]) -> dict:
-    """Totales por red para el dashboard, usando la última foto de cada publicación."""
+def con_fecha_referencia(qs: QuerySet[Publication]) -> QuerySet[Publication]:
+    """fecha_ref: cuándo se publicó o, si todavía no (pendiente, fallida), cuándo se programó."""
+    return qs.annotate(fecha_ref=Coalesce("publicado_at", "fecha_creacion"))
+
+
+def del_anio(qs: QuerySet[Publication], anio: int) -> QuerySet[Publication]:
+    """Publicaciones cuyo año (hora de Lima) es `anio`."""
+    return con_fecha_referencia(qs).filter(fecha_ref__year=anio)
+
+
+def anios_con_publicaciones(qs: QuerySet[Publication]) -> list[int]:
+    """Años con alguna publicación, del más reciente al más antiguo; siempre incluye el actual."""
+    anios = set(
+        con_fecha_referencia(qs)
+        .annotate(anio=ExtractYear("fecha_ref"))
+        .order_by()
+        .values_list("anio", flat=True)
+        .distinct()
+    )
+    anios.add(timezone.localtime().year)
+    return sorted(anios, reverse=True)
+
+
+def serie_anual(qs: QuerySet[Publication], anio: int) -> dict:
+    """
+    Los 12 meses de `anio` por red, según la fecha de publicación.
+
+    - publicaciones_por_mes: cuántas se publicaron (0 es un dato real).
+    - me_gusta_por_mes: suma de la última foto de cada publicación del mes, con
+      cuántas tenían el dato. None si ninguna lo tenía: no es cero.
+    """
+    redes = RedSocial.values
+    publicaciones = [{"mes": f"{anio}-{m:02d}", **{red: 0 for red in redes}} for m in range(1, 13)]
+    me_gusta = [
+        {
+            "mes": f"{anio}-{m:02d}",
+            **{red: None for red in redes},
+            **{f"{red}_con_dato": 0 for red in redes},
+            **{f"{red}_publicaciones": 0 for red in redes},
+        }
+        for m in range(1, 13)
+    ]
+    publicadas = con_ultima_metrica(del_anio(qs, anio).filter(estado=PublicacionEstado.PUBLICADO))
+    for publicacion in publicadas:
+        red = publicacion.red
+        if red not in redes:
+            continue
+        i = timezone.localtime(publicacion.fecha_ref).month - 1
+        publicaciones[i][red] += 1
+        fila = me_gusta[i]
+        fila[f"{red}_publicaciones"] += 1
+        ultima = publicacion.metricas_ordenadas[0] if publicacion.metricas_ordenadas else None
+        if ultima is not None and ultima.me_gusta is not None:
+            fila[red] = (fila[red] or 0) + ultima.me_gusta
+            fila[f"{red}_con_dato"] += 1
+
+    return {
+        "anio": anio,
+        "anios": anios_con_publicaciones(qs),
+        "publicaciones_por_mes": publicaciones,
+        "me_gusta_por_mes": me_gusta,
+    }
+
+
+def resumen_por_red(qs: QuerySet[Publication], anio: int | None = None) -> dict:
+    """
+    Totales por red para el dashboard, usando la última foto de cada publicación.
+
+    Sin `anio` (app Android) los totales son de todo el historial, como antes.
+    `anual` siempre viene: los 12 meses del año pedido o del actual.
+    """
+    todas = qs
+    if anio is not None:
+        qs = del_anio(qs, anio)
     publicadas = con_ultima_metrica(qs.filter(estado=PublicacionEstado.PUBLICADO))
-    inicio_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    # Mes calendario de Lima, no de UTC: el 1 a las 20:00 de Lima ya es día 2 en UTC.
+    inicio_mes = timezone.localtime().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     redes = {}
     por_red: dict[str, list[Publication]] = defaultdict(list)
@@ -148,4 +224,5 @@ def resumen_por_red(qs: QuerySet[Publication]) -> dict:
         "total_publicaciones": sum(r["publicaciones"] for r in redes.values()),
         "fallidas": qs.filter(estado=PublicacionEstado.FALLIDO).count(),
         "pendientes": qs.filter(estado=PublicacionEstado.ESPERANDO_APROBACION).count(),
+        "anual": serie_anual(todas, anio if anio is not None else timezone.localtime().year),
     }

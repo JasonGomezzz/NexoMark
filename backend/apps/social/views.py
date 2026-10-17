@@ -8,10 +8,10 @@ MarketMind Voice — Endpoints de redes sociales.
     GET    /api/social/connections/                  cuentas que conectó el usuario
     GET    /api/social/connections/destinos/?cliente_email=   destinos posibles al enviar (marketero)
     DELETE /api/social/connections/{id}/             desconectar
-    GET    /api/social/publications/?campaign={id}&estado=   historial con la última foto de métricas
+    GET    /api/social/publications/?campaign={id}&estado=&anio=   historial con la última foto de métricas
     POST   /api/social/publications/{id}/publish/    publicar ahora / reintentar
     GET    /api/social/publications/{id}/stats/?refresh=1     métricas de una publicación (+ historial)
-    GET    /api/social/publications/summary/          totales por red y serie mensual (dashboard)
+    GET    /api/social/publications/summary/?anio=    totales por red y series mensuales (dashboard)
     POST   /api/social/publications/refresh/          actualiza desde Meta las 20 publicadas más recientes
     GET    /api/public/media/{token}.jpg             imagen aprobada para Meta (firmada, caduca)
     POST   /api/internal/campaign-events/approved    aviso de Spring tras aprobar (token interno)
@@ -39,6 +39,7 @@ from services import meta_graph, public_media
 from services.metrics_service import (
     MetricasNoDisponibles,
     con_ultima_metrica,
+    del_anio,
     refrescar_metricas,
     refrescar_recientes,
     resumen_por_red,
@@ -65,6 +66,28 @@ logger = logging.getLogger(__name__)
 
 RUTA_RETORNO_META = "/redes/meta-retorno"
 MAX_LARGO_CODE = 4096
+
+
+class AnioInvalido(Exception):
+    pass
+
+
+def _anio(request: Request) -> int | None:
+    """?anio=2026 del dashboard. Ausente: sin filtro (la app Android no lo envía)."""
+    valor = request.query_params.get("anio")
+    if valor in (None, ""):
+        return None
+    try:
+        anio = int(valor)
+    except ValueError:
+        raise AnioInvalido from None
+    if not 2000 <= anio <= 2100:
+        raise AnioInvalido
+    return anio
+
+
+def _anio_invalido() -> Response:
+    return Response(api_response(False, "El año no es válido.", {}), status=status.HTTP_400_BAD_REQUEST)
 
 
 def _puede_conectar(usuario) -> bool:
@@ -277,6 +300,12 @@ class PublicationViewSet(viewsets.GenericViewSet):
         red = request.query_params.get("red")
         if red in RedSocial.values:
             qs = qs.filter(red=red)
+        try:
+            anio = _anio(request)
+        except AnioInvalido:
+            return _anio_invalido()
+        if anio is not None:
+            qs = del_anio(qs, anio)
         qs = con_ultima_metrica(qs.order_by("-publicado_at", "-fecha_creacion"))[:100]
         return Response(api_response(True, "Publicaciones.", {
             "publicaciones": PublicationSerializer(qs, many=True).data,
@@ -302,7 +331,11 @@ class PublicationViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["get"], url_path="summary")
     def summary(self, request: Request) -> Response:
         """Dashboard: publicaciones y totales por red con la última foto de cada publicación."""
-        return Response(api_response(True, "Resumen por red.", resumen_por_red(self.get_queryset())))
+        try:
+            anio = _anio(request)
+        except AnioInvalido:
+            return _anio_invalido()
+        return Response(api_response(True, "Resumen por red.", resumen_por_red(self.get_queryset(), anio)))
 
     @action(detail=False, methods=["post"], url_path="refresh")
     def refresh(self, request: Request) -> Response:
