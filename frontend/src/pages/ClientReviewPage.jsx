@@ -10,6 +10,7 @@ import StatusBadge from '@/components/StatusBadge'
 import RejectModal from '@/components/campaign/RejectModal'
 import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import RedIcon from '@/components/social/RedIcon'
+import XVariantReviewCard from '@/components/social/XVariantReviewCard'
 import { estadoPublicacion, etiquetaRed } from '../services/social'
 
 /**
@@ -205,6 +206,11 @@ export default function ClientReviewPage() {
               </div>
             )}
           </div>
+
+          {/* X opcional: versión corta de la campaña aprobada, que el cliente aprueba aparte */}
+          {campaign.estado === 'aprobado' && (
+            <XVariantReviewCard campaignId={id} imagenB64={campaign.imagenB64} titulo={campaign.titulo} />
+          )}
 
           {/* Feedback previo si la rechazó antes */}
           {['rechazado', 'fracaso'].includes(campaign.estado) && campaign.feedbackRechazo && (

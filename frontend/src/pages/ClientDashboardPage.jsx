@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { getPendingCampaigns, getCampaignSummary } from '../services/clientCampaigns'
 import { Button } from '@/components/ui/button'
+import XPendientesCliente from '@/components/social/XPendientesCliente'
 import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import { campaignSentAt, relativeTimeFrom } from '../utils/date'
 import { getAuthItem } from '../services/session'
@@ -129,6 +130,8 @@ export default function ClientDashboardPage() {
               : 'No tienes campañas pendientes por ahora.'}
         </p>
       </header>
+
+      <XPendientesCliente />
 
       {/* Stat cards */}
       <section className="grid grid-cols-1 gap-6 md:grid-cols-3">

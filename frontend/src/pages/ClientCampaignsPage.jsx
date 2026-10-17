@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, AlertCircle, Inbox, Search, Star } from 'lucide-react'
 import { getMyCampaigns } from '../services/clientCampaigns'
 import { Button } from '@/components/ui/button'
+import XPendientesCliente from '@/components/social/XPendientesCliente'
 import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import { campaignSentAt, relativeTimeFrom } from '../utils/date'
 import { getAuthItem } from '../services/session'
@@ -107,6 +108,8 @@ export default function ClientCampaignsPage() {
           Dashboard
         </Button>
       </header>
+
+      <XPendientesCliente />
 
       {error && (
         <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">

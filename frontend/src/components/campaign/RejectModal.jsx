@@ -20,7 +20,16 @@ const MOTIVOS = [
   'No cumple el brief',
 ]
 
-export default function RejectModal({ open, onConfirm, onCancel, busy }) {
+export default function RejectModal({
+  open,
+  onConfirm,
+  onCancel,
+  busy,
+  titulo = '¿Por qué rechazas esta campaña?',
+  descripcion = 'Tu feedback ayuda al marketero a regenerar el contenido.',
+  nota = 'El marketero recibirá un email con tu feedback.',
+  motivos = MOTIVOS,
+}) {
   const [feedback, setFeedback] = useState('')
   const textareaRef = useRef(null)
 
@@ -65,7 +74,7 @@ export default function RejectModal({ open, onConfirm, onCancel, busy }) {
       >
         <div className="mb-1 flex items-start justify-between gap-4">
           <h3 id="reject-title" className="text-xl font-semibold text-on-surface">
-            ¿Por qué rechazas esta campaña?
+            {titulo}
           </h3>
           <button
             onClick={onCancel}
@@ -76,13 +85,11 @@ export default function RejectModal({ open, onConfirm, onCancel, busy }) {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <p className="mb-5 text-sm text-on-surface-variant">
-          Tu feedback ayuda al marketero a regenerar el contenido.
-        </p>
+        <p className="mb-5 text-sm text-on-surface-variant">{descripcion}</p>
 
         {/* Motivos rápidos */}
         <div className="mb-4 flex flex-wrap gap-2">
-          {MOTIVOS.map((m) => (
+          {motivos.map((m) => (
             <button
               key={m}
               type="button"
@@ -116,7 +123,7 @@ export default function RejectModal({ open, onConfirm, onCancel, busy }) {
             >
               {feedback.trim().length < MIN_CHARS
                 ? `Mínimo ${MIN_CHARS} caracteres`
-                : 'El marketero recibirá un email con tu feedback.'}
+                : nota}
             </span>
             <span className="tabular-nums text-on-surface-variant">
               {feedback.length}/{MAX_CHARS}
