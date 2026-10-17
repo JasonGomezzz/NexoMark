@@ -18,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -26,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,7 +48,7 @@ fun DestinosSheet(
     onCancelar: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = onCancelar, sheetState = sheetState, containerColor = Color.White) {
+    ModalBottomSheet(onDismissRequest = onCancelar, sheetState = sheetState, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -57,24 +57,24 @@ fun DestinosSheet(
                 .padding(bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("Enviar al cliente", color = SocialTextDark, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+            Text("Enviar al cliente", color = MaterialTheme.colorScheme.onSurface, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
             Text(
                 "Publicar automáticamente cuando el cliente apruebe en:",
-                color = SocialTextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             when {
-                destinos == null -> Text("Cargando cuentas…", color = SocialTextMuted, fontSize = 13.sp)
+                destinos == null -> Text("Cargando cuentas…", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                 destinos.isEmpty() -> Text(
                     "Ni el cliente ni tú tienen cuentas conectadas. Se enviará sin publicación automática; " +
                         "las cuentas se conectan en la web, en Configuración → Redes conectadas.",
-                    color = SocialTextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(SocialSurfaceSoft)
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
                         .padding(12.dp),
                 )
                 else -> destinos.forEach { d ->
@@ -84,26 +84,26 @@ fun DestinosSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, if (marcado) SocialBrand else Color(0xFFE4E1ED), RoundedCornerShape(12.dp))
+                            .border(1.dp, if (marcado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
                             .toggleable(value = marcado, role = Role.Checkbox, onValueChange = { onAlternar(d.id) })
                             .padding(horizontal = 8.dp, vertical = 6.dp),
                     ) {
                         Checkbox(
                             checked = marcado,
                             onCheckedChange = null,
-                            colors = CheckboxDefaults.colors(checkedColor = SocialBrand),
+                            colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary),
                         )
                         RedLogo(red = d.red, size = 24.dp)
                         Spacer(Modifier.width(10.dp))
                         Text(
                             d.cuentaNombre,
-                            color = SocialTextDark,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.weight(1f),
                         )
                         Text(
                             if (d.propietarioRol == "cliente") "del cliente" else "de la agencia",
-                            color = SocialTextMuted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp,
                         )
                     }
@@ -116,7 +116,7 @@ fun DestinosSheet(
                 Button(
                     onClick = onConfirmar,
                     enabled = destinos != null && !enviando,
-                    colors = ButtonDefaults.buttonColors(containerColor = SocialBrand),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(if (enviando) "Enviando…" else "Confirmar envío")

@@ -1,5 +1,6 @@
 package com.marketmind.mobile.ui.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.marketmind.mobile.data.remote.dto.CampaignDto
 import com.marketmind.mobile.ui.campaigns.formatEstado
 import com.marketmind.mobile.ui.campaigns.formatFecha
+import com.marketmind.mobile.ui.theme.coloresEstado
 
 @Composable
 fun CampaignCard(
@@ -26,10 +28,13 @@ fun CampaignCard(
     onClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val estado = coloresEstado(campaign.estado)
     Card(
         onClick = { onClick(campaign.id) },
         modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -53,8 +58,8 @@ fun CampaignCard(
                     enabled = false,
                     label = { Text(formatEstado(campaign.estado)) },
                     colors = AssistChipDefaults.assistChipColors(
-                        disabledLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        disabledLabelColor = estado.texto,
+                        disabledContainerColor = estado.fondo,
                     ),
                 )
             }

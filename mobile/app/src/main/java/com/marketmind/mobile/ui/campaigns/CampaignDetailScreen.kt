@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +59,7 @@ import com.marketmind.mobile.data.remote.dto.CampaignDto
 import com.marketmind.mobile.data.remote.dto.PublicationDto
 import com.marketmind.mobile.ui.social.DestinosSheet
 import com.marketmind.mobile.ui.social.PublicationsSection
+import com.marketmind.mobile.ui.theme.coloresEstado
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -326,9 +328,12 @@ private fun CampaignDetailBody(
 
 @Composable
 private fun MetadataCard(campaign: CampaignDto) {
+    val estado = coloresEstado(campaign.estado)
     Card(
         modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -352,8 +357,8 @@ private fun MetadataCard(campaign: CampaignDto) {
                     enabled = false,
                     label = { Text(formatEstado(campaign.estado)) },
                     colors = AssistChipDefaults.assistChipColors(
-                        disabledLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        disabledLabelColor = estado.texto,
+                        disabledContainerColor = estado.fondo,
                     ),
                 )
             }

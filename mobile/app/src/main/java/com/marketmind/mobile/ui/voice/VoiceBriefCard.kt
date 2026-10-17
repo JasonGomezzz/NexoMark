@@ -28,6 +28,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -40,19 +42,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-
-private val BrandBlue = Color(0xFF4D4AF0)
-private val TextDark = Color(0xFF12132A)
-private val TextMuted = Color(0xFF74778A)
-private val WarningBrown = Color(0xFFA76525)
-private val DangerRed = Color(0xFFD73737)
 
 /** Resumen de lo que la IA completó, para mostrarlo bajo el brief. */
 data class VoiceResumen(
@@ -119,9 +114,9 @@ fun VoiceBriefCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        border = BorderStroke(1.dp, Color(0xFFEDEAF6)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -131,13 +126,13 @@ fun VoiceBriefCard(
         ) {
             Text(
                 text = "Cuéntame la campaña",
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
             Text(
                 text = "Dicta o escribe la idea y completo el formulario por ti. Aún no se usa ningún crédito.",
-                color = TextMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
             )
@@ -149,12 +144,12 @@ fun VoiceBriefCard(
                 minLines = 3,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White),
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest),
                 shape = RoundedCornerShape(8.dp),
                 placeholder = {
                     Text(
                         text = "Ej: Campaña para una cafetería en Instagram, tono casual, 2x1 en capuchinos para universitarios.",
-                        color = Color(0xFF8B8DA0),
+                        color = MaterialTheme.colorScheme.outline,
                         fontSize = 14.sp,
                     )
                 },
@@ -162,7 +157,7 @@ fun VoiceBriefCard(
             if (escuchando) {
                 Text(
                     text = parcial.ifBlank { "Escuchando…" },
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     fontStyle = FontStyle.Italic,
                 )
@@ -191,12 +186,12 @@ fun VoiceBriefCard(
                         Icon(
                             imageVector = if (escuchando) Icons.Filled.Stop else Icons.Filled.Mic,
                             contentDescription = null,
-                            tint = BrandBlue,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp),
                         )
                         Text(
                             text = if (escuchando) "  Detener" else "  Dictar",
-                            color = BrandBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
                         )
                     }
@@ -208,12 +203,12 @@ fun VoiceBriefCard(
                     },
                     enabled = !ocupado && texto.trim().length >= 10,
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier = Modifier.height(46.dp),
                 ) {
                     if (interpreting) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = LocalContentColor.current,
                             strokeWidth = 2.dp,
                             modifier = Modifier.size(18.dp),
                         )
@@ -221,13 +216,11 @@ fun VoiceBriefCard(
                         Icon(
                             imageVector = Icons.Filled.AutoFixHigh,
                             contentDescription = null,
-                            tint = Color.White,
                             modifier = Modifier.size(18.dp),
                         )
                     }
                     Text(
                         text = if (interpreting) "  Interpretando…" else "  Completar formulario",
-                        color = Color.White,
                         fontWeight = FontWeight.Bold,
                     )
                 }
@@ -241,19 +234,19 @@ fun VoiceBriefCard(
             if (!puedeDictar) {
                 Text(
                     text = "Este teléfono no tiene reconocimiento de voz disponible. Escribe el brief.",
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                 )
             }
             error?.let {
-                Text(text = it, color = DangerRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
 
             resumen?.let { info ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFFF4F1FB), RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(10.dp))
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
@@ -264,12 +257,12 @@ fun VoiceBriefCard(
                         Icon(
                             imageVector = Icons.Filled.CheckCircle,
                             contentDescription = null,
-                            tint = BrandBlue,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp),
                         )
                         Text(
                             text = "Completé ${info.completados} de 7 campos. Revísalos antes de generar.",
-                            color = TextDark,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f),
@@ -278,7 +271,7 @@ fun VoiceBriefCard(
                     if (info.pendientes.isNotEmpty()) {
                         Text(
                             text = "Te falta completar: ${info.pendientes.joinToString(", ")}.",
-                            color = TextMuted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 13.sp,
                         )
                     }
@@ -290,12 +283,12 @@ fun VoiceBriefCard(
                             Icon(
                                 imageVector = Icons.Filled.Warning,
                                 contentDescription = null,
-                                tint = WarningBrown,
+                                tint = MaterialTheme.colorScheme.tertiary,
                                 modifier = Modifier.size(16.dp),
                             )
                             Text(
                                 text = aviso,
-                                color = WarningBrown,
+                                color = MaterialTheme.colorScheme.tertiary,
                                 fontSize = 13.sp,
                                 modifier = Modifier.weight(1f),
                             )
@@ -330,14 +323,14 @@ private fun AvisoDictado(
                     Icons.Outlined.Cloud
                 },
                 contentDescription = null,
-                tint = TextMuted,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
                     .padding(top = 1.dp)
                     .size(14.dp),
             )
             Text(
                 text = aviso,
-                color = TextMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 lineHeight = 16.sp,
                 modifier = Modifier.weight(1f),
@@ -347,7 +340,7 @@ private fun AvisoDictado(
     when {
         estado.descargando -> Text(
             text = "Descargando español para dictar sin enviar audio. Mientras tanto se usa el reconocedor de Google.",
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp,
             lineHeight = 16.sp,
         )
@@ -357,7 +350,7 @@ private fun AvisoDictado(
         ) {
             Text(
                 text = "Descargar español para dictar sin enviar audio",
-                color = BrandBlue,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
             )

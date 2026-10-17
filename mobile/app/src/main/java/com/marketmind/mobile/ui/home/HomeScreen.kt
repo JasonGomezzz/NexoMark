@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -61,6 +62,8 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -75,7 +78,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -93,20 +95,19 @@ import com.marketmind.mobile.data.remote.dto.CampaignStatsDto
 import com.marketmind.mobile.data.repository.UserSession
 import com.marketmind.mobile.R
 import com.marketmind.mobile.ui.social.StatsContent
+import com.marketmind.mobile.ui.theme.NexoNavy
+import com.marketmind.mobile.ui.theme.NexoNavyLine
+import com.marketmind.mobile.ui.theme.NexoOnNavy
+import com.marketmind.mobile.ui.theme.NexoOnNavyMuted
+import com.marketmind.mobile.ui.theme.NexoPaper
+import com.marketmind.mobile.ui.theme.NexoRedes
+import com.marketmind.mobile.ui.theme.NexoTheme
+import com.marketmind.mobile.ui.theme.NexoTurquoise
+import com.marketmind.mobile.ui.theme.NexoTurquoiseSoft
+import com.marketmind.mobile.ui.theme.coloresEstado
 import com.marketmind.mobile.ui.voice.IntentFormMapper
 import com.marketmind.mobile.ui.voice.VoiceBriefCard
 import com.marketmind.mobile.ui.voice.VoiceResumen
-
-private val BrandBlue = Color(0xFF4D4AF0)
-private val BrandBlueSoft = Color(0xFF6865F3)
-private val PageBackground = Color(0xFFFCF9FF)
-private val TextDark = Color(0xFF12132A)
-private val TextMuted = Color(0xFF74778A)
-private val SuccessBlue = Color(0xFF7077FF)
-private val WarningBrown = Color(0xFFA76525)
-private val DangerRed = Color(0xFFD73737)
-private val FieldBackground = Color(0xFFF4F1FB)
-private val FieldBorder = Color(0xFFE1DDF3)
 
 private val industryOptions = listOf(
     "tecnologia",
@@ -133,19 +134,19 @@ private val platformOptions = listOf(
     PlatformOption(
         value = "facebook",
         label = "Facebook",
-        color = Color(0xFF1877F2),
+        color = NexoRedes.Facebook,
         drawableRes = R.drawable.facebook_logo,
     ),
     PlatformOption(
         value = "instagram",
         label = "Instagram",
-        color = Color(0xFFE8409C),
+        color = NexoRedes.Instagram,
         drawableRes = R.drawable.ig_logo,
     ),
     PlatformOption(
         value = "linkedin",
         label = "LinkedIn",
-        color = Color(0xFF0A66C2),
+        color = NexoRedes.LinkedIn,
         drawableRes = R.drawable.linkedin_logo,
     ),
 )
@@ -161,7 +162,7 @@ fun HomeScreen(
     var selectedProject by remember { mutableStateOf<CampaignDto?>(null) }
 
     Scaffold(
-        containerColor = PageBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             if (selectedTab == AppTab.ProjectDetail) {
                 ProjectDetailTopBar(
@@ -179,8 +180,8 @@ fun HomeScreen(
             if (selectedTab == AppTab.Home) {
                 FloatingActionButton(
                     onClick = { selectedTab = AppTab.AiLab },
-                    containerColor = BrandBlue,
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.size(58.dp),
                 ) {
@@ -208,7 +209,7 @@ fun HomeScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator(color = BrandBlue)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
             is HomeUiState.Error -> ErrorPanel(
                 message = state.message,
@@ -301,7 +302,7 @@ private fun HomeDashboard(
             ) {
                 Text(
                     text = "Hola, ${user.nombre}",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 19.sp,
                     lineHeight = 23.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -309,7 +310,7 @@ private fun HomeDashboard(
                 )
                 Text(
                     text = "Este es el rendimiento de tus campañas.",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -327,14 +328,14 @@ private fun HomeDashboard(
                 ) {
                     Text(
                         text = "Campañas recientes",
-                        color = TextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 21.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     TextButton(onClick = { }) {
                         Text(
                             text = "Ver todo",
-                            color = BrandBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                         )
@@ -427,7 +428,7 @@ private fun AiLabScreen(
             ) {
                 Text(
                     text = "Nueva campaña",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.ExtraBold,
                 )
@@ -439,14 +440,14 @@ private fun AiLabScreen(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFE7E3F4)),
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.28f)
                         .height(6.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(BrandBlue),
+                        .background(MaterialTheme.colorScheme.primary),
                 )
             }
         }
@@ -494,7 +495,7 @@ private fun AiLabScreen(
             item {
                 Text(
                     text = it,
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 18.sp,
@@ -517,14 +518,14 @@ private fun AiLabScreen(
                 ) {
                     Text(
                         text = "AI Generation Preview",
-                        color = TextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Icon(
                         imageVector = Icons.Filled.AutoAwesome,
                         contentDescription = null,
-                        tint = BrandBlue,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -547,7 +548,7 @@ private fun HomeTopBar(nombre: String?, onAvatarClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.72f))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .statusBarsPadding()
             .height(56.dp)
             .padding(horizontal = 16.dp),
@@ -562,7 +563,7 @@ private fun HomeTopBar(nombre: String?, onAvatarClick: () -> Unit) {
         )
         Text(
             text = "NexoMark IA",
-            color = Color(0xFF252166),
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 22.sp,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.weight(1f),
@@ -570,7 +571,7 @@ private fun HomeTopBar(nombre: String?, onAvatarClick: () -> Unit) {
         Icon(
             imageVector = Icons.Filled.NotificationsNone,
             contentDescription = null,
-            tint = TextDark,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .padding(end = 12.dp)
                 .size(22.dp),
@@ -579,14 +580,14 @@ private fun HomeTopBar(nombre: String?, onAvatarClick: () -> Unit) {
             onClick = onAvatarClick,
             modifier = Modifier.size(31.dp),
             shape = CircleShape,
-            color = Color(0xFFE4F2F4),
-            border = BorderStroke(1.dp, Color.White),
+            color = NexoTheme.colors.primaryFixed,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             shadowElevation = 2.dp,
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text(
                     nombre?.trim()?.firstOrNull()?.uppercase() ?: "M",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                 )
@@ -603,7 +604,7 @@ private fun ProjectDetailTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.82f))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .statusBarsPadding()
             .height(56.dp)
             .padding(horizontal = 12.dp),
@@ -619,14 +620,14 @@ private fun ProjectDetailTopBar(
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = null,
-                    tint = BrandBlue,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(22.dp),
                 )
             }
         }
         Text(
             text = title,
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 17.sp,
             fontWeight = FontWeight.ExtraBold,
             maxLines = 1,
@@ -637,14 +638,13 @@ private fun ProjectDetailTopBar(
         )
         Button(
             onClick = { },
-            colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.height(38.dp),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp),
         ) {
             Text(
                 text = "Publicar",
-                color = Color.White,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
@@ -660,14 +660,14 @@ private fun MetricsGrid(stats: CampaignStatsDto, modifier: Modifier = Modifier) 
                 icon = Icons.Filled.Campaign,
                 label = "Campañas",
                 value = stats.total.toString(),
-                color = BrandBlue,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 icon = Icons.Filled.HourglassEmpty,
                 label = "Pendientes",
                 value = stats.pendienteAprobacion.toString(),
-                color = WarningBrown,
+                color = NexoTheme.colors.warning,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -676,14 +676,14 @@ private fun MetricsGrid(stats: CampaignStatsDto, modifier: Modifier = Modifier) 
                 icon = Icons.Filled.CheckCircle,
                 label = "Aprobadas",
                 value = stats.aprobado.toString(),
-                color = SuccessBlue,
+                color = NexoTheme.colors.success,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 icon = Icons.Filled.Close,
                 label = "Rechazadas",
                 value = stats.rechazado.toString(),
-                color = DangerRed,
+                color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -702,9 +702,9 @@ private fun MetricCard(
     Card(
         modifier = modifier.aspectRatio(1.48f),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(2.dp, color.copy(alpha = 0.68f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -731,13 +731,13 @@ private fun MetricCard(
                     )
                 }
                 trend?.let {
-                    Text(it, color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Spacer(modifier = Modifier.height(9.dp))
             Text(
                 text = label,
-                color = TextMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
                 maxLines = 1,
@@ -745,7 +745,7 @@ private fun MetricCard(
             )
             Text(
                 text = value,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.padding(top = 2.dp),
@@ -762,18 +762,17 @@ private fun ResumenCard(stats: CampaignStatsDto, modifier: Modifier = Modifier) 
             .fillMaxWidth()
             .heightIn(min = 146.dp),
         shape = RoundedCornerShape(11.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandBlue),
+        colors = CardDefaults.cardColors(containerColor = NexoNavy),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        border = BorderStroke(1.dp, NexoNavyLine),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Brush.horizontalGradient(listOf(BrandBlue, BrandBlueSoft))),
+            modifier = Modifier.fillMaxSize(),
         ) {
             Icon(
                 imageVector = Icons.Filled.Settings,
                 contentDescription = null,
-                tint = Color.White.copy(alpha = 0.18f),
+                tint = NexoTurquoise.copy(alpha = 0.12f),
                 modifier = Modifier
                     .size(92.dp)
                     .align(Alignment.BottomEnd)
@@ -788,19 +787,19 @@ private fun ResumenCard(stats: CampaignStatsDto, modifier: Modifier = Modifier) 
                     Icon(
                         imageVector = Icons.Filled.AutoAwesome,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = NexoTurquoiseSoft,
                         modifier = Modifier.size(15.dp),
                     )
                     Text(
                         text = "  Tu resumen",
-                        color = Color.White,
+                        color = NexoOnNavy,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                 }
                 Text(
                     text = resumen.titulo,
-                    color = Color.White,
+                    color = NexoOnNavy,
                     fontSize = 20.sp,
                     lineHeight = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -808,7 +807,7 @@ private fun ResumenCard(stats: CampaignStatsDto, modifier: Modifier = Modifier) 
                 )
                 Text(
                     text = resumen.detalle,
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = NexoOnNavyMuted,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 8.dp),
@@ -842,9 +841,9 @@ private fun CampaignBuilderCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        border = BorderStroke(1.dp, Color(0xFFEDEAF6)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -882,12 +881,12 @@ private fun CampaignBuilderCard(
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
             ) {
                 if (generating) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = LocalContentColor.current,
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(20.dp),
                     )
@@ -895,12 +894,10 @@ private fun CampaignBuilderCard(
                     Icon(
                         imageVector = Icons.Filled.AutoAwesome,
                         contentDescription = null,
-                        tint = Color.White,
                         modifier = Modifier.size(20.dp),
                     )
                     Text(
                         text = "  Generar con IA",
-                        color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
@@ -923,7 +920,7 @@ private fun CampaignField(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = label,
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             fontWeight = FontWeight.ExtraBold,
         )
@@ -934,10 +931,10 @@ private fun CampaignField(
             minLines = if (label == "Prompt IA") 3 else 1,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White),
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest),
             shape = RoundedCornerShape(8.dp),
             placeholder = {
-                Text(text = label, color = Color(0xFF8B8DA0), fontSize = 14.sp)
+                Text(text = label, color = MaterialTheme.colorScheme.outline, fontSize = 14.sp)
             },
         )
     }
@@ -956,7 +953,7 @@ private fun CampaignDropdown(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = label,
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             fontWeight = FontWeight.ExtraBold,
         )
@@ -968,7 +965,7 @@ private fun CampaignDropdown(
                 value = value,
                 onValueChange = {},
                 readOnly = true,
-                placeholder = { Text(placeholder, color = TextMuted) },
+                placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier
                     .menuAnchor()
@@ -1001,7 +998,7 @@ private fun PlatformSelector(
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(
             text = "Selecciona la plataforma",
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
         )
@@ -1036,10 +1033,10 @@ private fun PlatformLogoButton(
             onClick = onClick,
             modifier = Modifier.size(72.dp),
             shape = CircleShape,
-            color = Color(0xFFF7F6FF),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
             border = BorderStroke(
                 width = if (selected) 3.dp else 2.dp,
-                color = if (selected) option.color else Color(0xFFD8D6E8),
+                color = if (selected) option.color else MaterialTheme.colorScheme.outlineVariant,
             ),
             shadowElevation = if (selected) 5.dp else 1.dp,
         ) {
@@ -1048,7 +1045,7 @@ private fun PlatformLogoButton(
                     modifier = Modifier
                         .size(50.dp)
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(NexoPaper),
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
@@ -1064,7 +1061,7 @@ private fun PlatformLogoButton(
         }
         Text(
             text = option.label,
-            color = if (selected) option.color else TextMuted,
+            color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 11.sp,
             fontWeight = FontWeight.ExtraBold,
             maxLines = 1,
@@ -1078,18 +1075,18 @@ private fun GeneratingImageStatus() {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFECEBFF))
+            .background(NexoTheme.colors.primaryFixed)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CircularProgressIndicator(
-            color = BrandBlue,
+            color = MaterialTheme.colorScheme.primary,
             strokeWidth = 2.dp,
             modifier = Modifier.size(20.dp),
         )
         Text(
             text = "Generando imagen...",
-            color = BrandBlue,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 14.sp,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.padding(start = 12.dp),
@@ -1105,21 +1102,21 @@ private fun AiPreviewCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(2.dp, Color(0xFFE3DDF9)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(232.dp)
-                    .background(Color(0xFFF4F1EC)),
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow),
             ) {
                 CampaignImage(campaign)
                 Surface(
                     shape = RoundedCornerShape(18.dp),
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(14.dp),
@@ -1131,12 +1128,12 @@ private fun AiPreviewCard(
                         Icon(
                             imageVector = Icons.Filled.AutoAwesome,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(14.dp),
                         )
                         Text(
                             text = " AI IMAGE",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.ExtraBold,
                         )
@@ -1151,14 +1148,14 @@ private fun AiPreviewCard(
             ) {
                 Text(
                     text = "GENERATED COPY",
-                    color = Color(0xFF7B74F2),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp,
                 )
                 Text(
                     text = campaign.titulo.orEmpty().ifBlank { "Campaña generada" },
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 23.sp,
                     lineHeight = 27.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -1170,7 +1167,7 @@ private fun AiPreviewCard(
                         ?: campaign.prompt
                         ?.takeIf { it.isNotBlank() }
                         ?: "Contenido generado por IA.",
-                    color = Color(0xFF76798D),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp,
                     lineHeight = 24.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -1207,16 +1204,12 @@ private fun CampaignImage(campaign: CampaignDto) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    listOf(Color(0xFFF8F5EE), Color(0xFFE9DFD2), Color(0xFFCEC0AF)),
-                ),
-            ),
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = campaign.imagenUrl?.takeIf { it.isNotBlank() } ?: "Imagen lista",
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 2,
@@ -1230,12 +1223,12 @@ private fun CampaignImage(campaign: CampaignDto) {
 private fun TagPill(text: String) {
     Text(
         text = text,
-        color = Color(0xFF7B7E91),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 11.sp,
         fontWeight = FontWeight.ExtraBold,
         modifier = Modifier
             .clip(RoundedCornerShape(7.dp))
-            .background(Color(0xFFECEEFF))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .padding(horizontal = 10.dp, vertical = 7.dp),
     )
 }
@@ -1265,8 +1258,8 @@ private fun ProjectDetailScreen(
 
             Surface(
                 shape = RoundedCornerShape(9.dp),
-                color = Color(0xFFF7F5FE),
-                border = BorderStroke(1.dp, Color(0xFFDCD6F1)),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 12.dp),
@@ -1278,12 +1271,12 @@ private fun ProjectDetailScreen(
                     Icon(
                         imageVector = Icons.Filled.History,
                         contentDescription = null,
-                        tint = TextDark,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(22.dp),
                     )
                     Text(
                         text = "Historial de versiones",
-                        color = TextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -1293,7 +1286,7 @@ private fun ProjectDetailScreen(
                     Icon(
                         imageVector = Icons.Filled.ExpandMore,
                         contentDescription = null,
-                        tint = TextDark,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(22.dp),
                     )
                 }
@@ -1314,8 +1307,8 @@ private fun DetailChip(
     text: String,
     selected: Boolean = false,
 ) {
-    val background = if (selected) Color(0xFFECEBFF) else Color(0xFFF4F1F8)
-    val color = if (selected) BrandBlue else TextMuted
+    val background = if (selected) NexoTheme.colors.primaryFixed else MaterialTheme.colorScheme.surfaceContainerHigh
+    val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
     Text(
         text = text,
         color = color,
@@ -1324,7 +1317,7 @@ private fun DetailChip(
         modifier = Modifier
             .clip(RoundedCornerShape(14.dp))
             .background(background)
-            .border(1.dp, Color(0xFFE0DCEE), RoundedCornerShape(14.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp),
         maxLines = 1,
     )
@@ -1346,9 +1339,9 @@ private fun EditorCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color(0xFFE2DDF0)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -1362,13 +1355,13 @@ private fun EditorCard(
                 Icon(
                     imageVector = Icons.Filled.FormatBold,
                     contentDescription = null,
-                    tint = TextDark,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(21.dp),
                 )
                 Icon(
                     imageVector = Icons.Filled.FormatItalic,
                     contentDescription = null,
-                    tint = TextDark,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .padding(start = 18.dp)
                         .size(21.dp),
@@ -1376,7 +1369,7 @@ private fun EditorCard(
                 Icon(
                     imageVector = Icons.Filled.FormatListBulleted,
                     contentDescription = null,
-                    tint = TextDark,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .padding(start = 18.dp)
                         .size(21.dp),
@@ -1384,7 +1377,7 @@ private fun EditorCard(
                 Icon(
                     imageVector = Icons.Filled.Link,
                     contentDescription = null,
-                    tint = TextDark,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .padding(start = 18.dp)
                         .size(21.dp),
@@ -1400,7 +1393,7 @@ private fun EditorCard(
                     Icon(
                         imageVector = if (editing) Icons.Filled.Close else Icons.Filled.Edit,
                         contentDescription = if (editing) "Cancelar edición" else "Editar texto",
-                        tint = if (editing) Color(0xFFE23D3D) else BrandBlue,
+                        tint = if (editing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp),
                     )
                 }
@@ -1408,7 +1401,7 @@ private fun EditorCard(
 
             Text(
                 text = campaign.titulo.orEmpty().ifBlank { "Campaña sin título" },
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 20.sp,
                 lineHeight = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -1424,7 +1417,7 @@ private fun EditorCard(
                     textStyle = androidx.compose.ui.text.TextStyle(
                         fontSize = 14.sp,
                         lineHeight = 21.sp,
-                        color = TextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                     ),
                     shape = RoundedCornerShape(8.dp),
                     minLines = 4,
@@ -1448,16 +1441,16 @@ private fun EditorCard(
                         enabled = !saving && editText.isNotBlank(),
                         modifier = Modifier.weight(1f).height(46.dp),
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     ) {
                         if (saving) {
                             CircularProgressIndicator(
-                                color = Color.White,
+                                color = LocalContentColor.current,
                                 strokeWidth = 2.dp,
                                 modifier = Modifier.size(16.dp),
                             )
                         } else {
-                            Text("Guardar cambios", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("Guardar cambios", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1468,7 +1461,7 @@ private fun EditorCard(
                         ?: campaign.prompt
                         ?.takeIf { it.isNotBlank() }
                         ?: "La campaña todavía no tiene contenido generado.",
-                    color = Color(0xFF4A4D66),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     lineHeight = 21.sp,
                     fontWeight = FontWeight.Medium,
@@ -1485,7 +1478,7 @@ private fun EditorCard(
             ) {
                 Text(
                     text = "${campaign.textoGenerado.orEmpty().split(Regex("\\s+")).filter { it.isNotBlank() }.size} palabras",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
                 )
@@ -1494,11 +1487,11 @@ private fun EditorCard(
                         modifier = Modifier
                             .size(7.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF18B65B)),
+                            .background(NexoTheme.colors.success),
                     )
                     Text(
                         text = " Guardado",
-                        color = TextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                     )
@@ -1518,18 +1511,17 @@ private fun EditorCard(
                     .height(52.dp)
                     .padding(top = 12.dp),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp),
             ) {
                 if (improving) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = LocalContentColor.current,
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(18.dp),
                     )
                     Text(
                         text = "  Mejorando…",
-                        color = Color.White,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
@@ -1537,12 +1529,10 @@ private fun EditorCard(
                     Icon(
                         imageVector = Icons.Filled.AutoAwesome,
                         contentDescription = null,
-                        tint = Color.White,
                         modifier = Modifier.size(18.dp),
                     )
                     Text(
                         text = "  Mejorar redacción con IA",
-                        color = Color.White,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
@@ -1562,7 +1552,7 @@ private fun CampaignPreviewCard(
         onClick = { onClick(campaign.id) },
         modifier = modifier.height(72.dp),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
     ) {
         Row(
@@ -1571,7 +1561,7 @@ private fun CampaignPreviewCard(
                 .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CampaignThumbnail(campaign.accent)
+            CampaignThumbnail(campaign.plataforma)
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -1580,7 +1570,7 @@ private fun CampaignPreviewCard(
             ) {
                 Text(
                     text = campaign.title,
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     maxLines = 1,
@@ -1588,7 +1578,7 @@ private fun CampaignPreviewCard(
                 )
                 Text(
                     text = "Actualizada el ${campaign.updated}",
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
@@ -1614,7 +1604,7 @@ private fun ErrorPanel(
     ) {
         Text(
             text = message,
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
             lineHeight = 22.sp,
             fontWeight = FontWeight.Bold,
@@ -1622,11 +1612,11 @@ private fun ErrorPanel(
         )
         Button(
             onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(top = 16.dp),
         ) {
-            Text("Reintentar", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("Reintentar", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -1639,22 +1629,8 @@ private fun CampaignDto.toPreview(): CampaignPreview {
             ?: fechaCreacion?.let { formatShortDate(it) }
             ?: "sin fecha",
         status = estado,
-        accent = when (plataforma?.lowercase()) {
-            "facebook" -> Color(0xFF1877F2)
-            "instagram" -> Color(0xFFE8409C)
-            "linkedin" -> Color(0xFF0A66C2)
-            "tiktok" -> Color(0xFF111111)
-            else -> BrandBlue
-        },
+        plataforma = plataforma,
     )
-}
-
-private fun CampaignDto.statusColor(): Pair<Color, Color> = when (estado) {
-    "aprobado" -> Color(0xFF087A44) to Color(0xFFCFF8E4)
-    "rechazado" -> DangerRed to Color(0xFFFFE0E0)
-    "pendiente_aprobacion" -> WarningBrown to Color(0xFFF3E0C8)
-    "generado" -> BrandBlue to Color(0xFFE8E7FF)
-    else -> TextMuted to Color(0xFFECEAF5)
 }
 
 private fun CampaignDto.hasReadyImage(): Boolean =
@@ -1670,53 +1646,43 @@ private data class PlatformOption(
     val drawableRes: Int,
 )
 
+/** Miniatura con el color de la red; sin degradados decorativos (frontend/DESIGN.md). */
 @Composable
-private fun CampaignThumbnail(accent: Color) {
+private fun CampaignThumbnail(plataforma: String?) {
+    val (fondo, icono) = when (plataforma?.lowercase()) {
+        "facebook" -> NexoRedes.Facebook to NexoPaper
+        "instagram" -> NexoRedes.Instagram to NexoPaper
+        "linkedin" -> NexoRedes.LinkedIn to NexoPaper
+        "tiktok" -> MaterialTheme.colorScheme.inverseSurface to MaterialTheme.colorScheme.inverseOnSurface
+        else -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
+    }
     Box(
         modifier = Modifier
             .size(42.dp)
             .clip(RoundedCornerShape(7.dp))
-            .background(Color(0xFFF3F4FA))
-            .border(1.dp, Color.White, RoundedCornerShape(7.dp)),
+            .background(fondo),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.linearGradient(
-                        listOf(accent.copy(alpha = 0.88f), Color.White, Color(0xFF1D1B25)),
-                    ),
-                ),
-        )
         Icon(
             imageVector = Icons.Filled.AutoAwesome,
             contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(4.dp)
-                .size(14.dp),
+            tint = icono,
+            modifier = Modifier.size(18.dp),
         )
     }
 }
 
 @Composable
 private fun StatusPill(estado: String) {
-    val colors = when (estado) {
-        "aprobado" -> Color(0xFF087A44) to Color(0xFFCFF8E4)
-        "rechazado", "fracaso" -> DangerRed to Color(0xFFFFE0E0)
-        "pendiente_aprobacion" -> Color(0xFF9B6933) to Color(0xFFF3E0C8)
-        "generado", "pendiente_ia" -> Color(0xFF4D4AF0) to Color(0xFFE7E6FF)
-        else -> TextMuted to Color(0xFFECEAF5)
-    }
+    val colors = coloresEstado(estado)
     Text(
         text = etiquetaEstadoCorta(estado).uppercase(),
-        color = colors.first,
+        color = colors.texto,
         fontSize = 9.sp,
         fontWeight = FontWeight.ExtraBold,
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(colors.second)
+            .background(colors.fondo)
             .padding(horizontal = 10.dp, vertical = 5.dp),
     )
 }
@@ -1776,13 +1742,13 @@ private fun ProjectsScreen(
             ) {
                 Text(
                     text = "Mis Campañas",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 25.sp,
                     fontWeight = FontWeight.ExtraBold,
                 )
                 Text(
                     text = "${filteredCampaigns.size} TOTAL",
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp,
@@ -1822,13 +1788,13 @@ private fun AccountScreen(
             ) {
                 Text(
                     text = "Cuenta",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 27.sp,
                     fontWeight = FontWeight.ExtraBold,
                 )
                 Text(
                     text = "Datos reales de la sesión autenticada en el backend.",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     lineHeight = 22.sp,
                     modifier = Modifier.padding(top = 8.dp),
@@ -1843,9 +1809,9 @@ private fun AccountScreen(
                     .padding(horizontal = 8.dp)
                     .padding(top = 26.dp, bottom = 18.dp),
                 shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                border = BorderStroke(1.dp, Color(0xFFDAD4EA)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             ) {
                 Column(
                     modifier = Modifier
@@ -1869,12 +1835,11 @@ private fun AccountScreen(
                             .height(56.dp)
                             .padding(top = 4.dp),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE23D3D)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
                     ) {
                         Text(
                             text = "Cerrar sesión",
-                            color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.ExtraBold,
                         )
@@ -1899,14 +1864,14 @@ private fun SearchBox(
             Icon(
                 imageVector = Icons.Filled.Search,
                 contentDescription = null,
-                tint = TextMuted,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp),
             )
         },
         placeholder = {
             Text(
                 text = "Buscar campañas...",
-                color = Color(0xFFAAA6B8),
+                color = MaterialTheme.colorScheme.outline,
                 fontSize = 15.sp,
             )
         },
@@ -1922,8 +1887,8 @@ private fun FilterPill(
     label: String,
     selected: Boolean = false,
 ) {
-    val background = if (selected) BrandBlue else Color(0xFFECEAF5)
-    val color = if (selected) Color.White else TextDark
+    val background = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
+    val color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
 
     Surface(
         shape = RoundedCornerShape(22.dp),
@@ -1950,9 +1915,9 @@ private fun ProjectSummaryCard(
         onClick = { onClick(campaign) },
         modifier = modifier,
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color(0xFFDAD4EA)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -1965,11 +1930,11 @@ private fun ProjectSummaryCard(
                 verticalAlignment = Alignment.Top,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    val statusColor = campaign.statusColor()
-                    StatusBadge(campaign.estado.uppercase(), statusColor.first, statusColor.second)
+                    val statusColor = coloresEstado(campaign.estado)
+                    StatusBadge(campaign.estado.uppercase(), statusColor.texto, statusColor.fondo)
                     Text(
                         text = campaign.titulo.orEmpty().ifBlank { "Campaña sin título" },
-                        color = TextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(top = 9.dp),
@@ -1980,7 +1945,7 @@ private fun ProjectSummaryCard(
                 Icon(
                     imageVector = Icons.Filled.MoreVert,
                     contentDescription = null,
-                    tint = TextMuted,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp),
                 )
             }
@@ -1989,13 +1954,13 @@ private fun ProjectSummaryCard(
                 modifier = Modifier.padding(top = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                PlatformBubble(Icons.Filled.Campaign, BrandBlue)
+                PlatformBubble(Icons.Filled.Campaign, MaterialTheme.colorScheme.primary)
                 Text(
                     text = listOfNotNull(campaign.plataforma, campaign.industria)
                         .filter { it.isNotBlank() }
                         .joinToString(" · ")
                         .ifBlank { "Sin plataforma" },
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
                     modifier = Modifier.padding(start = 9.dp),
@@ -2006,7 +1971,7 @@ private fun ProjectSummaryCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Color(0xFFECEAF3))
+                    .background(MaterialTheme.colorScheme.outlineVariant)
                     .padding(top = 18.dp),
             )
 
@@ -2028,14 +1993,14 @@ private fun ProjectSummaryCard(
             ) {
                 Text(
                     text = campaign.fechaCreacion?.let { "Creada ${formatShortDate(it)}" } ?: "Sin fecha",
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
                 )
                 Text(
                     text = "Ver detalles  ->",
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
                 )
@@ -2068,7 +2033,7 @@ private fun PlatformBubble(icon: ImageVector, color: Color) {
         modifier = Modifier
             .size(23.dp)
             .clip(CircleShape)
-            .background(Color(0xFFE8E7FF)),
+            .background(NexoTheme.colors.primaryFixed),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -2089,13 +2054,13 @@ private fun MetricText(
     Column(modifier = modifier) {
         Text(
             text = label,
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 11.sp,
             fontWeight = FontWeight.ExtraBold,
         )
         Text(
             text = value,
-            color = BrandBlue,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 4.dp),
@@ -2110,20 +2075,24 @@ private fun ProfileAvatar() {
             modifier = Modifier
                 .size(86.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFECEAFF))
-                .border(1.dp, Color(0xFFD3CFF0), CircleShape),
+                .background(NexoTheme.colors.primaryFixed)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(Color(0xFFF6D7C6), Color(0xFFB56E58)),
-                        ),
-                    ),
-            )
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(32.dp),
+                )
+            }
         }
     }
 }
@@ -2138,7 +2107,7 @@ private fun AccountField(label: String, value: String) {
     ) {
         Text(
             text = label,
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 12.sp,
             fontWeight = FontWeight.ExtraBold,
         )
@@ -2147,14 +2116,14 @@ private fun AccountField(label: String, value: String) {
                 .fillMaxWidth()
                 .height(54.dp)
                 .clip(RoundedCornerShape(9.dp))
-                .background(FieldBackground)
-                .border(1.dp, Color(0xFFD7D0E8), RoundedCornerShape(9.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(9.dp))
                 .padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart,
         ) {
             Text(
                 text = value,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
             )
         }
@@ -2169,7 +2138,7 @@ private fun BottomNavigationBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .navigationBarsPadding()
             .padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -2193,8 +2162,8 @@ private fun NavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val color = if (selected) Color.White else TextMuted
-    val background = if (selected) BrandBlue else Color.Transparent
+    val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val background = if (selected) NexoTheme.colors.primaryFixed else Color.Transparent
 
     Surface(
         onClick = onClick,
@@ -2256,7 +2225,7 @@ private data class CampaignPreview(
     val updated: String,
     /** Estado real de la campaña (borrador, generado, aprobado…). */
     val status: String,
-    val accent: Color,
+    val plataforma: String?,
 )
 
 

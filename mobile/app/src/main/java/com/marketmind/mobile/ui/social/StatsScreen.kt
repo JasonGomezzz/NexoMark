@@ -33,6 +33,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -42,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -57,6 +57,7 @@ import com.marketmind.mobile.data.remote.dto.PublicationMetricDto
 import com.marketmind.mobile.data.remote.dto.PublicationStatsDto
 import com.marketmind.mobile.data.remote.dto.RedResumenDto
 import com.marketmind.mobile.data.remote.dto.ResumenRedesDto
+import com.marketmind.mobile.ui.theme.NexoTheme
 
 /**
  * Pestaña "Estadísticas" (marketero y cliente): resumen por red, publicaciones y el
@@ -73,7 +74,7 @@ fun StatsContent(
     Box(modifier = modifier.fillMaxSize()) {
         when {
             state.cargando -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = SocialBrand)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
             state.error != null && state.resumen == null -> ErrorEstadisticas(
                 mensaje = state.error.orEmpty(),
@@ -99,7 +100,7 @@ fun StatsContent(
                 item {
                     Text(
                         "Publicaciones",
-                        color = SocialTextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                         modifier = Modifier.padding(top = 8.dp),
@@ -114,7 +115,7 @@ fun StatsContent(
                     item {
                         Text(
                             "— todavía no se leyeron métricas · sin dato: Meta no informa esa cifra",
-                            color = SocialTextMuted,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp,
                         )
                     }
@@ -143,7 +144,7 @@ private fun Cabecera(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             "$alcance Las cifras vienen de Meta y pueden tardar hasta 48 horas.",
-            color = SocialTextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
         )
         resumen?.let {
@@ -151,21 +152,21 @@ private fun Cabecera(
                 "${it.totalPublicaciones} ${if (it.totalPublicaciones == 1) "publicada" else "publicadas"} · " +
                     "${it.pendientes} esperando aprobación · " +
                     "${it.fallidas} ${if (it.fallidas == 1) "no se pudo publicar" else "no se pudieron publicar"}",
-                color = if (it.fallidas > 0) Color(0xFF93000A) else SocialTextDark,
+                color = if (it.fallidas > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
             )
         }
         OutlinedButton(onClick = onActualizar, enabled = !actualizando) {
             if (actualizando) {
-                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = SocialBrand)
+                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.primary)
             } else {
                 Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(8.dp))
             Text(if (actualizando) "Actualizando…" else "Actualizar métricas")
         }
-        mensaje?.let { Text(it, color = SocialTextMuted, fontSize = 13.sp) }
+        mensaje?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp) }
     }
 }
 
@@ -180,8 +181,8 @@ private fun TarjetaRed(red: String, datos: RedResumenDto?) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE4E1ED), RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp))
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -189,11 +190,11 @@ private fun TarjetaRed(red: String, datos: RedResumenDto?) {
             RedLogo(red = red, size = 48.dp)
             Spacer(Modifier.width(14.dp))
             Column {
-                Text(nombre, color = SocialTextDark, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+                Text(nombre, color = MaterialTheme.colorScheme.onSurface, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
                 Text(
                     (if (total == 1) "1 publicación" else "$total publicaciones") +
                         (if (total > 0) " · ${datos?.publicacionesMes ?: 0} este mes" else ""),
-                    color = SocialTextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                 )
             }
@@ -201,12 +202,12 @@ private fun TarjetaRed(red: String, datos: RedResumenDto?) {
         if (total == 0) {
             Text(
                 "Aún no hay publicaciones en $nombre. Aparecen cuando el cliente aprueba una campaña con $nombre como destino.",
-                color = SocialTextMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(SocialSurfaceSoft)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
                     .padding(16.dp),
             )
         } else {
@@ -215,7 +216,7 @@ private fun TarjetaRed(red: String, datos: RedResumenDto?) {
                     CifraMetrica(m.etiqueta, SocialFormat.valor(datos, m.campo), grande = true, modifier = Modifier.weight(1f))
                 }
             }
-            HorizontalDivider(color = Color(0xFFE4E1ED))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 metricas.secundarias.forEach { m ->
                     CifraMetrica(m.etiqueta, SocialFormat.valor(datos, m.campo))
@@ -224,7 +225,7 @@ private fun TarjetaRed(red: String, datos: RedResumenDto?) {
             Text(
                 if ((datos?.conMetricas ?: 0) == 0) "Meta todavía no entregó métricas de estas publicaciones."
                 else "Totales de ${datos?.conMetricas} de $total · leídos de Meta ${SocialFormat.haceCuanto(datos?.metricasAl).orEmpty()}",
-                color = SocialTextMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
             )
         }
@@ -240,8 +241,8 @@ private fun FilaPublicacion(publicacion: PublicationDto, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE4E1ED), RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
             .clickable(onClickLabel = "Ver estadísticas", onClick = onClick)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -252,7 +253,7 @@ private fun FilaPublicacion(publicacion: PublicationDto, onClick: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text(
                     p.campaignTitulo.orEmpty().ifBlank { "Campaña" },
-                    color = SocialTextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     maxLines = 1,
@@ -260,7 +261,7 @@ private fun FilaPublicacion(publicacion: PublicationDto, onClick: () -> Unit) {
                 )
                 Text(
                     listOfNotNull(p.cuentaNombre, p.clienteNombre?.takeIf { it.isNotBlank() }).joinToString(" · "),
-                    color = SocialTextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -269,20 +270,20 @@ private fun FilaPublicacion(publicacion: PublicationDto, onClick: () -> Unit) {
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             EstadoPublicacionPill(p.estado)
-            p.versionAprobada?.let { Text("Versión $it aprobada", color = SocialTextMuted, fontSize = 12.sp) }
+            p.versionAprobada?.let { Text("Versión $it aprobada", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             principales.forEach { metrica ->
                 val valor = SocialFormat.valor(m, metrica.campo)
                 Column(Modifier.weight(1f)) {
-                    Text(metrica.etiqueta, color = SocialTextMuted, fontSize = 12.sp)
+                    Text(metrica.etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                     Text(
                         when {
                             m == null -> "—"
                             valor == null -> "sin dato"
                             else -> SocialFormat.formatoMetrica(valor)
                         },
-                        color = if (m != null && valor != null) SocialTextDark else SocialTextMuted,
+                        color = if (m != null && valor != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = if (m != null && valor != null) 16.sp else 13.sp,
                         fontWeight = if (m != null && valor != null) FontWeight.ExtraBold else FontWeight.Medium,
                         modifier = if (m == null) Modifier.semantics { contentDescription = "sin lectura todavía" } else Modifier,
@@ -290,7 +291,7 @@ private fun FilaPublicacion(publicacion: PublicationDto, onClick: () -> Unit) {
                 }
             }
         }
-        Text("Ver estadísticas", color = SocialBrand, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+        Text("Ver estadísticas", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
     }
 }
 
@@ -302,7 +303,7 @@ private fun DetallePublicacion(
     onCerrar: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = onCerrar, sheetState = sheetState, containerColor = Color.White) {
+    ModalBottomSheet(onDismissRequest = onCerrar, sheetState = sheetState, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -312,9 +313,9 @@ private fun DetallePublicacion(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             when {
-                error != null -> Text(error, color = Color(0xFF93000A))
+                error != null -> Text(error, color = MaterialTheme.colorScheme.error)
                 datos == null -> Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = SocialBrand)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
                 else -> ContenidoDetalle(datos)
             }
@@ -335,8 +336,8 @@ private fun ContenidoDetalle(datos: PublicationStatsDto) {
         RedLogo(red = p.red, size = 36.dp)
         Spacer(Modifier.width(12.dp))
         Column {
-            Text(p.campaignTitulo.orEmpty(), color = SocialTextDark, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
-            Text("${p.cuentaNombre} · ${SocialFormat.etiquetaRed(p.red)}", color = SocialTextMuted, fontSize = 13.sp)
+            Text(p.campaignTitulo.orEmpty(), color = MaterialTheme.colorScheme.onSurface, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+            Text("${p.cuentaNombre} · ${SocialFormat.etiquetaRed(p.red)}", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
         }
     }
 
@@ -367,7 +368,7 @@ private fun ContenidoDetalle(datos: PublicationStatsDto) {
     if (p.estado == "publicado" && !p.permalink.isNullOrBlank()) {
         Button(
             onClick = { uriHandler.openUri(p.permalink) },
-            colors = ButtonDefaults.buttonColors(containerColor = SocialBrand),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -377,13 +378,13 @@ private fun ContenidoDetalle(datos: PublicationStatsDto) {
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Métricas", color = SocialTextDark, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        datos.aviso?.takeIf { it.isNotBlank() }?.let { Text(it, color = SocialTextMuted, fontSize = 13.sp) }
+        Text("Métricas", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        datos.aviso?.takeIf { it.isNotBlank() }?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp) }
         if (metrica == null) {
             Text(
                 if (p.estado == "publicado") "Meta todavía no entrega métricas de esta publicación; pueden tardar hasta 48 horas."
                 else "Las métricas aparecen cuando la publicación ya está en la red social.",
-                color = SocialTextMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
             )
         } else {
@@ -400,7 +401,7 @@ private fun ContenidoDetalle(datos: PublicationStatsDto) {
 
     if (historial.size > 1) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Historial de lecturas", color = SocialTextDark, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Historial de lecturas", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             historial.forEach { h -> FilaHistorial(h, metricas.principales.first().etiqueta) }
         }
     }
@@ -409,18 +410,18 @@ private fun ContenidoDetalle(datos: PublicationStatsDto) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 if (p.estado == "publicado") "Texto publicado" else "Texto aprobado",
-                color = SocialTextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
                 copy,
-                color = SocialTextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(SocialSurfaceSoft)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
                     .padding(14.dp),
             )
         }
@@ -436,9 +437,9 @@ private fun PasoCadena(hecho: Boolean, titulo: String, detalle: String?, fallo: 
                 .clip(CircleShape)
                 .background(
                     when {
-                        fallo -> Color(0xFFBA1A1A)
-                        hecho -> Color(0xFF2E7D32)
-                        else -> Color(0xFFE9E6F3)
+                        fallo -> MaterialTheme.colorScheme.error
+                        hecho -> NexoTheme.colors.success
+                        else -> MaterialTheme.colorScheme.surfaceContainerHigh
                     }
                 ),
             contentAlignment = Alignment.Center,
@@ -446,15 +447,19 @@ private fun PasoCadena(hecho: Boolean, titulo: String, detalle: String?, fallo: 
             Icon(
                 if (fallo) Icons.Filled.ErrorOutline else Icons.Filled.CheckCircle,
                 contentDescription = null,
-                tint = if (fallo || hecho) Color.White else Color(0xFF767586),
+                tint = when {
+                    fallo -> MaterialTheme.colorScheme.onError
+                    hecho -> NexoTheme.colors.onSuccess
+                    else -> MaterialTheme.colorScheme.outline
+                },
                 modifier = Modifier.size(16.dp),
             )
         }
         Spacer(Modifier.width(12.dp))
         Column {
-            Text(titulo, color = SocialTextDark, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(titulo, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             detalle?.let {
-                Text(it, color = if (fallo) Color(0xFF93000A) else SocialTextMuted, fontSize = 13.sp)
+                Text(it, color = if (fallo) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
             }
         }
     }
@@ -466,14 +471,14 @@ private fun FilaHistorial(m: PublicationMetricDto, etiquetaMeGusta: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .background(SocialSurfaceSoft)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(SocialFormat.fechaCorta(m.obtenidaAt).orEmpty(), color = SocialTextMuted, fontSize = 12.sp)
+        Text(SocialFormat.fechaCorta(m.obtenidaAt).orEmpty(), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         Text(
             "$etiquetaMeGusta ${SocialFormat.formatoMetrica(m.meGusta)} · Coment. ${SocialFormat.formatoMetrica(m.comentarios)}",
-            color = SocialTextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
         )
@@ -486,16 +491,16 @@ private fun SinPublicaciones() {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, Color(0xFFC7C4D7), RoundedCornerShape(16.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Icon(Icons.Filled.BarChart, contentDescription = null, tint = Color(0xFF767586), modifier = Modifier.size(32.dp))
-        Text("Aún no hay publicaciones", color = SocialTextDark, fontWeight = FontWeight.Bold)
+        Icon(Icons.Filled.BarChart, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(32.dp))
+        Text("Aún no hay publicaciones", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
         Text(
             "Cuando se apruebe una campaña con destino en Instagram o Facebook, aquí verás cómo le va.",
-            color = SocialTextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp,
         )
     }
@@ -510,11 +515,11 @@ private fun ErrorEstadisticas(mensaje: String, onReintentar: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("No pudimos cargar las estadísticas", color = SocialTextDark, fontWeight = FontWeight.Bold)
-        Text(mensaje, color = SocialTextMuted, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp))
+        Text("No pudimos cargar las estadísticas", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+        Text(mensaje, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp))
         Button(
             onClick = onReintentar,
-            colors = ButtonDefaults.buttonColors(containerColor = SocialBrand),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             modifier = Modifier.padding(top = 16.dp),
         ) { Text("Reintentar") }
     }

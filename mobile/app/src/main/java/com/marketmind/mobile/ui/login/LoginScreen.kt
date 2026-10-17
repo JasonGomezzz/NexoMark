@@ -47,6 +47,8 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -62,7 +64,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -78,15 +79,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.marketmind.mobile.R
+import com.marketmind.mobile.ui.theme.NexoTheme
 import kotlinx.coroutines.delay
-
-private val BrandBlue = Color(0xFF4D4AF0)
-private val TextDark = Color(0xFF20213A)
-private val TextMuted = Color(0xFF74778D)
-private val PanelBorder = Color(0xFFE0E2EE)
-private val FieldBorder = Color(0xFFD6D9E6)
-private val PageTop = Color(0xFFF6F2FF)
-private val PageBottom = Color(0xFFFFFBFF)
 
 @Composable
 fun LoginScreen(
@@ -113,11 +107,11 @@ fun LoginScreen(
         }
     }
 
-    Scaffold(containerColor = PageBottom) { innerPadding ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(listOf(PageTop, PageBottom)))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             Column(
                 modifier = Modifier
@@ -135,14 +129,14 @@ fun LoginScreen(
 
                 Text(
                     text = "NexoMark IA",
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 25.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 0.sp,
                 )
                 Text(
                     text = "Impulsa tu crecimiento con inteligencia.",
-                    color = Color(0xFF40435A),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,
                     textAlign = TextAlign.Center,
@@ -183,7 +177,7 @@ fun LoginScreen(
 
                 Text(
                     text = "SEGURIDAD IA GARANTIZADA",
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 2.sp,
@@ -202,7 +196,7 @@ fun LoginScreen(
 
                 Text(
                     text = "© 2026 NexoMark IA",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center,
@@ -254,9 +248,9 @@ private fun LoginCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        border = BorderStroke(1.dp, PanelBorder),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -333,7 +327,7 @@ private fun LoginCard(
             errorMessage?.let {
                 Text(
                     text = it,
-                    color = Color(0xFFD73737),
+                    color = MaterialTheme.colorScheme.error,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 16.sp,
@@ -347,27 +341,25 @@ private fun LoginCard(
                     .fillMaxWidth()
                     .height(58.dp)
                     .padding(top = 4.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(14.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
             ) {
                 if (loading) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = LocalContentColor.current,
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(20.dp),
                     )
                 } else {
                     Text(
                         text = if (mode == AuthMode.Login) "Iniciar Sesion" else "Crear cuenta",
-                        color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp,
                     )
                     Icon(
                         imageVector = Icons.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = Color.White,
                         modifier = Modifier
                             .padding(start = 8.dp)
                             .size(18.dp),
@@ -379,7 +371,7 @@ private fun LoginCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Color(0xFFE9EAF3)),
+                    .background(MaterialTheme.colorScheme.outlineVariant),
             )
 
             Row(
@@ -388,13 +380,13 @@ private fun LoginCard(
             ) {
                 Text(
                     text = if (mode == AuthMode.Login) "¿No tienes una cuenta? " else "¿Ya tienes una cuenta? ",
-                    color = Color(0xFF7B7E91),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
                     text = if (mode == AuthMode.Login) "Registrate ahora" else "Ingresa",
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     modifier = Modifier.clickable {
@@ -416,7 +408,7 @@ private fun AuthTabs(
             .fillMaxWidth()
             .height(44.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF0F1F8))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -473,8 +465,8 @@ private fun RoleOption(
         onClick = onClick,
         modifier = modifier.height(48.dp),
         shape = RoundedCornerShape(12.dp),
-        color = if (selected) BrandBlue.copy(alpha = 0.1f) else Color.White,
-        border = BorderStroke(1.dp, if (selected) BrandBlue else FieldBorder),
+        color = if (selected) NexoTheme.colors.primaryFixed else MaterialTheme.colorScheme.surfaceContainerLowest,
+        border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
     ) {
         Row(
             modifier = Modifier
@@ -486,13 +478,13 @@ private fun RoleOption(
                 checked = selected,
                 onCheckedChange = { onClick() },
                 colors = CheckboxDefaults.colors(
-                    checkedColor = BrandBlue,
-                    uncheckedColor = TextMuted,
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
             Text(
                 text = label,
-                color = if (selected) BrandBlue else TextDark,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.ExtraBold,
                 maxLines = 1,
@@ -512,13 +504,13 @@ private fun AuthTab(
         modifier = modifier
             .fillMaxSize()
             .clip(RoundedCornerShape(9.dp))
-            .background(if (selected) Color.White else Color.Transparent)
+            .background(if (selected) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Transparent)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
-            color = if (selected) BrandBlue else TextMuted,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp,
             fontWeight = FontWeight.ExtraBold,
             maxLines = 1,
@@ -548,7 +540,7 @@ private fun WelcomeOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White.copy(alpha = 0.94f))
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.96f))
                 .padding(24.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -559,28 +551,28 @@ private fun WelcomeOverlay(
                 Surface(
                     modifier = Modifier.size(82.dp),
                     shape = CircleShape,
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     shadowElevation = 12.dp,
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Filled.VerifiedUser,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(38.dp),
                         )
                     }
                 }
                 Text(
                     text = "Bienvenido",
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     modifier = Modifier.padding(top = 22.dp),
                 )
                 Text(
                     text = nombre.ifBlank { "marketero" },
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Center,
@@ -600,7 +592,7 @@ private enum class AuthMode {
 private fun FieldLabel(text: String) {
     Text(
         text = text,
-        color = Color(0xFF777A8A),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 12.sp,
         fontWeight = FontWeight.ExtraBold,
     )
@@ -626,7 +618,7 @@ private fun StyledTextField(
         placeholder = {
             Text(
                 text = placeholder,
-                color = Color(0xFFBCC0CD),
+                color = MaterialTheme.colorScheme.outline,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -635,7 +627,7 @@ private fun StyledTextField(
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                tint = Color(0xFF9BA0B2),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp),
             )
         },
@@ -645,7 +637,7 @@ private fun StyledTextField(
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = Color(0xFF9BA0B2),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp),
                     )
                 }
@@ -656,13 +648,13 @@ private fun StyledTextField(
         keyboardActions = keyboardActions,
         shape = RoundedCornerShape(13.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = BrandBlue.copy(alpha = 0.7f),
-            unfocusedBorderColor = FieldBorder,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            cursorColor = BrandBlue,
-            focusedTextColor = TextDark,
-            unfocusedTextColor = TextDark,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
         ),
         modifier = modifier
             .fillMaxWidth()
@@ -676,13 +668,13 @@ private fun SecurityBadge(icon: ImageVector) {
         modifier = Modifier
             .size(26.dp)
             .clip(CircleShape)
-            .border(1.dp, Color(0xFFD3D6E3), CircleShape),
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = TextMuted,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(14.dp),
         )
     }

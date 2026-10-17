@@ -35,6 +35,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -50,8 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -66,11 +65,8 @@ import com.marketmind.mobile.data.remote.dto.CampaignDto
 import com.marketmind.mobile.ui.campaigns.formatEstado
 import com.marketmind.mobile.ui.campaigns.formatFecha
 import com.marketmind.mobile.ui.social.StatsContent
-
-private val BrandBlue = Color(0xFF4D4AF0)
-private val PageBackground = Color(0xFFFCF9FF)
-private val TextDark = Color(0xFF12132A)
-private val TextMuted = Color(0xFF74778A)
+import com.marketmind.mobile.ui.theme.NexoTheme
+import com.marketmind.mobile.ui.theme.coloresEstado
 
 @OptIn(ExperimentalMaterial3Api::class)
 private enum class ClientTab { Inicio, Estadisticas, Cuenta }
@@ -91,7 +87,7 @@ fun ClientHomeScreen(
     }
 
     Scaffold(
-        containerColor = PageBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             ClientTopBar(
                 titulo = when (selectedTab) {
@@ -145,7 +141,7 @@ private fun ClientTopBar(titulo: String, nombre: String?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.72f))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .statusBarsPadding()
             .height(56.dp)
             .padding(horizontal = 16.dp),
@@ -154,7 +150,7 @@ private fun ClientTopBar(titulo: String, nombre: String?) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = titulo,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
                 maxLines = 1,
@@ -163,7 +159,7 @@ private fun ClientTopBar(titulo: String, nombre: String?) {
             nombre?.takeIf { it.isNotBlank() }?.let {
                 Text(
                     text = "Hola, $it",
-                    color = TextMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
@@ -174,7 +170,7 @@ private fun ClientTopBar(titulo: String, nombre: String?) {
         Icon(
             imageVector = Icons.Filled.NotificationsNone,
             contentDescription = null,
-            tint = TextDark,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(22.dp),
         )
     }
@@ -182,18 +178,18 @@ private fun ClientTopBar(titulo: String, nombre: String?) {
 
 @Composable
 private fun ClientBottomBar(selected: ClientTab, onSelected: (ClientTab) -> Unit) {
-    NavigationBar(containerColor = Color.White) {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
         NavigationBarItem(
             selected = selected == ClientTab.Inicio,
             onClick = { onSelected(ClientTab.Inicio) },
             icon = { Icon(Icons.Filled.Home, contentDescription = "Inicio") },
             label = { Text("Inicio") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = BrandBlue,
-                selectedTextColor = BrandBlue,
-                indicatorColor = Color(0xFFE7E6FF),
-                unselectedIconColor = TextMuted,
-                unselectedTextColor = TextMuted,
+                selectedIconColor = MaterialTheme.colorScheme.primary,
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = NexoTheme.colors.primaryFixed,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         )
         NavigationBarItem(
@@ -202,11 +198,11 @@ private fun ClientBottomBar(selected: ClientTab, onSelected: (ClientTab) -> Unit
             icon = { Icon(Icons.Filled.BarChart, contentDescription = "Estadísticas") },
             label = { Text("Estadísticas") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = BrandBlue,
-                selectedTextColor = BrandBlue,
-                indicatorColor = Color(0xFFE7E6FF),
-                unselectedIconColor = TextMuted,
-                unselectedTextColor = TextMuted,
+                selectedIconColor = MaterialTheme.colorScheme.primary,
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = NexoTheme.colors.primaryFixed,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         )
         NavigationBarItem(
@@ -215,11 +211,11 @@ private fun ClientBottomBar(selected: ClientTab, onSelected: (ClientTab) -> Unit
             icon = { Icon(Icons.Filled.AccountCircle, contentDescription = "Cuenta") },
             label = { Text("Cuenta") },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = BrandBlue,
-                selectedTextColor = BrandBlue,
-                indicatorColor = Color(0xFFE7E6FF),
-                unselectedIconColor = TextMuted,
-                unselectedTextColor = TextMuted,
+                selectedIconColor = MaterialTheme.colorScheme.primary,
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = NexoTheme.colors.primaryFixed,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         )
     }
@@ -244,12 +240,12 @@ private fun ClientAccountScreen(
                 .padding(top = 12.dp, bottom = 20.dp)
                 .size(88.dp),
             shape = CircleShape,
-            color = Color(0xFFE7E6FF),
+            color = NexoTheme.colors.primaryFixed,
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text(
                     text = nombre?.trim()?.firstOrNull()?.uppercase() ?: "C",
-                    color = BrandBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 34.sp,
                     fontWeight = FontWeight.ExtraBold,
                 )
@@ -266,11 +262,10 @@ private fun ClientAccountScreen(
                 .height(56.dp)
                 .padding(top = 20.dp),
             shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE23D3D)),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
         ) {
             Text(
                 text = "Cerrar sesión",
-                color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
@@ -287,7 +282,7 @@ private fun AccountInfoField(label: String, value: String) {
     ) {
         Text(
             text = label,
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp,
             fontWeight = FontWeight.ExtraBold,
         )
@@ -296,11 +291,11 @@ private fun AccountInfoField(label: String, value: String) {
                 .fillMaxWidth()
                 .padding(top = 6.dp),
             shape = RoundedCornerShape(10.dp),
-            color = Color(0xFFF3F2FB),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
         ) {
             Text(
                 text = value,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
@@ -315,7 +310,7 @@ private fun LoadingState() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(color = BrandBlue)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -330,25 +325,25 @@ private fun EmptyState(onRefresh: () -> Unit) {
     ) {
         Text(
             text = "No tienes campañas pendientes",
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
         )
         Text(
             text = "Cuando un marketero envíe una campaña, aparecerá aquí.",
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp),
         )
         Button(
             onClick = onRefresh,
-            colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(top = 16.dp),
         ) {
-            Text("Actualizar", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("Actualizar", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -364,25 +359,25 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(
             text = "No pudimos cargar las campañas",
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
         )
         Text(
             text = message,
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp),
         )
         Button(
             onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(top = 16.dp),
         ) {
-            Text("Reintentar", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("Reintentar", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -425,9 +420,9 @@ private fun ClientCampaignCard(
         onClick = { onClick(campaign.id) },
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        border = BorderStroke(1.dp, Color(0xFFEDEAF6)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Row(
             modifier = Modifier
@@ -444,7 +439,7 @@ private fun ClientCampaignCard(
             ) {
                 Text(
                     text = campaign.titulo.orEmpty().ifBlank { "Sin título" },
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.ExtraBold,
                     maxLines = 1,
@@ -453,7 +448,7 @@ private fun ClientCampaignCard(
                 campaign.clienteNombre?.takeIf { it.isNotBlank() }?.let {
                     Text(
                         text = "Cliente: $it",
-                        color = TextMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -467,7 +462,7 @@ private fun ClientCampaignCard(
                         text = it.trim().take(90).let { snippet ->
                             if (it.length > 90) "$snippet…" else snippet
                         },
-                        color = TextMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
@@ -482,7 +477,7 @@ private fun ClientCampaignCard(
                     campaign.fechaCreacion?.let { iso ->
                         Text(
                             text = formatFecha(iso),
-                            color = Color(0xFF9A9CAD),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                         )
@@ -500,7 +495,7 @@ private fun CampaignThumbnail(campaign: CampaignDto) {
         modifier = Modifier
             .size(56.dp)
             .clip(RoundedCornerShape(9.dp))
-            .background(Color(0xFFF3F4FA)),
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         contentAlignment = Alignment.Center,
     ) {
         if (bitmap != null) {
@@ -516,17 +511,13 @@ private fun CampaignThumbnail(campaign: CampaignDto) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(
-                            listOf(BrandBlue.copy(alpha = 0.85f), Color(0xFF6865F3)),
-                        ),
-                    ),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.Filled.AutoAwesome,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(22.dp),
                 )
             }
@@ -536,13 +527,7 @@ private fun CampaignThumbnail(campaign: CampaignDto) {
 
 @Composable
 private fun StatePill(estado: String) {
-    val (fg, bg) = when (estado) {
-        "aprobado" -> Color(0xFF087A44) to Color(0xFFCFF8E4)
-        "rechazado" -> Color(0xFFD73737) to Color(0xFFFFE0E0)
-        "pendiente_aprobacion" -> Color(0xFFA76525) to Color(0xFFF3E0C8)
-        "generado" -> BrandBlue to Color(0xFFE8E7FF)
-        else -> TextMuted to Color(0xFFECEAF5)
-    }
+    val (fg, bg) = coloresEstado(estado)
     Text(
         text = formatEstado(estado),
         color = fg,

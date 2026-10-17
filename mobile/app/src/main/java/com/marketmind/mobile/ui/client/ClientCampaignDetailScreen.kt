@@ -31,6 +31,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -64,12 +66,7 @@ import com.marketmind.mobile.data.remote.dto.CampaignDto
 import com.marketmind.mobile.ui.campaigns.formatEstado
 import com.marketmind.mobile.ui.campaigns.formatFecha
 import com.marketmind.mobile.ui.social.DestinosCampanaCard
-
-private val BrandBlue = Color(0xFF4D4AF0)
-private val PageBackground = Color(0xFFFCF9FF)
-private val TextDark = Color(0xFF12132A)
-private val TextMuted = Color(0xFF74778A)
-private val DangerRed = Color(0xFFD73737)
+import com.marketmind.mobile.ui.theme.coloresEstado
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +89,7 @@ fun ClientCampaignDetailScreen(
     }
 
     Scaffold(
-        containerColor = PageBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             ClientDetailTopBar(onBack = onBack)
         },
@@ -144,7 +141,7 @@ private fun ClientDetailTopBar(onBack: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.82f))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .statusBarsPadding()
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -159,14 +156,14 @@ private fun ClientDetailTopBar(onBack: () -> Unit) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Volver",
-                    tint = BrandBlue,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(22.dp),
                 )
             }
         }
         Text(
             text = "Detalle de campaña",
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 17.sp,
             fontWeight = FontWeight.ExtraBold,
             maxLines = 1,
@@ -194,7 +191,7 @@ private fun DetailActionsBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.92f))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .navigationBarsPadding()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -202,7 +199,7 @@ private fun DetailActionsBar(
         if (current?.campaign?.estado == "pendiente_aprobacion") {
             Text(
                 text = if (rating == 0) "Valora la campaña para aprobar o rechazar" else "Valoración: $rating de 5",
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -215,7 +212,7 @@ private fun DetailActionsBar(
                         Icon(
                             imageVector = if (value <= rating) Icons.Filled.Star else Icons.Outlined.StarBorder,
                             contentDescription = "Valorar con $value de 5 estrellas",
-                            tint = if (value <= rating) BrandBlue else TextMuted,
+                            tint = if (value <= rating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -226,15 +223,15 @@ private fun DetailActionsBar(
                 onClick = onRejectClick,
                 enabled = canAct,
                 shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, DangerRed),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 modifier = Modifier.weight(1f),
             ) {
                 if (submitting) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(18.dp),
-                        color = DangerRed,
+                        color = MaterialTheme.colorScheme.error,
                     )
                 } else {
                     Text("Rechazar", fontWeight = FontWeight.ExtraBold)
@@ -244,17 +241,17 @@ private fun DetailActionsBar(
                 onClick = onApproveClick,
                 enabled = canAct,
                 shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 modifier = Modifier.weight(1f),
             ) {
                 if (submitting) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(18.dp),
-                        color = Color.White,
+                        color = LocalContentColor.current,
                     )
                 } else {
-                    Text("Aprobar", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                    Text("Aprobar", fontWeight = FontWeight.ExtraBold)
                 }
             }
         }
@@ -267,7 +264,7 @@ private fun LoadingState() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(color = BrandBlue)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -282,25 +279,25 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(
             text = "No pudimos cargar la campaña",
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
         )
         Text(
             text = message,
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp),
         )
         Button(
             onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.padding(top = 16.dp),
         ) {
-            Text("Reintentar", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("Reintentar", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -324,9 +321,9 @@ private fun CampaignDetailBody(campaign: CampaignDto) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            border = BorderStroke(1.dp, Color(0xFFEDEAF6)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         ) {
             Column(
                 modifier = Modifier
@@ -336,7 +333,7 @@ private fun CampaignDetailBody(campaign: CampaignDto) {
             ) {
                 Text(
                     text = "TEXTO GENERADO",
-                    color = Color(0xFF7B74F2),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp,
@@ -347,7 +344,7 @@ private fun CampaignDetailBody(campaign: CampaignDto) {
                         ?: campaign.prompt
                             ?.takeIf { it.isNotBlank() }
                         ?: "Sin contenido generado.",
-                    color = Color(0xFF4A4D66),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 15.sp,
                     lineHeight = 22.sp,
                     fontWeight = FontWeight.Medium,
@@ -359,9 +356,9 @@ private fun CampaignDetailBody(campaign: CampaignDto) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1F1)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                border = BorderStroke(1.dp, Color(0xFFF3C9C9)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
             ) {
                 Column(
                     modifier = Modifier
@@ -371,14 +368,14 @@ private fun CampaignDetailBody(campaign: CampaignDto) {
                 ) {
                     Text(
                         text = "MOTIVO DEL RECHAZO",
-                        color = DangerRed,
+                        color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 1.sp,
                     )
                     Text(
                         text = feedback,
-                        color = Color(0xFF7A2E2E),
+                        color = MaterialTheme.colorScheme.onErrorContainer,
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
                         fontWeight = FontWeight.Medium,
@@ -394,9 +391,9 @@ private fun MetadataCard(campaign: CampaignDto) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, Color(0xFFEDEAF6)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -411,7 +408,7 @@ private fun MetadataCard(campaign: CampaignDto) {
             ) {
                 Text(
                     text = campaign.titulo.orEmpty().ifBlank { "Sin título" },
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 20.sp,
                     lineHeight = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -441,13 +438,13 @@ private fun MetaRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "$label: ",
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
         )
         Text(
             text = value,
-            color = TextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
         )
@@ -475,13 +472,13 @@ private fun CampaignImage(campaign: CampaignDto) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, Color(0xFFEDEAF6)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Text(
             text = "Imagen no generada aún",
-            color = TextMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(16.dp),
@@ -491,13 +488,7 @@ private fun CampaignImage(campaign: CampaignDto) {
 
 @Composable
 private fun StatePill(estado: String) {
-    val (fg, bg) = when (estado) {
-        "aprobado" -> Color(0xFF087A44) to Color(0xFFCFF8E4)
-        "rechazado" -> DangerRed to Color(0xFFFFE0E0)
-        "pendiente_aprobacion" -> Color(0xFFA76525) to Color(0xFFF3E0C8)
-        "generado" -> BrandBlue to Color(0xFFE8E7FF)
-        else -> TextMuted to Color(0xFFECEAF5)
-    }
+    val (fg, bg) = coloresEstado(estado)
     Text(
         text = formatEstado(estado),
         color = fg,
@@ -525,7 +516,7 @@ private fun RejectFeedbackSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         Column(
             modifier = Modifier
@@ -535,20 +526,20 @@ private fun RejectFeedbackSheet(
         ) {
             Text(
                 text = "Motivo del rechazo",
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
             Text(
                 text = "Explica al marketero por qué rechazas esta campaña (mínimo 10 caracteres).",
-                color = TextMuted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
             )
 
             OutlinedTextField(
                 value = feedbackText,
                 onValueChange = onFeedbackChange,
-                placeholder = { Text("Describe el motivo (mínimo 10 caracteres)", color = TextMuted) },
+                placeholder = { Text("Describe el motivo (mínimo 10 caracteres)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 4,
                 maxLines = 6,
@@ -559,9 +550,9 @@ private fun RejectFeedbackSheet(
             Text(
                 text = "${feedbackText.length} / 500 (mínimo 10)",
                 color = if (feedbackText.trim().length in 10..500 || feedbackText.isEmpty()) {
-                    TextMuted
+                    MaterialTheme.colorScheme.onSurfaceVariant
                 } else {
-                    DangerRed
+                    MaterialTheme.colorScheme.error
                 },
                 fontSize = 12.sp,
                 modifier = Modifier.align(Alignment.End),
@@ -572,15 +563,15 @@ private fun RejectFeedbackSheet(
                 horizontalArrangement = Arrangement.End,
             ) {
                 TextButton(onClick = onDismiss) {
-                    Text("Cancelar", color = TextMuted, fontWeight = FontWeight.Bold)
+                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                 }
                 Button(
                     onClick = { onConfirm(feedbackText.trim()) },
                     enabled = isValid,
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
                 ) {
-                    Text("Confirmar rechazo", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                    Text("Confirmar rechazo", fontWeight = FontWeight.ExtraBold)
                 }
             }
         }

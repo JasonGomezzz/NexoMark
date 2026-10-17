@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,12 +45,12 @@ fun PublicationsSection(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFFE4E1ED), RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Publicación en redes", color = SocialTextDark, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Text("Publicación en redes", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         publicaciones.forEach { p ->
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -58,14 +58,14 @@ fun PublicationsSection(
                     Spacer(Modifier.width(10.dp))
                     Text(
                         p.cuentaNombre,
-                        color = SocialTextDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f),
                     )
                     EstadoPublicacionPill(p.estado)
                 }
                 p.error?.takeIf { it.isNotBlank() && p.estado == "fallido" }?.let {
-                    Text(it, color = Color(0xFF93000A), fontSize = 12.sp)
+                    Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (p.estado == "publicado" && !p.permalink.isNullOrBlank()) {
@@ -78,7 +78,7 @@ fun PublicationsSection(
                     if (SocialFormat.puedeReintentar(p, estadoCampana)) {
                         OutlinedButton(onClick = { onPublicar(p) }, enabled = publicando == null) {
                             if (publicando == p.id) {
-                                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = SocialBrand)
+                                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.primary)
                             } else {
                                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
                             }

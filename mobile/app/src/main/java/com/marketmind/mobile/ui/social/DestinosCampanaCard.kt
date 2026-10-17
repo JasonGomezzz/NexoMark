@@ -10,13 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,8 +38,8 @@ fun DestinosCampanaCard(destinos: List<DestinoDto>?, estadoCampana: String, modi
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(if (pendiente) SocialSurfaceSoft else Color.White)
-            .border(1.dp, Color(0xFFE1DEF7), RoundedCornerShape(12.dp))
+            .background(if (pendiente) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -49,7 +49,7 @@ fun DestinosCampanaCard(destinos: List<DestinoDto>?, estadoCampana: String, modi
                 pendiente -> "Al aprobar, esta versión se publicará en:"
                 else -> "Publicación en redes"
             },
-            color = SocialTextDark,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
         )
@@ -58,8 +58,8 @@ fun DestinosCampanaCard(destinos: List<DestinoDto>?, estadoCampana: String, modi
                 RedLogo(red = d.red, size = 24.dp)
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(d.cuentaNombre, color = SocialTextDark, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                    Text(SocialFormat.etiquetaRed(d.red), color = SocialTextMuted, fontSize = 12.sp)
+                    Text(d.cuentaNombre, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text(SocialFormat.etiquetaRed(d.red), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                 }
                 if (!pendiente) d.estado?.let { EstadoPublicacionPill(it) }
             }
