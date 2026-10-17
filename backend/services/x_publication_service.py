@@ -269,15 +269,36 @@ def rechazar(variante: VarianteX, usuario: User, feedback) -> VarianteX:
 # ── Publicación ──────────────────────────────────────────────────────────
 
 
+def _filtro_cuentas_x(campaign: Campaign) -> Q:
+    filtro = Q(usuario_id=campaign.marketero_id)
+    if campaign.cliente_email:
+        filtro |= Q(usuario__email__iexact=campaign.cliente_email, usuario__rol=UserRole.CLIENTE)
+    return filtro
+
+
+def cuentas_x_disponibles(campaign: Campaign) -> list[SocialConnection]:
+    """
+    Cuentas de X activas del marketero de la campaña y de su cliente, una por
+    cuenta (si ambos conectaron la misma, se ofrece la del cliente, su dueño).
+    """
+    from services.publication_service import una_por_cuenta
+
+    conexiones = list(
+        SocialConnection.objects.filter(_filtro_cuentas_x(campaign), red=RedSocial.X, estado=ConexionEstado.ACTIVA)
+        .select_related("usuario")
+        .order_by("cuenta_nombre")
+    )
+    return una_por_cuenta(conexiones, campaign.cliente_email)
+
+
 def _conexion_x(campaign: Campaign, conexion_id) -> SocialConnection:
     """Cuenta de X activa del marketero de la campaña o de su cliente."""
     if isinstance(conexion_id, bool) or not isinstance(conexion_id, int):
         raise OperacionNoPermitida("Elige la cuenta de X donde publicar.", 400, "conexion")
-    filtro = Q(usuario_id=campaign.marketero_id)
-    if campaign.cliente_email:
-        filtro |= Q(usuario__email__iexact=campaign.cliente_email, usuario__rol=UserRole.CLIENTE)
     conexion = (
-        SocialConnection.objects.filter(filtro, pk=conexion_id, red=RedSocial.X, estado=ConexionEstado.ACTIVA)
+        SocialConnection.objects.filter(
+            _filtro_cuentas_x(campaign), pk=conexion_id, red=RedSocial.X, estado=ConexionEstado.ACTIVA
+        )
         .select_related("usuario")
         .first()
     )

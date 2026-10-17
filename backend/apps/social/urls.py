@@ -8,7 +8,14 @@ from .views import (
     PublicationViewSet,
     SocialConnectionViewSet,
 )
-from .views_x import VarianteXViewSet, XCallbackView, XCompleteView, XConfigView, XConnectView
+from .views_x import (
+    VarianteXViewSet,
+    XCallbackView,
+    XCompleteView,
+    XConfigView,
+    XConnectView,
+    XDestinosView,
+)
 
 router = SimpleRouter()
 router.register(r"connections", SocialConnectionViewSet, basename="social-connection")
@@ -23,4 +30,5 @@ urlpatterns = [
     path("x/connect/", XConnectView.as_view(), name="x-connect"),
     path("x/callback/", XCallbackView.as_view(), name="x-callback"),
     path("x/complete/", XCompleteView.as_view(), name="x-complete"),
+    path("x/destinos/", XDestinosView.as_view(), name="x-destinos"),
 ] + router.urls

@@ -493,3 +493,25 @@ class TestXFueraDeMetaYMetricas:
         assert (resumen.publicadas, resumen.fallidas) == (0, 0)
         pub.refresh_from_db()
         assert pub.estado == PublicacionEstado.ESPERANDO_APROBACION
+
+
+@pytest.mark.django_db
+class TestCuentasXDeLaCampana:
+    URL = "/api/social/x/destinos/"
+
+    def test_ofrece_las_del_marketero_y_del_cliente_una_por_cuenta(self, x_on, user_marketero, cliente, otro_cliente,
+                                                                   campana, cuenta_x):
+        conexion(cliente, red=RedSocial.X, cuenta_id="555", cuenta_nombre="@cafe", pagina_id="")
+        conexion(cliente, red=RedSocial.X, cuenta_id="999", cuenta_nombre="@agencia", pagina_id="")  # la misma
+        conexion(otro_cliente, red=RedSocial.X, cuenta_id="777", cuenta_nombre="@ajena", pagina_id="")
+        conexion(cliente)  # Instagram: no es de X
+        data = cliente_api(user_marketero).get(self.URL, {"campaign": campana.id}).data["data"]["conexiones"]
+        assert sorted((c["cuenta_nombre"], c["propietario_rol"]) for c in data) == [
+            ("@agencia", "cliente"), ("@cafe", "cliente"),
+        ]
+
+    def test_solo_el_marketero_dueno_y_con_x_encendida(self, x_on, otro_marketero, cliente, campana):
+        assert cliente_api(otro_marketero).get(self.URL, {"campaign": campana.id}).status_code == 404
+        assert cliente_api(cliente).get(self.URL, {"campaign": campana.id}).status_code == 403
+        x_on.X_HABILITADO = False
+        assert cliente_api(otro_marketero).get(self.URL, {"campaign": campana.id}).status_code == 403

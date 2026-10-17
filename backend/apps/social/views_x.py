@@ -7,6 +7,7 @@ NexoMark — X (Twitter) como red OPCIONAL, apagada por defecto (X_HABILITADO).
                                       frontend con code y state en el fragmento (#)
     POST   /api/social/x/complete/    {code, state} con JWT: reclama el state, canjea con el code_verifier
                                       y guarda los tokens cifrados
+    GET    /api/social/x/destinos/?campaign=   cuentas de X del marketero y del cliente de esa campaña
 
     Versión para X de una campaña aprobada (services/x_publication_service.py):
     GET    /api/social/x-variants/?campaign=&estado=     según el rol (el cliente no ve borradores)
@@ -221,6 +222,27 @@ class XCompleteView(APIView):
         conexion = _guardar_conexion_x(request.user, perfil, tokens)
         return Response(api_response(True, f"Se conectó {conexion.cuenta_nombre}.", {
             "conectadas": 1, "conexiones": [SocialConnectionSerializer(conexion).data],
+        }))
+
+
+class XDestinosView(APIView):
+    """Cuentas de X donde el marketero dueño puede publicar la versión para X de una campaña."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        if not x_habilitado():
+            return respuesta_x_desactivado()
+        if request.user.rol != UserRole.MARKETERO:
+            return Response(api_response(False, "Solo el marketero elige la cuenta de X.", {}),
+                            status=status.HTTP_403_FORBIDDEN)
+        campaign_id = _entero(request.query_params.get("campaign"))
+        if campaign_id is None:
+            return Response(api_response(False, "Indica la campaña.", {}), status=status.HTTP_400_BAD_REQUEST)
+        campaign = get_object_or_404(Campaign, pk=campaign_id, marketero=request.user)
+        conexiones = servicio.cuentas_x_disponibles(campaign)
+        return Response(api_response(True, "Cuentas de X disponibles.", {
+            "conexiones": SocialConnectionSerializer(conexiones, many=True).data,
         }))
 
 
