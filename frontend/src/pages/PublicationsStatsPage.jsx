@@ -29,6 +29,7 @@ const FILTRO_ESTADO = [
  * Estadísticas de publicaciones en Instagram y Facebook (Fase 4).
  * Mismo componente para los tres roles: Django recorta lo que cada uno ve
  * (cliente: lo suyo; marketero: sus clientes; superadmin: todo).
+ * Todo lo de la página corresponde al año elegido (por defecto, el actual).
  */
 export default function PublicationsStatsPage() {
   const { getRole } = useAuth()
@@ -41,12 +42,13 @@ export default function PublicationsStatsPage() {
   const [actualizando, setActualizando] = useState(false)
   const [red, setRed] = useState('todas')
   const [estado, setEstado] = useState('todas')
+  const [anio, setAnio] = useState(() => new Date().getFullYear())
 
   const abierta = Number(params.get('publicacion')) || null
 
   useEffect(() => {
     let vigente = true
-    Promise.all([socialApi.resumen(), socialApi.publicaciones()])
+    Promise.all([socialApi.resumen(anio), socialApi.publicacionesDelAnio(anio)])
       .then(([r, lista]) => {
         if (!vigente) return
         setResumen(r)
@@ -57,7 +59,7 @@ export default function PublicationsStatsPage() {
     return () => {
       vigente = false
     }
-  }, [recarga])
+  }, [recarga, anio])
 
   async function actualizarMetricas() {
     setActualizando(true)
@@ -86,6 +88,9 @@ export default function PublicationsStatsPage() {
 
   const visibles = useMemo(() => filtrarPublicaciones(publicaciones, { red, estado }), [publicaciones, red, estado])
   const cargando = !resumen && !error
+  // Al cambiar de año se deja la vista anterior atenuada hasta que llegan los datos nuevos.
+  const cambiandoAnio = Boolean(resumen) && resumen.anual?.anio !== anio
+  const anios = resumen?.anual?.anios?.includes(anio) ? resumen.anual.anios : [anio, ...(resumen?.anual?.anios ?? [])]
   const conCliente = rol !== 'cliente'
   const conMarketero = rol === 'superadmin'
 
@@ -99,10 +104,32 @@ export default function PublicationsStatsPage() {
           </p>
           {resumen && <LineaDeEstado resumen={resumen} />}
         </div>
-        <Button variant="outline" onClick={actualizarMetricas} disabled={actualizando || cargando}>
-          <RefreshCw className={`h-4 w-4 ${actualizando ? 'animate-spin' : ''}`} />
-          {actualizando ? 'Actualizando…' : 'Actualizar métricas'}
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm font-medium text-on-surface-variant">
+            Año
+            <span className="relative">
+              <select
+                value={anio}
+                onChange={(e) => setAnio(Number(e.target.value))}
+                className="appearance-none rounded-full border border-outline-variant bg-white py-2 pr-10 pl-4 text-sm font-semibold text-on-surface tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {anios.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-on-surface-variant"
+              />
+            </span>
+          </label>
+          <Button variant="outline" onClick={actualizarMetricas} disabled={actualizando || cargando}>
+            <RefreshCw className={`h-4 w-4 ${actualizando ? 'animate-spin' : ''}`} />
+            {actualizando ? 'Actualizando…' : 'Actualizar métricas'}
+          </Button>
+        </div>
       </header>
 
       {error && (
@@ -118,14 +145,18 @@ export default function PublicationsStatsPage() {
       {cargando && <Esqueleto />}
 
       {resumen && (
-        <>
-          <section className="grid grid-cols-1 gap-6 xl:grid-cols-2" aria-label="Resumen por red">
+        <div
+          aria-busy={cambiandoAnio}
+          className={`space-y-8 transition-opacity duration-200 ${cambiandoAnio ? 'opacity-50' : ''}`}
+        >
+          <section className="grid grid-cols-1 gap-6 xl:grid-cols-2" aria-label={`Resumen por red en ${resumen.anual.anio}`}>
             {['instagram', 'facebook'].map((r) => (
               <NetworkPanel
                 key={r}
                 red={r}
                 datos={resumen.redes[r]}
-                porMes={resumen.por_mes}
+                anual={resumen.anual}
+                anio={resumen.anual.anio}
                 puedeConectar={rol !== 'superadmin'}
               />
             ))}
@@ -134,7 +165,7 @@ export default function PublicationsStatsPage() {
           <section aria-labelledby="publicaciones-titulo" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="publicaciones-titulo" className="text-2xl font-semibold text-on-surface">
-                Publicaciones
+                Publicaciones de {resumen.anual.anio}
               </h2>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="flex gap-1 rounded-full border border-outline-variant bg-white p-1" role="group" aria-label="Filtrar por red">
@@ -175,7 +206,7 @@ export default function PublicationsStatsPage() {
             </div>
 
             {publicaciones.length === 0 ? (
-              <SinPublicaciones rol={rol} />
+              <SinPublicaciones rol={rol} anio={resumen.anual.anio} />
             ) : visibles.length === 0 ? (
               <p className="rounded-xl border border-dashed border-outline-variant bg-white/50 px-6 py-10 text-center text-sm text-on-surface-variant">
                 Ninguna publicación coincide con estos filtros.
@@ -190,7 +221,7 @@ export default function PublicationsStatsPage() {
               />
             )}
           </section>
-        </>
+        </div>
       )}
 
       <AnimatePresence>
@@ -331,14 +362,17 @@ const VACIO = {
   superadmin: 'Todavía no hay publicaciones en la plataforma.',
 }
 
-function SinPublicaciones({ rol }) {
+function SinPublicaciones({ rol, anio }) {
+  const esteAnio = Number(anio) === new Date().getFullYear()
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-white/50 p-12 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-outline">
         <ChartColumnIncreasing className="h-7 w-7" />
       </div>
-      <h3 className="text-lg font-semibold text-on-surface">Aún no hay publicaciones</h3>
-      <p className="max-w-sm text-sm text-on-surface-variant">{VACIO[rol] ?? VACIO.cliente}</p>
+      <h3 className="text-lg font-semibold text-on-surface">
+        {esteAnio ? 'Aún no hay publicaciones' : `No hubo publicaciones en ${anio}`}
+      </h3>
+      {esteAnio && <p className="max-w-sm text-sm text-on-surface-variant">{VACIO[rol] ?? VACIO.cliente}</p>}
     </div>
   )
 }

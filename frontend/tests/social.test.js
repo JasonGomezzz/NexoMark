@@ -12,7 +12,8 @@ import {
   metricasDeRed,
   publicacionAtascada,
   puedeReintentar,
-  serieMensual,
+  indiceMesActual,
+  serieAnual,
   textoCuentasConectadas,
 } from '../src/services/social.js'
 
@@ -73,13 +74,43 @@ test('metricasDeRed names Facebook likes as reactions and hides saves', () => {
   assert.ok(metricasDeRed('instagram').secundarias.some(([campo]) => campo === 'guardados'))
 })
 
-test('serieMensual fills the last six months and keeps the counts of the summary', () => {
-  const serie = serieMensual([{ mes: '2026-10', instagram: 2, facebook: 1 }, { mes: '2026-08', instagram: 1, facebook: 0 }],
-    'instagram', new Date(2026, 9, 6))
-  assert.deepEqual(serie.map((m) => m.mes), ['2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10'])
-  assert.deepEqual(serie.map((m) => m.total), [0, 0, 0, 1, 0, 2])
-  assert.equal(serie.at(-1).etiqueta, 'oct')
-  assert.equal(serieMensual([], 'facebook', new Date(2026, 0, 15))[0].mes, '2025-08')
+const ANUAL = {
+  publicaciones_por_mes: Array.from({ length: 12 }, (_, i) => ({
+    mes: `2025-${String(i + 1).padStart(2, '0')}`,
+    instagram: i === 2 ? 2 : 0,
+    facebook: 0,
+  })),
+  me_gusta_por_mes: Array.from({ length: 12 }, (_, i) => ({
+    mes: `2025-${String(i + 1).padStart(2, '0')}`,
+    instagram: i === 2 ? 8 : null,
+    instagram_con_dato: i === 2 ? 1 : 0,
+    instagram_publicaciones: i === 2 ? 2 : 0,
+    facebook: i === 4 ? 0 : null,
+    facebook_con_dato: i === 4 ? 1 : 0,
+    facebook_publicaciones: i === 4 ? 1 : 0,
+  })),
+}
+
+test('serieAnual keeps the twelve months and real zeros for publications', () => {
+  const serie = serieAnual(ANUAL, 'instagram')
+  assert.equal(serie.length, 12)
+  assert.deepEqual(serie.map((m) => m.total), [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+  assert.equal(serie[2].etiqueta, 'mar')
+  assert.equal(serie[8].nombreMes, 'setiembre')
+})
+
+test('serieAnual tells "no data" apart from zero likes and carries the coverage', () => {
+  const instagram = serieAnual(ANUAL, 'instagram', 'me_gusta')
+  assert.equal(instagram[0].total, null)
+  assert.deepEqual([instagram[2].total, instagram[2].conDato, instagram[2].publicaciones], [8, 1, 2])
+  const facebook = serieAnual(ANUAL, 'facebook', 'me_gusta')
+  assert.equal(facebook[4].total, 0)
+  assert.deepEqual(serieAnual(undefined, 'instagram'), [])
+})
+
+test('indiceMesActual only marks a month when the series is from this year', () => {
+  assert.equal(indiceMesActual(2026, new Date(2026, 9, 17)), 9)
+  assert.equal(indiceMesActual('2025', new Date(2026, 9, 17)), -1)
 })
 
 test('filtrarPublicaciones combines network and state filters', () => {

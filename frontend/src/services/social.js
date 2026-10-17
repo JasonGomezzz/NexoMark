@@ -131,21 +131,38 @@ export function filtrarPublicaciones(lista, { red = 'todas', estado = 'todas' } 
 }
 
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic']
+const MESES_LARGOS = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre',
+]
 
 /**
- * Publicaciones por mes de una red para los últimos `meses` meses, rellenando con 0
- * los meses sin publicaciones (aquí 0 es real: es un conteo propio, no un dato de Meta).
- * @param {{mes: string}[]} porMes filas "YYYY-MM" del resumen
+ * Los 12 meses de un año para una red, a partir de `anual` del resumen de Django.
+ * - `publicaciones`: conteo propio, así que 0 es real.
+ * - `me_gusta`: suma de la última lectura de cada publicación del mes; `null` si
+ *   ninguna tenía el dato (no es 0). Lleva cuántas publicaciones tenían dato.
+ * @param {{ publicaciones_por_mes?: object[], me_gusta_por_mes?: object[] } | undefined} anual
+ * @param {'publicaciones' | 'me_gusta'} medida
  */
-export function serieMensual(porMes, red, hoy = new Date(), meses = 6) {
-  const conteo = Object.fromEntries((porMes ?? []).map((fila) => [fila.mes, fila[red] ?? 0]))
-  const serie = []
-  for (let i = meses - 1; i >= 0; i -= 1) {
-    const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1)
-    const clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`
-    serie.push({ mes: clave, etiqueta: MESES_CORTOS[fecha.getMonth()], total: conteo[clave] ?? 0 })
-  }
-  return serie
+export function serieAnual(anual, red, medida = 'publicaciones') {
+  const filas = (medida === 'me_gusta' ? anual?.me_gusta_por_mes : anual?.publicaciones_por_mes) ?? []
+  return filas.map((fila) => {
+    const indice = Number(fila.mes.slice(5, 7)) - 1
+    const valor = fila[red]
+    return {
+      mes: fila.mes,
+      etiqueta: MESES_CORTOS[indice],
+      nombreMes: MESES_LARGOS[indice],
+      total: medida === 'me_gusta' ? (valor ?? null) : (valor ?? 0),
+      conDato: fila[`${red}_con_dato`] ?? null,
+      publicaciones: fila[`${red}_publicaciones`] ?? null,
+    }
+  })
+}
+
+/** Índice del mes en curso si la serie es del año actual; si no, -1 (ningún mes "actual"). */
+export function indiceMesActual(anio, hoy = new Date()) {
+  return Number(anio) === hoy.getFullYear() ? hoy.getMonth() : -1
 }
 
 /** "hace 5 min", "hace 3 h", "hace 2 días" o la fecha corta. */

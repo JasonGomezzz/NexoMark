@@ -16,8 +16,12 @@ export const socialApi = {
     api
       .get('/api/social/publications/', { params: campaignId ? { campaign: campaignId } : {} })
       .then((r) => r.data.data.publicaciones),
+  /** Historial del dashboard: publicaciones del año (por fecha de publicación o, si no salió, de creación). */
+  publicacionesDelAnio: (anio) =>
+    api.get('/api/social/publications/', { params: { anio } }).then((r) => r.data.data.publicaciones),
   publicar: (id) => api.post(`/api/social/publications/${id}/publish/`),
-  resumen: () => api.get('/api/social/publications/summary/').then((r) => r.data.data),
+  resumen: (anio) =>
+    api.get('/api/social/publications/summary/', { params: anio ? { anio } : {} }).then((r) => r.data.data),
   estadisticas: (id) =>
     api.get(`/api/social/publications/${id}/stats/`, { params: { refresh: 1 } }).then((r) => r.data.data),
   actualizarMetricas: () => api.post('/api/social/publications/refresh/').then((r) => r.data.data),
