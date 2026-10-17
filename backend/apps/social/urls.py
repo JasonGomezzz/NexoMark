@@ -8,11 +8,12 @@ from .views import (
     PublicationViewSet,
     SocialConnectionViewSet,
 )
-from .views_x import XCallbackView, XCompleteView, XConfigView, XConnectView
+from .views_x import VarianteXViewSet, XCallbackView, XCompleteView, XConfigView, XConnectView
 
 router = SimpleRouter()
 router.register(r"connections", SocialConnectionViewSet, basename="social-connection")
 router.register(r"publications", PublicationViewSet, basename="publication")
+router.register(r"x-variants", VarianteXViewSet, basename="x-variant")
 
 urlpatterns = [
     path("meta/connect/", MetaConnectView.as_view(), name="meta-connect"),

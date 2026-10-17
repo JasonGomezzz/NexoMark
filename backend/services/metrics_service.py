@@ -47,6 +47,9 @@ def ultima_metrica(publicacion: Publication) -> PublicationMetric | None:
 
 def refrescar_metricas(publicacion: Publication, forzar: bool = False) -> PublicationMetric:
     """Devuelve la foto más reciente; consulta a Meta solo si la última es vieja."""
+    if publicacion.red == RedSocial.X:
+        # Leer posts en la API de X cuesta (pago por uso): en esta entrega no se consulta.
+        raise MetricasNoDisponibles("Las métricas de X no se leen para no generar costo")
     if publicacion.estado != PublicacionEstado.PUBLICADO:
         raise MetricasNoDisponibles("La publicación todavía no está en la red social.")
     if not publicacion.externo_id:

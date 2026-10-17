@@ -8,6 +8,18 @@ NexoMark — X (Twitter) como red OPCIONAL, apagada por defecto (X_HABILITADO).
     POST   /api/social/x/complete/    {code, state} con JWT: reclama el state, canjea con el code_verifier
                                       y guarda los tokens cifrados
 
+    Versión para X de una campaña aprobada (services/x_publication_service.py):
+    GET    /api/social/x-variants/?campaign=&estado=     según el rol (el cliente no ve borradores)
+    GET    /api/social/x-variants/{id}/
+    POST   /api/social/x-variants/                       {campaign, texto?}: crea o regenera (sin texto
+                                                         la resume la IA; no cobra crédito)
+    PATCH  /api/social/x-variants/{id}/                  {texto}: vuelve a borrador; la campaña no cambia
+    POST   /api/social/x-variants/{id}/enviar/           al cliente (esperando al cliente)
+    POST   /api/social/x-variants/{id}/aprobar/          cliente: {hash_texto} del texto que vio
+    POST   /api/social/x-variants/{id}/rechazar/         cliente: {feedback} (10 a 500 caracteres)
+    POST   /api/social/x-variants/{id}/publicar/         marketero: {conexion, confirmo_costo: true,
+                                                         confirmo_revision?}
+
 Con X apagado todos responden 403 "X está desactivado" salvo config, que
 informa habilitado=false para que la UI no muestre nada de X.
 """
@@ -19,21 +31,25 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import exceptions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.authentication.models import UserRole
+from apps.campaigns.models import Campaign
 from core.exceptions import api_response
 from services import x_api, x_gasto
+from services import x_publication_service as servicio
 from services.social_tokens import TokenIlegible, cifrar
 
 from . import oauth
-from .models import ConexionEstado, ProveedorOAuth, RedSocial, SocialConnection
-from .serializers import SocialConnectionSerializer
+from .models import ConexionEstado, ProveedorOAuth, PublicacionEstado, RedSocial, SocialConnection, VarianteXEstado
+from .serializers import PublicationSerializer, SocialConnectionSerializer, VarianteXSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -232,3 +248,142 @@ def _guardar_conexion_x(usuario, perfil: dict, tokens: x_api.TokensX) -> SocialC
             },
         )
     return conexion
+
+
+def _respuesta_error(exc: servicio.OperacionNoPermitida) -> Response:
+    return Response(api_response(False, exc.mensaje, {"motivo": exc.motivo} if exc.motivo else {}),
+                    status=exc.status)
+
+
+def _entero(valor) -> int | None:
+    if isinstance(valor, bool):
+        return None
+    if isinstance(valor, int):
+        return valor
+    if isinstance(valor, str) and valor.isdecimal():
+        return int(valor)
+    return None
+
+
+class VarianteXViewSet(viewsets.GenericViewSet):
+    """Versión para X: la prepara el marketero, la aprueba el cliente y la publica el marketero."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = VarianteXSerializer
+
+    def initial(self, request: Request, *args, **kwargs) -> None:
+        super().initial(request, *args, **kwargs)
+        if not x_habilitado():
+            raise exceptions.PermissionDenied(MENSAJE_DESACTIVADO)
+
+    def get_queryset(self):
+        return servicio.variantes_visibles(self.request.user)
+
+    def _datos(self, variante, mensaje: str, status_code: int = status.HTTP_200_OK) -> Response:
+        variante.refresh_from_db()
+        return Response(
+            api_response(True, mensaje, {"variante": VarianteXSerializer(variante).data}),
+            status=status_code,
+        )
+
+    def list(self, request: Request) -> Response:
+        qs = self.get_queryset()
+        if "campaign" in request.query_params:
+            campaign_id = _entero(request.query_params.get("campaign"))
+            if campaign_id is None:
+                return Response(api_response(False, "campaign inválido.", {}), status=status.HTTP_400_BAD_REQUEST)
+            qs = qs.filter(campaign_id=campaign_id)
+        estado = request.query_params.get("estado")
+        if estado in VarianteXEstado.values:
+            qs = qs.filter(estado=estado)
+        return Response(api_response(True, "Versiones para X.", {
+            "variantes": VarianteXSerializer(qs[:50], many=True).data,
+        }))
+
+    def retrieve(self, request: Request, pk: str | None = None) -> Response:
+        variante = get_object_or_404(self.get_queryset(), pk=pk)
+        return Response(api_response(True, "Versión para X.", {"variante": VarianteXSerializer(variante).data}))
+
+    def create(self, request: Request) -> Response:
+        campaign_id = request.data.get("campaign")
+        if isinstance(campaign_id, bool) or not isinstance(campaign_id, int):
+            return Response(api_response(False, "Indica la campaña.", {}), status=status.HTTP_400_BAD_REQUEST)
+        texto = request.data.get("texto")
+        if texto is not None and not isinstance(texto, str):
+            return Response(api_response(False, "El texto para X debe ser texto.", {}),
+                            status=status.HTTP_400_BAD_REQUEST)
+        if request.user.rol == UserRole.SUPERADMIN:
+            campaign = get_object_or_404(Campaign, pk=campaign_id)
+        else:
+            campaign = get_object_or_404(Campaign, pk=campaign_id, marketero=request.user)
+        try:
+            variante, creada = servicio.crear_o_regenerar(campaign, request.user, texto)
+        except servicio.OperacionNoPermitida as exc:
+            return _respuesta_error(exc)
+        if texto is not None:
+            mensaje = "Versión para X guardada. Envíala al cliente para que la apruebe."
+        elif variante.generada_por_ia:
+            mensaje = "Resumen para X listo. Revísalo y envíalo al cliente."
+        else:
+            mensaje = "Se preparó un resumen recortado del copy aprobado (sin IA). Revísalo antes de enviarlo."
+        return self._datos(variante, mensaje, status.HTTP_201_CREATED if creada else status.HTTP_200_OK)
+
+    def partial_update(self, request: Request, pk: str | None = None) -> Response:
+        variante = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            variante = servicio.editar(variante, request.user, request.data.get("texto"))
+        except servicio.OperacionNoPermitida as exc:
+            return _respuesta_error(exc)
+        return self._datos(variante, "Versión para X actualizada. Envíala al cliente para que la apruebe.")
+
+    @action(detail=True, methods=["post"], url_path="enviar")
+    def enviar(self, request: Request, pk: str | None = None) -> Response:
+        variante = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            variante = servicio.enviar(variante, request.user)
+        except servicio.OperacionNoPermitida as exc:
+            return _respuesta_error(exc)
+        return self._datos(variante, "Versión para X enviada al cliente.")
+
+    @action(detail=True, methods=["post"], url_path="aprobar")
+    def aprobar(self, request: Request, pk: str | None = None) -> Response:
+        variante = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            variante = servicio.aprobar(variante, request.user, request.data.get("hash_texto"))
+        except servicio.OperacionNoPermitida as exc:
+            return _respuesta_error(exc)
+        return self._datos(variante, "Aprobaste la versión para X.")
+
+    @action(detail=True, methods=["post"], url_path="rechazar")
+    def rechazar(self, request: Request, pk: str | None = None) -> Response:
+        variante = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            variante = servicio.rechazar(variante, request.user, request.data.get("feedback"))
+        except servicio.OperacionNoPermitida as exc:
+            return _respuesta_error(exc)
+        return self._datos(variante, "Rechazaste la versión para X. El marketero verá tu comentario.")
+
+    @action(detail=True, methods=["post"], url_path="publicar")
+    def publicar(self, request: Request, pk: str | None = None) -> Response:
+        variante = get_object_or_404(self.get_queryset(), pk=pk)
+        try:
+            publicacion = servicio.publicar(
+                variante,
+                request.user,
+                request.data.get("conexion"),
+                request.data.get("confirmo_costo"),
+                request.data.get("confirmo_revision", False),
+            )
+        except servicio.OperacionNoPermitida as exc:
+            return _respuesta_error(exc)
+        ok = publicacion.estado == PublicacionEstado.PUBLICADO
+        variante.refresh_from_db()
+        mensaje = f"Publicado en {publicacion.cuenta_nombre}." if ok else (publicacion.error or "No se pudo publicar en X.")
+        return Response(
+            api_response(ok, mensaje, {
+                "publicacion": PublicationSerializer(publicacion).data,
+                "variante": VarianteXSerializer(variante).data,
+                "gasto": x_gasto.estado().como_dict(),
+            }),
+            status=status.HTTP_200_OK if ok else status.HTTP_502_BAD_GATEWAY,
+        )

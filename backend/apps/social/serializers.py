@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from services import public_media
+from services import public_media, x_texto
 
-from .models import Publication, PublicationMetric, SocialConnection
+from .models import Publication, PublicationMetric, RedSocial, SocialConnection, VarianteX
 
 
 class SocialConnectionSerializer(serializers.ModelSerializer):
@@ -63,3 +63,62 @@ class PublicationDetailSerializer(PublicationSerializer):
 
     def get_imagen_url(self, obj: Publication) -> str | None:
         return public_media.url_publica(obj.id) if obj.imagen_aprobada_b64 else None
+
+
+class PublicacionXSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Publication
+        fields = [
+            "id", "cuenta_nombre", "estado", "permalink", "error", "intentos", "resultado_incierto",
+            "publicando_desde", "publicado_at",
+        ]
+        read_only_fields = fields
+
+
+class VarianteXSerializer(serializers.ModelSerializer):
+    """
+    Versión para X. `hash_texto` es el sha256 del texto: el cliente lo devuelve
+    al aprobar para demostrar que aprobó exactamente lo que tenía en pantalla.
+    """
+
+    campaign_titulo = serializers.CharField(source="campaign.titulo", read_only=True)
+    cliente_nombre = serializers.CharField(source="campaign.cliente_nombre", read_only=True)
+    longitud = serializers.SerializerMethodField()
+    limite = serializers.SerializerMethodField()
+    hash_texto = serializers.SerializerMethodField()
+    vigente = serializers.SerializerMethodField()
+    bloqueada = serializers.SerializerMethodField()
+    publicaciones = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VarianteX
+        fields = [
+            "id", "campaign", "campaign_titulo", "cliente_nombre", "texto", "estado", "longitud", "limite",
+            "hash_texto", "generada_por_ia", "feedback_cliente", "version_origen", "vigente", "bloqueada",
+            "enviada_at", "aprobada_at", "fecha_creacion", "fecha_actualizacion", "publicaciones",
+        ]
+        read_only_fields = fields
+
+    def get_longitud(self, obj: VarianteX) -> int:
+        return x_texto.longitud_ponderada(obj.texto)
+
+    def get_limite(self, obj: VarianteX) -> int:
+        return x_texto.MAXIMO
+
+    def get_hash_texto(self, obj: VarianteX) -> str:
+        return x_texto.hash_texto(obj.texto)
+
+    def get_vigente(self, obj: VarianteX) -> bool:
+        """False si el copy o la imagen de la campaña cambiaron desde que se preparó (no debería pasar)."""
+        from services.x_publication_service import hash_campana
+
+        return hash_campana(obj.campaign) == obj.hash_origen
+
+    def get_bloqueada(self, obj: VarianteX) -> bool:
+        from services.x_publication_service import bloqueada
+
+        return bloqueada(obj)
+
+    def get_publicaciones(self, obj: VarianteX):
+        qs = Publication.objects.filter(campaign_id=obj.campaign_id, red=RedSocial.X).order_by("-fecha_creacion")
+        return PublicacionXSerializer(qs, many=True).data
