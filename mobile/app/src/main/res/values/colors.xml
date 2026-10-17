@@ -3,4 +3,6 @@
     <!-- NexoMark (frontend/DESIGN.md): ventana de arranque antes de que dibuje Compose. -->
     <color name="nexo_background">#FFF5FAFA</color>
     <color name="nexo_primary">#FF087B75</color>
+    <!-- Fondo del ícono adaptativo: marino del icono aprobado. -->
+    <color name="ic_launcher_background">#FF14283F</color>
 </resources>

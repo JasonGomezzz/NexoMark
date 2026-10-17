@@ -1,6 +1,7 @@
 package com.marketmind.mobile.ui.login
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,7 +33,6 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -76,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.marketmind.mobile.R
 import kotlinx.coroutines.delay
 
 private val BrandBlue = Color(0xFF4D4AF0)
@@ -215,23 +217,14 @@ fun LoginScreen(
     }
 }
 
+/** Icono aprobado de NexoMark (brand/nexomark-icon-approved-1024.png), sin redibujar. */
 @Composable
 private fun AppLogo() {
-    Surface(
-        modifier = Modifier.size(58.dp),
-        shape = RoundedCornerShape(17.dp),
-        color = BrandBlue,
-        shadowElevation = 12.dp,
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = Icons.Filled.Settings,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(27.dp),
-            )
-        }
-    }
+    Image(
+        painter = painterResource(R.drawable.nexomark_logo),
+        contentDescription = null,
+        modifier = Modifier.size(64.dp),
+    )
 }
 
 @Composable

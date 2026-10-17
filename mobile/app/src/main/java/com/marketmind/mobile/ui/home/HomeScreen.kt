@@ -553,6 +553,13 @@ private fun HomeTopBar(nombre: String?, onAvatarClick: () -> Unit) {
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Image(
+            painter = painterResource(R.drawable.nexomark_logo),
+            contentDescription = null,
+            modifier = Modifier
+                .padding(end = 10.dp)
+                .size(30.dp),
+        )
         Text(
             text = "NexoMark IA",
             color = Color(0xFF252166),
