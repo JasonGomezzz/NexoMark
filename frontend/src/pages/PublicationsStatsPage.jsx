@@ -9,7 +9,7 @@ import PublicationBadge from '../components/social/PublicationBadge'
 import PublicationStatsDrawer from '../components/social/PublicationStatsDrawer'
 import RedIcon from '../components/social/RedIcon'
 import { useAuth } from '../hooks/useAuth'
-import { alcanceDelRol, filtrarPublicaciones, formatoMetrica, metricasDeRed } from '../services/social'
+import { alcanceDelRol, filtrarPublicaciones, formatoMetrica, metricasDeRed, mostrarX } from '../services/social'
 import { socialApi } from '../services/socialApi'
 
 const FILTRO_RED = [
@@ -43,6 +43,7 @@ export default function PublicationsStatsPage() {
   const [red, setRed] = useState('todas')
   const [estado, setEstado] = useState('todas')
   const [anio, setAnio] = useState(() => new Date().getFullYear())
+  const [xConfig, setXConfig] = useState(null)
 
   const abierta = Number(params.get('publicacion')) || null
 
@@ -60,6 +61,18 @@ export default function PublicationsStatsPage() {
       vigente = false
     }
   }, [recarga, anio])
+
+  // X es opcional: si el servidor no responde, simplemente no se muestra.
+  useEffect(() => {
+    let vigente = true
+    socialApi
+      .xConfig()
+      .then((c) => vigente && setXConfig(c))
+      .catch(() => {})
+    return () => {
+      vigente = false
+    }
+  }, [])
 
   async function actualizarMetricas() {
     setActualizando(true)
@@ -92,6 +105,9 @@ export default function PublicationsStatsPage() {
   const cambiandoAnio = Boolean(resumen) && resumen.anual?.anio !== anio
   const anios = resumen?.anual?.anios?.includes(anio) ? resumen.anual.anios : [anio, ...(resumen?.anual?.anios ?? [])]
   const conCliente = rol !== 'cliente'
+  const conX = mostrarX({ xConfig, resumen, publicaciones })
+  const redesPanel = conX ? ['instagram', 'facebook', 'x'] : ['instagram', 'facebook']
+  const filtrosRed = conX ? [...FILTRO_RED, { valor: 'x', texto: 'X' }] : FILTRO_RED
   const conMarketero = rol === 'superadmin'
 
   return (
@@ -150,7 +166,7 @@ export default function PublicationsStatsPage() {
           className={`space-y-8 transition-opacity duration-200 ${cambiandoAnio ? 'opacity-50' : ''}`}
         >
           <section className="grid grid-cols-1 gap-6 xl:grid-cols-2" aria-label={`Resumen por red en ${resumen.anual.anio}`}>
-            {['instagram', 'facebook'].map((r) => (
+            {redesPanel.map((r) => (
               <NetworkPanel
                 key={r}
                 red={r}
@@ -169,7 +185,7 @@ export default function PublicationsStatsPage() {
               </h2>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="flex gap-1 rounded-full border border-outline-variant bg-white p-1" role="group" aria-label="Filtrar por red">
-                  {FILTRO_RED.map((f) => (
+                  {filtrosRed.map((f) => (
                     <button
                       key={f.valor}
                       onClick={() => setRed(f.valor)}
@@ -217,6 +233,7 @@ export default function PublicationsStatsPage() {
                 red={red}
                 conCliente={conCliente}
                 conMarketero={conMarketero}
+                conX={conX}
                 onAbrir={abrir}
               />
             )}
@@ -255,9 +272,10 @@ function LineaDeEstado({ resumen }) {
   )
 }
 
-function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, onAbrir }) {
-  // Facebook llama "reacciones" a lo que Instagram llama "me gusta".
-  const encabezadoMeGusta = red === 'todas' ? 'Me gusta / reacciones' : metricasDeRed(red).principales[0][1]
+function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, conX, onAbrir }) {
+  // Facebook llama "reacciones" a lo que Instagram llama "me gusta"; X no tiene lectura.
+  const encabezadoMeGusta =
+    red === 'todas' || red === 'x' ? 'Me gusta / reacciones' : metricasDeRed(red).principales[0][1]
   return (
     <div>
       <div className="overflow-x-auto rounded-xl border border-outline-variant bg-white shadow-sm">
@@ -279,7 +297,7 @@ function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, onAb
           <tbody>
             {publicaciones.map((p) => {
               const m = p.ultima_metrica
-              const [meGusta] = metricasDeRed(p.red).principales
+              const [meGusta = ['me_gusta', 'Me gusta']] = metricasDeRed(p.red).principales
               return (
                 <tr
                   key={p.id}
@@ -330,7 +348,8 @@ function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, onAb
         </table>
       </div>
       <p className="mt-3 text-xs text-on-surface-variant">
-        — todavía no se leyeron métricas · sin dato: Meta no informa esa cifra
+        — todavía no se leyeron métricas{conX && ' (en X no se leen para no generar costo)'} · sin dato: Meta no
+        informa esa cifra
       </p>
     </div>
   )

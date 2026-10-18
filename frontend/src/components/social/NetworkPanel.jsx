@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import instagramLogo from '@/assets/social/instagram.png'
 import facebookLogo from '@/assets/social/facebook.png'
+import RedIcon from './RedIcon'
 import { etiquetaRed, formatoMetrica, haceCuanto, indiceMesActual, metricasDeRed, serieAnual } from '../../services/social'
 
 const LOGOS = { instagram: instagramLogo, facebook: facebookLogo }
@@ -13,16 +14,22 @@ const LOGOS = { instagram: instagramLogo, facebook: facebookLogo }
  */
 export default function NetworkPanel({ red, datos, anual, anio, puedeConectar }) {
   const nombre = etiquetaRed(red)
-  const { principales, secundarias } = metricasDeRed(red)
+  const { principales, secundarias, sinLectura } = metricasDeRed(red)
   const total = datos?.publicaciones ?? 0
   const mesActual = indiceMesActual(anio)
   const esteAnio = mesActual !== -1
-  const nombreMeGusta = principales[0][1]
+  const nombreMeGusta = principales[0]?.[1]
 
   return (
     <article className="flex flex-col rounded-3xl border border-outline-variant bg-white p-6 shadow-sm sm:p-8">
       <header className="flex items-center gap-4">
-        <img src={LOGOS[red]} alt="" aria-hidden="true" className="h-14 w-14 rounded-2xl shadow-md" />
+        {LOGOS[red] ? (
+          <img src={LOGOS[red]} alt="" aria-hidden="true" className="h-14 w-14 rounded-2xl shadow-md" />
+        ) : (
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-on-surface text-surface shadow-md">
+            <RedIcon red={red} className="h-7 w-7" />
+          </span>
+        )}
         <div className="min-w-0">
           <h2 className="text-2xl font-semibold text-on-surface">{nombre}</h2>
           <p className="text-sm text-on-surface-variant">
@@ -38,7 +45,9 @@ export default function NetworkPanel({ red, datos, anual, anio, puedeConectar })
             <>
               <p className="font-semibold text-on-surface">Aún no hay publicaciones en {nombre} este año</p>
               <p className="mt-1 max-w-sm text-sm text-on-surface-variant">
-                Aparecen aquí cuando el cliente aprueba una campaña que tiene {nombre} como destino.
+                {sinLectura
+                  ? `Aparecen aquí cuando el marketero publica la versión para ${nombre} que aprobó el cliente.`
+                  : `Aparecen aquí cuando el cliente aprueba una campaña que tiene ${nombre} como destino.`}
               </p>
               {puedeConectar && (
                 <Link to="/settings" className="mt-3 text-sm font-semibold text-primary hover:underline">
@@ -50,6 +59,20 @@ export default function NetworkPanel({ red, datos, anual, anio, puedeConectar })
             <p className="font-semibold text-on-surface">No hubo publicaciones en {nombre} en {anio}</p>
           )}
         </div>
+      ) : sinLectura ? (
+        <>
+          <p className="mt-6 rounded-2xl bg-surface-container-low px-5 py-4 text-sm text-on-surface-variant">
+            En {nombre} solo se cuentan las publicaciones: leer sus métricas cuesta en la API de pago por uso,
+            así que NexoMark no las consulta.
+          </p>
+          <BarrasMensuales
+            titulo="Publicaciones por mes"
+            anio={anio}
+            mesActual={mesActual}
+            serie={serieAnual(anual, red, 'publicaciones')}
+            describir={(m) => `${m.total} ${m.total === 1 ? 'publicación' : 'publicaciones'}`}
+          />
+        </>
       ) : (
         <>
           <dl className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))] gap-4">

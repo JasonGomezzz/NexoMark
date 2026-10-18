@@ -13,6 +13,7 @@ import {
   publicacionAtascada,
   puedeReintentar,
   indiceMesActual,
+  mostrarX,
   serieAnual,
   textoCuentasConectadas,
 } from '../src/services/social.js'
@@ -106,6 +107,15 @@ test('serieAnual tells "no data" apart from zero likes and carries the coverage'
   const facebook = serieAnual(ANUAL, 'facebook', 'me_gusta')
   assert.equal(facebook[4].total, 0)
   assert.deepEqual(serieAnual(undefined, 'instagram'), [])
+})
+
+test('mostrarX shows X only when it is enabled or already has publications', () => {
+  assert.equal(mostrarX({ xConfig: { habilitado: false }, resumen: { redes: { x: { publicaciones: 0 } } } }), false)
+  assert.equal(mostrarX({ xConfig: { habilitado: true } }), true)
+  assert.equal(mostrarX({ resumen: { redes: { x: { publicaciones: 2 } } } }), true)
+  assert.equal(mostrarX({ publicaciones: [{ red: 'x' }] }), true)
+  assert.equal(mostrarX(), false)
+  assert.equal(metricasDeRed('x').sinLectura, true)
 })
 
 test('indiceMesActual only marks a month when the series is from this year', () => {

@@ -114,6 +114,8 @@ const METRICAS = {
       ['interacciones', 'Clics'],
     ],
   },
+  // En X no se leen métricas: cada lectura de la API cuesta (pago por uso).
+  x: { principales: [], secundarias: [], sinLectura: true },
 }
 
 export function metricasDeRed(red) {
@@ -136,6 +138,14 @@ const ALCANCE = {
 
 export function alcanceDelRol(rol) {
   return ALCANCE[rol] ?? ALCANCE.cliente
+}
+
+/**
+ * X es opcional: su panel y su filtro aparecen si está encendida en el servidor
+ * o si ya hay publicaciones en X (aunque después se haya apagado).
+ */
+export function mostrarX({ xConfig, resumen, publicaciones = [] } = {}) {
+  return Boolean(xConfig?.habilitado || resumen?.redes?.x?.publicaciones || publicaciones.some((p) => p.red === 'x'))
 }
 
 /** Filtros de la tabla. `estado` acepta 'todas' o un estado de publicación. */
