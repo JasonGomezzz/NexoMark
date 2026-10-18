@@ -1,5 +1,19 @@
 # Historial de documentos — NexoMark
 
+## Borrador v0.12 — 18 de octubre de 2026
+
+- Gemini: confirmado por Jason que la clave es del nivel gratuito (Google AI Studio); se mantiene
+  la advertencia de que Google puede usar el contenido y que hay revisión humana.
+- Regiones confirmadas: Render en Oregón (EE. UU.) y Neon en AWS us-east-1 (Virginia del Norte,
+  EE. UU.), leídas de la configuración de Render el 18/10. Se quita el aviso de pendiente.
+- X descrita tal como quedó en `remejora` (17/10): opcional y desactivada por defecto, permisos
+  OAuth reales, versión breve sin enlaces aprobada por el cliente con verificación por hash,
+  confirmación de costo y tope mensual, sin lectura de métricas. X Corp. añadida a proveedores.
+- Meta: la configuración de inicio de sesión pide ahora 9 permisos (se suman `read_insights` y
+  `pages_read_user_content` para las estadísticas de Facebook), igual que `META_OAUTH_SCOPES`.
+- Términos: misma descripción de X. Eliminación de datos sin cambios (sigue en v0.11).
+- Sigue siendo borrador: falta que Jason y Piero aprueben el texto y los nombres.
+
 ## Borrador v0.11 — 16 de octubre de 2026
 
 - Privacidad y términos reescritos para describir la rama `remejora` (código revisado el 16/10),
