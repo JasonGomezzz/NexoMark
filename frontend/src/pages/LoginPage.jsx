@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
@@ -18,6 +18,7 @@ import BrandLogo from '@/components/BrandLogo'
 export default function LoginPage() {
   const { login, loading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [showPassword, setShowPassword] = useState(false)
   const brandContent = useAuthBrandContent('login')
 
@@ -76,6 +77,7 @@ export default function LoginPage() {
               </p>
             </div>
 
+            {typeof location.state?.securityNotice === 'string' && <p role="status" className="rounded-lg bg-surface-container-low p-4 text-sm text-on-surface">{location.state.securityNotice}</p>}
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
               <div className="space-y-1.5">
                 <label

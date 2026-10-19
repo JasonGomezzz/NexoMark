@@ -1,5 +1,6 @@
-import { setAuthItem } from '@/lib/authStorage'
+import { clearAuthSession, setAuthItem } from '@/lib/authStorage'
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
 import {
@@ -39,6 +40,7 @@ const ROLE_LABEL = {
 const QUOTA_DEFAULT = 100 // tokens_disponibles default del modelo User
 
 export default function AccountSettingsPage() {
+  const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -55,7 +57,21 @@ export default function AccountSettingsPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingPassword, setSavingPassword] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordRetryUntil, setPasswordRetryUntil] = useState(0)
+  const [passwordNow, setPasswordNow] = useState(() => Date.now())
+  const passwordRequest = useRef(false)
   const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    if (!passwordRetryUntil) return
+    const timer = setInterval(() => {
+      const now = Date.now()
+      setPasswordNow(now)
+      if (now >= passwordRetryUntil) clearInterval(timer)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [passwordRetryUntil])
 
   useEffect(() => {
     let cancelled = false
@@ -112,25 +128,43 @@ export default function AccountSettingsPage() {
 
   async function handleChangePassword(e) {
     e.preventDefault()
+    if (passwordRequest.current || savingPassword || Date.now() < passwordRetryUntil) return
+    setPasswordError('')
     if (newPassword !== confirmPassword) {
-      toast.error('La confirmación no coincide con la nueva contraseña.')
+      setPasswordError('La confirmación no coincide con la nueva contraseña.')
       return
     }
+    if (newPassword === currentPassword) {
+      setPasswordError('La nueva contraseña debe ser diferente a la actual.')
+      return
+    }
+    passwordRequest.current = true
     setSavingPassword(true)
     try {
-      await api.post('/api/auth/me/change-password/', {
+      const { data } = await api.post('/api/auth/me/change-password/', {
         current_password: currentPassword,
         new_password: newPassword,
       })
-      toast.success('Contraseña actualizada')
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
+      clearAuthSession()
+      navigate('/login', { replace: true, state: { securityNotice: data.message } })
     } catch (err) {
       const data = err.response?.data?.data
-      const fieldError = data?.current_password?.[0] || data?.new_password?.[0]
-      toast.error(fieldError || err.response?.data?.message || 'No se pudo cambiar la contraseña')
+      const errors = data?.errors || data
+      const fieldError = errors?.current_password?.[0] || errors?.new_password?.[0]
+      setPasswordError(fieldError || err.response?.data?.message || 'No se pudo confirmar el cambio. Si perdiste la conexión, intenta ingresar con la nueva contraseña antes de reintentar.')
+      if (err.response?.status === 429) {
+        const seconds = Number(data?.retry_after || err.response.headers?.['retry-after'] || 60)
+        setPasswordNow(Date.now())
+        setPasswordRetryUntil(Date.now() + seconds * 1000)
+      }
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
     } finally {
+      passwordRequest.current = false
       setSavingPassword(false)
     }
   }
@@ -167,7 +201,8 @@ export default function AccountSettingsPage() {
   const pct = Math.min(100, Math.round((tokens / QUOTA_DEFAULT) * 100))
   const profileEdit = profileEditState({ draft: nombre, saved: user.nombre, editing: editingProfile, saving: savingProfile })
   const passwordValido =
-    currentPassword.length > 0 && newPassword.length >= 8 && confirmPassword.length > 0
+    currentPassword.length > 0 && newPassword.length >= 8 && newPassword === confirmPassword && newPassword !== currentPassword
+  const passwordWait = Math.max(0, Math.ceil((passwordRetryUntil - passwordNow) / 1000))
 
   const inputCls =
     'w-full rounded-lg border border-outline-variant px-3 py-2.5 text-sm text-on-surface outline-none transition placeholder:text-outline focus:border-transparent focus:ring-2 focus:ring-primary'
@@ -279,10 +314,10 @@ export default function AccountSettingsPage() {
             Seguridad
           </h2>
           <p className="mb-5 text-sm text-on-surface-variant">
-            Cambia tu contraseña. Necesitas la actual para confirmar.
+            Confirma tu contraseña actual y escribe la nueva dos veces. Al guardar se cerrarán tus sesiones, volverás al inicio de sesión y enviaremos un aviso a tu correo.
           </p>
 
-          <form onSubmit={handleChangePassword} className="space-y-4">
+          <form onSubmit={handleChangePassword} aria-busy={savingPassword} className="space-y-4">
             <label className="block sm:max-w-sm">
               <span className="mb-1.5 block text-sm font-medium text-on-surface">
                 Contraseña actual
@@ -292,6 +327,8 @@ export default function AccountSettingsPage() {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 autoComplete="current-password"
+                maxLength={128}
+                disabled={savingPassword}
                 required
                 className={inputCls}
               />
@@ -306,6 +343,8 @@ export default function AccountSettingsPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoComplete="new-password"
+                  maxLength={128}
+                  disabled={savingPassword}
                   minLength={8}
                   required
                   className={inputCls}
@@ -321,14 +360,18 @@ export default function AccountSettingsPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
+                  maxLength={128}
+                  disabled={savingPassword}
                   required
                   className={inputCls}
                 />
               </label>
             </div>
+            {confirmPassword && newPassword !== confirmPassword && <p role="status" className="text-sm text-error">Las contraseñas no coinciden.</p>}
+            {passwordError && <p role="alert" className="text-sm text-error">{passwordError}</p>}
             <div className="flex justify-end">
-              <Button type="submit" variant="outline" disabled={!passwordValido || savingPassword}>
-                {savingPassword ? 'Actualizando…' : 'Actualizar contraseña'}
+              <Button type="submit" variant="outline" disabled={!passwordValido || savingPassword || passwordWait > 0}>
+                {savingPassword ? 'Actualizando…' : passwordWait > 0 ? `Espera ${passwordWait} s` : 'Actualizar contraseña'}
               </Button>
             </div>
           </form>

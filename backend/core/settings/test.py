@@ -7,6 +7,7 @@ Uso: DJANGO_SETTINGS_MODULE=core.settings.test (configurado en pytest.ini)
 from .base import *  # noqa: F401, F403
 
 DEBUG = False
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 # ── DB in-memory para velocidad y aislamiento ──
 DATABASES = {

@@ -24,6 +24,8 @@ from .serializers import (
 )
 from .models import AuthBrandContent
 from .throttles import RegisterRateThrottle
+from .password_reset import RecoveryAPIView
+from .password_security import PasswordChangeThrottle, notify_password_changed
 
 
 class RegisterView(APIView):
@@ -183,16 +185,21 @@ class MeView(APIView):
         )
 
 
-class ChangePasswordView(APIView):
+class ChangePasswordView(RecoveryAPIView):
     """
     POST /api/auth/me/change-password/
 
     Cambia la contraseña del propio usuario. Exige la contraseña actual.
-    No invalida la sesión activa (token_version no cambia): el usuario
-    sigue logueado tras el cambio.
+    Invalida todos los JWT anteriores y avisa al correo registrado.
     """
 
     permission_classes = [IsAuthenticated]
+    throttle_classes = [PasswordChangeThrottle]
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        response['Cache-Control'] = 'no-store'
+        return response
 
     def post(self, request: Request) -> Response:
         """
@@ -210,9 +217,13 @@ class ChangePasswordView(APIView):
                 api_response(success=False, message="Datos inválidos.", data=serializer.errors),
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer.save()
+        user = serializer.save()
+        notified = notify_password_changed(user.email)
+        message = 'Contraseña actualizada. Se cerraron las sesiones anteriores. Inicia sesión con tu nueva contraseña.'
+        if not notified:
+            message += ' No se pudo enviar el aviso por correo; la contraseña sí se cambió.'
         return Response(
-            api_response(success=True, message="Contraseña actualizada.", data={}),
+            api_response(success=True, message=message, data={'notification_sent': notified, 'reauthentication_required': True}),
             status=status.HTTP_200_OK,
         )
 
