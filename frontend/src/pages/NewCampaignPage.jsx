@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { ArrowLeft, Sparkles, Lightbulb } from 'lucide-react'
+import { ArrowLeft, Bot, Sparkles, Lightbulb } from 'lucide-react'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
@@ -406,7 +406,7 @@ export default function NewCampaignPage() {
             )}
 
             <Button type="submit" size="lg" disabled={submitting} className="w-full">
-              <Sparkles className="h-5 w-5" />
+              <Bot aria-hidden="true" className="h-5 w-5" />
               {submitting ? 'Generando con IA…' : 'Generar campaña con IA'}
             </Button>
           </form>
@@ -478,7 +478,7 @@ function EmptyResultPanel() {
   return (
     <div className="flex min-h-[420px] flex-col items-center justify-center rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-8 text-center">
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Sparkles className="h-7 w-7" />
+        <Bot aria-hidden="true" className="h-7 w-7" />
       </div>
       <p className="text-sm font-medium text-on-surface">El resultado de la IA aparecerá aquí</p>
       <p className="mt-1 text-xs text-on-surface-variant">
