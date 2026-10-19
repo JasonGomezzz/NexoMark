@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
 import { ArrowLeft, Eye, EyeOff, Zap, ShieldCheck, Sparkles } from 'lucide-react'
@@ -9,11 +9,13 @@ import { Button } from '@/components/ui/button'
 import AuthBrandPanel from '@/components/auth/AuthBrandPanel'
 import { useAuthBrandContent } from '../hooks/useAuthBrandContent'
 import BrandLogo from '@/components/BrandLogo'
+import GoogleSignIn from '@/components/auth/GoogleSignIn'
+import { startAuthSession, setAuthItem } from '@/lib/authStorage'
 
 /**
  * Login rediseñado (sistema Lumina Creative). Split: formulario + panel de marca.
  * LÓGICA INTACTA: useForm + useAuth().login → shape plano JWT → /dashboard.
- * Sin OAuth social (el backend solo emite JWT).
+ * Google Identity Services ofrece acceso alternativo; Django valida y emite JWT propios.
  */
 export default function LoginPage() {
   const { login, loading } = useAuth()
@@ -25,8 +27,15 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm()
+
+  const finishGoogle = useCallback(data => {
+    startAuthSession(data, Boolean(getValues('remember')))
+    setAuthItem('user_email', data.email)
+    navigate('/dashboard', { replace: true })
+  }, [getValues, navigate])
 
   async function onSubmit({ email, password, remember }) {
     const result = await login(email, password, remember)
@@ -161,6 +170,8 @@ export default function LoginPage() {
               </Button>
             </form>
 
+            <div className="flex items-center gap-3 text-xs text-on-surface-variant"><span className="h-px flex-1 bg-outline-variant" />o continúa con<span className="h-px flex-1 bg-outline-variant" /></div>
+            <GoogleSignIn onSuccess={finishGoogle} />
             <p className="text-center text-base text-on-surface-variant">
               ¿No tienes una cuenta?{' '}
               <Link to="/register" className="font-semibold text-primary hover:underline">

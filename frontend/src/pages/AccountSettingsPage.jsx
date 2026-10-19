@@ -1,6 +1,6 @@
 import { clearAuthSession, setAuthItem } from '@/lib/authStorage'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
 import {
@@ -19,6 +19,7 @@ import { useTheme } from '../hooks/useTheme'
 import { profileEditState } from '@/lib/profileEditing'
 import EmailChangeSettings from '@/components/EmailChangeSettings'
 import ProfileAvatar from '@/components/ProfileAvatar'
+import GoogleAccountSettings from '@/components/GoogleAccountSettings'
 import { profilePhotoError } from '@/lib/profilePhoto'
 import InstagramAccounts from '../components/InstagramAccounts'
 import FacebookPages from '../components/FacebookPages'
@@ -331,7 +332,8 @@ export default function AccountSettingsPage() {
           </form>
         </section>
 
-        <EmailChangeSettings currentEmail={user.email} />
+        <GoogleAccountSettings user={user} />
+        {user.has_password !== false ? <EmailChangeSettings currentEmail={user.email} /> : <section className="rounded-xl bg-white p-6 shadow-sm"><h2 className="text-xl font-semibold text-on-surface">Correo de acceso</h2><p className="mt-2 text-sm text-on-surface-variant">Para cambiar el correo de una cuenta creada con Google, primero <Link to="/forgot-password" className="text-primary underline">crea una contraseña de NexoMark mediante el enlace de recuperación</Link>.</p></section>}
 
         {user.rol === 'marketero' && (
           <section aria-labelledby="social-connections-heading" className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
@@ -356,7 +358,7 @@ export default function AccountSettingsPage() {
             Confirma tu contraseña actual y escribe la nueva dos veces. Al guardar se cerrarán tus sesiones, volverás al inicio de sesión y enviaremos un aviso a tu correo.
           </p>
 
-          <form onSubmit={handleChangePassword} aria-busy={savingPassword} className="space-y-4">
+          {user.has_password === false ? <p className="text-sm text-on-surface-variant">Tu cuenta todavía no tiene contraseña local. <Link to="/forgot-password" className="text-primary underline">Crea una contraseña con el enlace que enviaremos a tu correo</Link>. No utilices tu contraseña de Google aquí.</p> : <form onSubmit={handleChangePassword} aria-busy={savingPassword} className="space-y-4">
             <label className="block sm:max-w-sm">
               <span className="mb-1.5 block text-sm font-medium text-on-surface">
                 Contraseña actual
@@ -413,7 +415,7 @@ export default function AccountSettingsPage() {
                 {savingPassword ? 'Actualizando…' : passwordWait > 0 ? `Espera ${passwordWait} s` : 'Actualizar contraseña'}
               </Button>
             </div>
-          </form>
+          </form>}
         </section>
 
         {/* Apariencia */}

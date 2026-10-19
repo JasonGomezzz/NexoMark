@@ -11,12 +11,17 @@ from .token_views import CustomTokenObtainPairView
 from .password_reset import PasswordResetRequestView, PasswordResetConfirmView
 from .email_change import EmailChangeView, EmailChangeConfirmView
 from .profile_avatar import MyAvatarView
+from .google_login import GoogleConfigView, GoogleChallengeView, GoogleCompleteView, GoogleDisconnectView
 from .instagram import InstagramAccountsView, InstagramConnectView, InstagramCompleteView, InstagramDisconnectView
 from .facebook import FacebookPagesView, FacebookConnectView, FacebookCompleteView, FacebookDisconnectView, FacebookCallbackRelayView
 from .x_oauth import XAccountsView, XConnectView, XDisconnectView, XCallbackView
 from .tiktok import TikTokAccountsView, TikTokConnectView, TikTokCompleteView, TikTokDisconnectView, TikTokCallbackView
 
 urlpatterns = [
+    path('google/config/', GoogleConfigView.as_view()),
+    path('google/challenge/', GoogleChallengeView.as_view()),
+    path('google/complete/', GoogleCompleteView.as_view()),
+    path('google/disconnect/', GoogleDisconnectView.as_view()),
     path('me/avatar/', MyAvatarView.as_view(), name='auth-avatar'),
     path('me/change-email/', EmailChangeView.as_view(), name='auth-change-email'),
     path('email-change/confirm/', EmailChangeConfirmView.as_view(), name='auth-change-email-confirm'),

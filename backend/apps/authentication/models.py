@@ -8,6 +8,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+import uuid
 
 
 class CreditRequest(models.Model):
@@ -147,6 +148,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Small normalized JPEG, served only by the authenticated /me/avatar/ endpoint.
     # No public media URL or original upload is retained.
     avatar = models.BinaryField(null=True, blank=True, editable=False)
+    google_subject = models.CharField(max_length=255, unique=True, null=True, blank=True, editable=False)
 
     # ── Rol ─────────────────────────────────────────────────
     rol = models.CharField(
@@ -228,6 +230,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_cliente(self) -> bool:
         """Verifica si el usuario tiene rol cliente."""
         return self.rol == UserRole.CLIENTE
+
+
+class GoogleLoginTicket(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nonce_hash = models.CharField(max_length=64)
+    proof_hash = models.CharField(max_length=64)
+    purpose = models.CharField(max_length=10)
+    role = models.CharField(max_length=20, blank=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
 
 
 class EmailChangeRequest(models.Model):

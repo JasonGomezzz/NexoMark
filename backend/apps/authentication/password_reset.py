@@ -52,7 +52,7 @@ class PasswordResetRequestView(RecoveryAPIView):
         serializer = RecoveryRequest(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = get_user_model().objects.filter(email__iexact=serializer.validated_data['email'], is_active=True).first()
-        if user and user.has_usable_password():
+        if user and (user.has_usable_password() or user.google_subject):
             params = urlencode({'uid': urlsafe_base64_encode(force_bytes(user.pk)), 'token': default_token_generator.make_token(user)})
             # Fragmento: no expone el token en logs HTTP ni Referer.
             url = f"{settings.FRONTEND_BASE_URL.rstrip('/')}/reset-password#{params}"

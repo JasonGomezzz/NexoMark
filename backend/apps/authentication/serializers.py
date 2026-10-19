@@ -251,13 +251,21 @@ class UserResponseSerializer(serializers.ModelSerializer):
     """
 
     has_avatar = serializers.SerializerMethodField()
+    has_password = serializers.SerializerMethodField()
+    google_connected = serializers.SerializerMethodField()
 
     def get_has_avatar(self, obj):
         return bool(obj.avatar)
 
+    def get_has_password(self, obj):
+        return obj.has_usable_password()
+
+    def get_google_connected(self, obj):
+        return bool(obj.google_subject)
+
     class Meta:
         model = User
-        fields = ["id", "email", "nombre", "rol", "is_active", "fecha_creacion", "tokens_disponibles", "has_avatar"]
+        fields = ["id", "email", "nombre", "rol", "is_active", "fecha_creacion", "tokens_disponibles", "has_avatar", "has_password", "google_connected"]
         read_only_fields = fields
 
 

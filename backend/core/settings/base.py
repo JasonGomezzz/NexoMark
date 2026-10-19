@@ -274,6 +274,7 @@ RESEND_API_KEY = config("RESEND_API_KEY", default="")
 RESEND_FROM_EMAIL = config("RESEND_FROM_EMAIL", default="noreply@marketmind.ai")
 
 FRONTEND_BASE_URL = config('FRONTEND_BASE_URL', default='http://localhost:5173')
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
 INSTAGRAM_APP_ID = config('INSTAGRAM_APP_ID', default='')
 INSTAGRAM_APP_SECRET = config('INSTAGRAM_APP_SECRET', default='')
 INSTAGRAM_REDIRECT_URI = config('INSTAGRAM_REDIRECT_URI', default='')

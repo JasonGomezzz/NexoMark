@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useNavigate, Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
 import { ArrowLeft, Eye, EyeOff, Rocket, Users, Sparkles } from 'lucide-react'
@@ -10,11 +10,13 @@ import AuthBrandPanel from '@/components/auth/AuthBrandPanel'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthBrandContent } from '../hooks/useAuthBrandContent'
 import BrandLogo from '@/components/BrandLogo'
+import GoogleSignIn from '@/components/auth/GoogleSignIn'
+import { startAuthSession, setAuthItem } from '@/lib/authStorage'
 
 /**
  * Registro rediseñado (sistema Lumina Creative). Mismo split que Login.
  * Consume el endpoint real POST /api/auth/register/ con {email, nombre, password, rol}.
- * Sin OAuth. Roles ofrecidos: marketero (crea campañas) y cliente (revisa/aprueba).
+ * Google es alternativa al registro local, con los mismos roles públicos: marketero y cliente.
  */
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -33,6 +35,11 @@ export default function RegisterPage() {
   // Estado local en vez de watch(): mismo comportamiento y el React Compiler
   // puede optimizar el componente (watch usa mutabilidad interior).
   const [rolSel, setRolSel] = useState('marketero')
+  const finishGoogle = useCallback(data => {
+    startAuthSession(data, false)
+    setAuthItem('user_email', data.email)
+    navigate('/dashboard', { replace: true })
+  }, [navigate])
 
   async function onSubmit({ nombre, email, password, rol }) {
     setLoading(true)
@@ -205,6 +212,9 @@ export default function RegisterPage() {
               </Button>
             </form>
 
+            <div className="flex items-center gap-3 text-xs text-on-surface-variant"><span className="h-px flex-1 bg-outline-variant" />o regístrate con<span className="h-px flex-1 bg-outline-variant" /></div>
+            <p className="text-xs text-on-surface-variant">Para Google se usará el rol seleccionado arriba: {rolSel === 'marketero' ? 'Marketero' : 'Cliente'}. Si ya tienes cuenta, conservarás tu rol actual.</p>
+            <GoogleSignIn key={rolSel} purpose="register" role={rolSel} onSuccess={finishGoogle} />
             <p className="text-center text-base text-on-surface-variant">
               ¿Ya tienes una cuenta?{' '}
               <Link to="/login" className="font-semibold text-primary hover:underline">
