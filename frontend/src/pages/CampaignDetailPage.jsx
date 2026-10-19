@@ -27,13 +27,12 @@ const PLATFORM_LABELS = {
   facebook: 'Facebook',
   twitter: 'Twitter / X',
   linkedin: 'LinkedIn (retirada)',
-  google_ads: 'Google Ads',
+  google_ads: 'Google Ads (retirada)',
   tiktok: 'TikTok',
 }
 
 const PLATFORM_PUBLISH_URLS = {
   instagram: () => 'https://www.instagram.com/',
-  google_ads: () => 'https://ads.google.com/aw/campaigns/new',
 }
 
 function wordCount(text) {
@@ -608,11 +607,11 @@ export default function CampaignDetailPage() {
                 )}
                 <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
                   Instagram, Facebook y X muestran la imagen y el texto aprobado para elegir el destino y confirmar la publicación.
-                  TikTok envía un borrador que debes terminar de publicar en su app. Google Ads requiere completar la publicación manualmente.
+                  TikTok envía un borrador que debes terminar de publicar en su app.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                {(campaign.plataformas?.length ? campaign.plataformas : [campaign.plataforma]).filter((platform) => platform !== 'linkedin').map(
+                {(campaign.plataformas?.length ? campaign.plataformas : [campaign.plataforma]).filter((platform) => !['linkedin', 'google_ads'].includes(platform)).map(
                   (platform) => (
                     <Button
                       key={platform}

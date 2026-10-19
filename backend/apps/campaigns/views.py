@@ -294,6 +294,9 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        if 'google_ads' in platforms(campaign):
+            return Response(api_response(False, 'Google Ads se ha retirado del proyecto.'), status=400)
+
         if request.user.tokens_disponibles <= 0:
             return Response(
                 api_response(
@@ -367,6 +370,9 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 ),
                 status=status.HTTP_409_CONFLICT,
             )
+
+        if 'google_ads' in platforms(campaign):
+            return Response(api_response(False, 'Google Ads se ha retirado del proyecto.'), status=400)
 
         if campaign.estado == CampaignStatus.RECHAZADO and campaign.rechazos_cliente_count >= 2:
             return Response(

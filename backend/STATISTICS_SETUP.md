@@ -14,7 +14,7 @@ como se explica debajo, sin usar cifras simuladas del esquema como datos reales.
 ## Implementado
 
 - Dashboard y detalle de campaña de marketero: bloques Facebook, Instagram, X y TikTok.
-  Google Ads se distingue como anuncios todavía no integrados, sin métricas orgánicas ficticias.
+  Google Ads se retiró del alcance el 18 de octubre de 2026: no aparece en estadísticas ni como canal nuevo.
 - Cuentan publicaciones `published` y posts TikTok existentes vinculados expresamente
   por el propietario tras validación Display API, incluyendo versiones anteriores. Envíos
   pendientes sin vinculación se muestran aparte. No se infiere publicación por similitud.
@@ -157,7 +157,7 @@ tras confirmación expresa del propietario y validación de la API. La medición
 en esa prueba final mostró 2 likes, 0 compartidos y 310 vistas; dashboard confirmó
 1 publicación y likes octubre=2. El envío original sigue inbox, sin receipt de publicación;
 el vínculo se identifica como user_confirmed_display_api, no como webhook recibido.
-Google Ads se deja para después por decisión del usuario. Pantallas cliente,
+Google Ads se descartó del proyecto por decisión del usuario. Pantallas cliente,
 móvil y mediciones programadas pendientes. No habilitar permisos Insights ni revisión de apps
 sin revisar requisitos oficiales y autorización del usuario.
 
@@ -166,4 +166,5 @@ publicar la funcionalidad. Obsidian/backups/.env y el allowance local no se sube
 Facebook likes, Instagram likes, X y esta publicación TikTok tienen mediciones reales.
 Todavía no afirmar que TODOS los contadores de TODAS las plataformas están completos:
 faltan Insights IG, vistas/compartidos Facebook cuando el proveedor no los devuelva,
-pantallas cliente/móvil y actualización programada. Google Ads sigue pospuesto.
+pantallas cliente/móvil y actualización programada. Google Ads no forma parte del alcance;
+sus identificadores históricos se conservan sin habilitar nuevas selecciones ni preparar anuncios.

@@ -32,12 +32,6 @@ export default function PlatformIcon({ platform, className = '' }) {
         <circle cx="6.4" cy="6.4" r="1.7" fill="white" />
         <path fill="white" d="M4.9 9.3h3V19h-3zM10.1 9.3H13v1.3c.6-1 1.6-1.6 3-1.6 3 0 3.6 2 3.6 4.6V19h-3v-4.8c0-1.2 0-2.7-1.7-2.7s-1.9 1.3-1.9 2.6V19h-2.9z" />
       </svg>
-    case 'google_ads':
-      return <svg {...common}>
-        <path d="M11.8 5 4.7 17.3" stroke="#FBBC04" strokeWidth="7" strokeLinecap="round" />
-        <path d="m12.2 5 7.1 12.3" stroke="#4285F4" strokeWidth="7" strokeLinecap="round" />
-        <circle cx="4.7" cy="17.3" r="3.5" fill="#34A853" />
-      </svg>
     case 'tiktok':
       return <svg {...common}>
         <path d="M14 3h3c.3 2.4 1.7 3.8 4 4v3c-1.5 0-2.9-.4-4-1.2v7.4a5.8 5.8 0 1 1-5.8-5.8v3a2.8 2.8 0 1 0 2.8 2.8V3Z" fill="#25F4EE" transform="translate(-.6 -.5)" />

@@ -27,7 +27,8 @@ const PLATAFORMA_LABELS = {
   facebook: 'Facebook',
   twitter: 'Twitter / X',
   linkedin: 'LinkedIn (retirada)',
-  google_ads: 'Google Ads',
+  google_ads: 'Google Ads (retirada)',
+  tiktok: 'TikTok',
 }
 
 const PERIODS = [

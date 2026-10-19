@@ -147,7 +147,7 @@ export default function ClientCampaignsPage() {
           className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
         >
           <option value="">Plataforma</option>
-          {['instagram', 'facebook', 'twitter', 'google_ads', 'tiktok'].map((item) => (
+          {['instagram', 'facebook', 'twitter', 'tiktok'].map((item) => (
             <option key={item} value={item}>{item}</option>
           ))}
         </select>

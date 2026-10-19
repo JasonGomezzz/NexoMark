@@ -143,6 +143,10 @@ class CampaignSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"plataformas": "LinkedIn ya no está disponible para nuevas campañas."}
             )
+        if plataforma_legacy == CampaignPlataforma.GOOGLE_ADS or CampaignPlataforma.GOOGLE_ADS in (plataformas or []):
+            raise serializers.ValidationError(
+                {"plataformas": "Google Ads se ha retirado del proyecto y no está disponible para nuevas campañas."}
+            )
         if not plataformas and plataforma_legacy:
             plataformas = [plataforma_legacy]
         if not plataformas:

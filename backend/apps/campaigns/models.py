@@ -25,7 +25,10 @@ class CampaignTono(models.TextChoices):
 
 
 class CampaignPlataforma(models.TextChoices):
-    """Plataformas de publicación soportadas."""
+    """Platform identifiers, including retired choices retained for historical records.
+
+    LinkedIn and Google Ads are not available for new campaigns.
+    """
     INSTAGRAM = "instagram", "Instagram"
     FACEBOOK = "facebook", "Facebook"
     TWITTER = "twitter", "Twitter / X"

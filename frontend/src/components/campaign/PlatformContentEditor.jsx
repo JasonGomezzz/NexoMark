@@ -5,14 +5,15 @@ import { getPlatformCopy } from '../../services/campaignPublication'
 import { Button } from '../ui/button'
 import PlatformIcon from './PlatformIcon'
 
-const LABELS = { instagram: 'Instagram', facebook: 'Facebook', twitter: 'Twitter / X', linkedin: 'LinkedIn (retirada)', google_ads: 'Google Ads', tiktok: 'TikTok' }
+const LABELS = { instagram: 'Instagram', facebook: 'Facebook', twitter: 'Twitter / X', linkedin: 'LinkedIn (retirada)', google_ads: 'Google Ads (retirada)', tiktok: 'TikTok' }
 
 export default function PlatformContentEditor({ campaign, onSaved, onDirty, onPrepareX, disabled = false }) {
   const platforms = campaign.plataformas?.length ? campaign.plataformas : [campaign.plataforma]
   const [copies, setCopies] = useState(() => Object.fromEntries(platforms.map(p => [p, getPlatformCopy(campaign, p)])))
   const [busy, setBusy] = useState(false)
   const [validation, setValidation] = useState(null)
-  const editable = ['borrador', 'generado', 'rechazado'].includes(campaign.estado)
+  const hasRetiredAds = platforms.includes('google_ads')
+  const editable = !hasRetiredAds && ['borrador', 'generado', 'rechazado'].includes(campaign.estado)
   const dirty = platforms.some(p => copies[p] !== getPlatformCopy(campaign, p))
   useEffect(() => { onDirty(dirty) }, [dirty, onDirty])
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function PlatformContentEditor({ campaign, onSaved, onDirty, onPr
   return <section className="mb-4 rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
     <h2 className="font-semibold">Contenido por plataforma</h2>
     <p className="my-2 text-sm text-on-surface-variant">Cada red usa su propio texto y la imagen compartida. El cliente aprueba todas las versiones juntas.</p>
+    {hasRetiredAds && <p className="my-2 text-sm">Google Ads se retiró del proyecto. Estas versiones históricas se conservan solo para consulta.</p>}
     {!Object.keys(campaign.textos_por_plataforma || {}).length && <p className="my-2 text-sm">Campaña anterior: se conserva el texto original. Puedes generar versiones específicas antes de solicitar una nueva aprobación.</p>}
     {platforms.map(platform => <div key={platform} className="my-4">
       <label htmlFor={`copy-${platform}`} className="mb-2 flex items-center gap-2 font-medium"><PlatformIcon platform={platform} className="h-5 w-5" />{LABELS[platform]}</label>
@@ -57,7 +59,7 @@ export default function PlatformContentEditor({ campaign, onSaved, onDirty, onPr
     </div>)}
     <div className="flex flex-wrap gap-2">
       {editable && <Button disabled={busy || disabled || !dirty} onClick={() => change('save')}>{busy ? 'Procesando…' : 'Guardar versiones'}</Button>}
-      {campaign.estado === 'generado' && <Button variant="outline" disabled={busy || disabled} onClick={() => change('adapt-platforms')}>Generar versiones con IA</Button>}
+      {campaign.estado === 'generado' && !hasRetiredAds && <Button variant="outline" disabled={busy || disabled} onClick={() => change('adapt-platforms')}>Generar versiones con IA</Button>}
       {campaign.estado === 'aprobado' && <Button variant="outline" disabled={busy} onClick={() => change('reopen-review')}>Abrir nueva revisión</Button>}
       {campaign.estado === 'aprobado' && platforms.includes('twitter') && onPrepareX && <Button onClick={onPrepareX}>Resumir para X</Button>}
     </div>

@@ -2,7 +2,7 @@ import PlatformIcon from './PlatformIcon'
 
 const LABELS = {
   instagram: 'Instagram', facebook: 'Facebook', twitter: 'Twitter / X',
-  linkedin: 'LinkedIn (retirada)', google_ads: 'Google Ads', tiktok: 'TikTok',
+  linkedin: 'LinkedIn (retirada)', google_ads: 'Google Ads (retirada)', tiktok: 'TikTok',
 }
 
 export default function CampaignPlatforms({ campaign }) {

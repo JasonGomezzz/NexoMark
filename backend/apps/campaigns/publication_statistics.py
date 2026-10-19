@@ -26,7 +26,7 @@ from .tiktok_post_ids import effective_public_post_ids
 
 MODELS = {'facebook': FacebookPublication, 'instagram': InstagramPublication,
           'twitter': XPublication, 'tiktok': TikTokUpload}
-PLATFORMS = (*MODELS, 'google_ads')
+PLATFORMS = tuple(MODELS)
 METRICS = ('likes', 'comments', 'shares', 'views')
 
 
@@ -215,7 +215,7 @@ class PublicationStatisticsView(APIView):
                      'Vistas y compartidos de Instagram requieren integración Insights adicional. '
                      'X: reposts (sin citas) e impresiones; consultas con presupuesto limitado. '
                      'TikTok incluye publicaciones confirmadas o vinculadas por el propietario y verificadas por API. '
-                     'En vinculaciones se usa la fecha de publicación de TikTok cuando está disponible. Google Ads se deja para después. '
+                     'En vinculaciones se usa la fecha de publicación de TikTok cuando está disponible. '
                      'No incluye otros posts del perfil ni envíos sin confirmación o vinculación verificada.'}))
 
 

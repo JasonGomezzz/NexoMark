@@ -5,7 +5,7 @@ import api from '@/services/api'
 import PlatformIcon from './PlatformIcon'
 import { monthlyChartData } from '@/services/publicationStatistics'
 
-const labels = { facebook: 'Facebook', instagram: 'Instagram', twitter: 'Twitter / X', tiktok: 'TikTok', google_ads: 'Google Ads' }
+const labels = { facebook: 'Facebook', instagram: 'Instagram', twitter: 'Twitter / X', tiktok: 'TikTok' }
 const metrics = { likes: 'Me gusta', shares: 'Compartidos', views: 'Vistas' }
 const number = value => value == null ? 'No disponible' : value.toLocaleString('es-PE')
 
@@ -57,17 +57,17 @@ export default function PublicationStatistics({ campaignId }) {
           const group = data.platforms[platform]
           return <article key={platform} className="min-w-0 rounded-xl bg-surface-container-low p-5">
             <div className="mb-4 flex items-center gap-3"><PlatformIcon platform={platform} className="!h-10 !w-10" /><h3 className="text-lg font-semibold">{label}</h3></div>
-            <p className="mb-4 text-xs text-on-surface-variant">{platform === 'google_ads' ? 'Anuncios · distinto de publicaciones orgánicas' : `Totales acumulados · publicaciones de ${data.year}`}</p>
+            <p className="mb-4 text-xs text-on-surface-variant">Totales acumulados · publicaciones de {data.year}</p>
             {group.pending > 0 && <p className="mb-4 text-sm text-on-surface-variant">{group.pending} envío(s) sin confirmación de publicación. No se incluyen en el total confirmado.</p>}
-            {platform === 'google_ads' ? <p className="text-sm text-on-surface-variant">No integrado. Clics, impresiones y conversiones: integración pendiente.</p> : <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div><dt className="text-sm text-on-surface-variant">Publicaciones</dt><dd className="text-2xl font-bold tabular-nums">{number(group.publications)}</dd></div>
               {Object.entries(metrics).map(([key, text]) => <div key={key}>
                 <dt className="text-sm text-on-surface-variant">{platform === 'twitter' && key === 'views' ? 'Impresiones' : platform === 'twitter' && key === 'shares' ? 'Reposts' : text}</dt>
                 <dd className="font-semibold tabular-nums">{number(group.metrics[key].value)}</dd>
                 <dd className="text-xs text-on-surface-variant">{group.metrics[key].covered}/{group.publications} publicaciones con dato</dd>
               </div>)}
-            </dl>}
-            {!campaignId && platform !== 'google_ads' && <>
+            </dl>
+            {!campaignId && <>
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 <MonthlyBars title="Publicaciones por mes" label={label} platform={platform}
                   rows={data.monthly} year={data.year} metric="Publicaciones"

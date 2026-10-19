@@ -4,7 +4,7 @@ export function getPlatformCopy(campaign, platform) {
 }
 
 export function getApprovedPublicationCopy(campaign, platform) {
-  if (platform === 'linkedin') return null
+  if (['linkedin', 'google_ads'].includes(platform)) return null
   if (campaign?.estado !== 'aprobado') return null
   const copy = platform ? getPlatformCopy(campaign, platform) : campaign.texto_generado
   return typeof copy === 'string' && copy.trim() ? copy : null

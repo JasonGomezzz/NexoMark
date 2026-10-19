@@ -38,7 +38,6 @@ const PLATAFORMAS = [
   { value: 'instagram', label: 'Instagram' },
   { value: 'facebook', label: 'Facebook' },
   { value: 'twitter', label: 'Twitter / X' },
-  { value: 'google_ads', label: 'Google Ads' },
   { value: 'tiktok', label: 'TikTok' },
 ]
 

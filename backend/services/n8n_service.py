@@ -48,6 +48,10 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
             - error (str): Descripción del error (solo si dispatched=False).
     """
     from apps.campaigns.models import CampaignStatus
+    from apps.campaigns.platform_content import platforms
+
+    if 'google_ads' in platforms(campaign):
+        return {"dispatched": False, "error": "Google Ads se ha retirado del proyecto. Se conserva la campaña histórica sin generar contenido nuevo."}
 
     user = campaign.marketero
 
