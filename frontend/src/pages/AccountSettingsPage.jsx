@@ -1,5 +1,5 @@
 import { setAuthItem } from '@/lib/authStorage'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
 import {
@@ -15,6 +15,7 @@ import {
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '../hooks/useTheme'
+import { profileEditState } from '@/lib/profileEditing'
 import InstagramAccounts from '../components/InstagramAccounts'
 import FacebookPages from '../components/FacebookPages'
 import XAccounts from '../components/XAccounts'
@@ -44,6 +45,9 @@ export default function AccountSettingsPage() {
   // Perfil
   const [nombre, setNombre] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [profileError, setProfileError] = useState('')
+  const profileRequest = useRef(false)
 
   // Contraseña
   const [currentPassword, setCurrentPassword] = useState('')
@@ -75,18 +79,34 @@ export default function AccountSettingsPage() {
 
   async function handleSaveProfile(e) {
     e.preventDefault()
+    const edit = profileEditState({ draft: nombre, saved: user?.nombre, editing: editingProfile, saving: savingProfile })
+    if (!edit.canSave || profileRequest.current) return
+    profileRequest.current = true
+    setProfileError('')
     setSavingProfile(true)
     try {
-      const { data } = await api.patch('/api/auth/me/', { nombre: nombre.trim() })
+      const { data } = await api.patch('/api/auth/me/', { nombre: edit.name })
       setUser(data.data.user)
+      setNombre(data.data.user.nombre || '')
+      setEditingProfile(false)
       setAuthItem('user_nombre', data.data.user.nombre)
       toast.success('Perfil actualizado')
     } catch (err) {
       const fieldError = err.response?.data?.data?.nombre?.[0]
-      toast.error(fieldError || err.response?.data?.message || 'No se pudo actualizar el perfil')
+      const message = fieldError || err.response?.data?.message || 'No se pudo actualizar el perfil'
+      setProfileError(message)
+      toast.error(message)
     } finally {
+      profileRequest.current = false
       setSavingProfile(false)
     }
+  }
+
+  function handleCancelProfile() {
+    if (profileRequest.current) return
+    setNombre(user.nombre || '')
+    setProfileError('')
+    setEditingProfile(false)
   }
 
   async function handleChangePassword(e) {
@@ -144,7 +164,7 @@ export default function AccountSettingsPage() {
   const usaCreditos = user.rol === 'marketero' || user.rol === 'superadmin'
   const tokens = user.tokens_disponibles ?? 0
   const pct = Math.min(100, Math.round((tokens / QUOTA_DEFAULT) * 100))
-  const nombreCambiado = nombre.trim() !== (user.nombre || '') && nombre.trim().length >= 2
+  const profileEdit = profileEditState({ draft: nombre, saved: user.nombre, editing: editingProfile, saving: savingProfile })
   const passwordValido =
     currentPassword.length > 0 && newPassword.length >= 8 && confirmPassword.length > 0
 
@@ -174,23 +194,27 @@ export default function AccountSettingsPage() {
             <div>
               <h2 className="text-xl font-semibold text-on-surface">Datos del perfil</h2>
               <p className="text-sm text-on-surface-variant">
-                Actualiza tu nombre. El email y el rol los gestiona el SuperAdmin.
+                Edita tu nombre y guarda cuando estés listo. El email y el rol los gestiona el SuperAdmin.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleSaveProfile} className="space-y-4">
+          <form onSubmit={handleSaveProfile} aria-busy={savingProfile} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-on-surface">Nombre</span>
                 <input
                   type="text"
                   value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
+                  onChange={(e) => { setNombre(e.target.value); setProfileError('') }}
+                  readOnly={!editingProfile || savingProfile}
+                  autoComplete="name"
+                  aria-describedby="profile-edit-help"
+                  aria-invalid={profileError ? true : undefined}
                   minLength={2}
                   maxLength={150}
                   required
-                  className={inputCls}
+                  className={`${inputCls} read-only:bg-surface-container-low read-only:cursor-default`}
                 />
               </label>
               <ReadonlyField icon={Mail} label="Email" value={user.email} />
@@ -213,10 +237,18 @@ export default function AccountSettingsPage() {
                 }
               />
             </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={!nombreCambiado || savingProfile}>
-                {savingProfile ? 'Guardando…' : 'Guardar cambios'}
-              </Button>
+            <p id="profile-edit-help" className="text-sm text-on-surface-variant">
+              {editingProfile ? 'Los cambios solo se guardan al pulsar «Guardar cambios».' : 'Pulsa «Editar perfil» para modificar tu nombre.'}
+            </p>
+            {editingProfile && profileEdit.dirty && <p role="status" className="text-sm text-on-surface-variant">Tienes cambios sin guardar.</p>}
+            {profileError && <p role="alert" className="text-sm text-error">{profileError}</p>}
+            <div className="flex flex-wrap justify-end gap-3">
+              {editingProfile ? <>
+                <Button type="button" variant="outline" disabled={savingProfile} onClick={handleCancelProfile}>Cancelar</Button>
+                <Button type="submit" disabled={!profileEdit.canSave}>
+                  {savingProfile ? 'Guardando…' : 'Guardar cambios'}
+                </Button>
+              </> : <Button type="button" onClick={() => { setNombre(user.nombre || ''); setProfileError(''); setEditingProfile(true) }}>Editar perfil</Button>}
             </div>
           </form>
         </section>
