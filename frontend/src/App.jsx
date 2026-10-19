@@ -4,6 +4,7 @@ import { MotionConfig } from 'motion/react'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import PasswordRecoveryPage from './pages/PasswordRecoveryPage'
+import EmailChangeConfirmPage from './pages/EmailChangeConfirmPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ClientDashboardPage from './pages/ClientDashboardPage'
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<PasswordRecoveryPage key="request" />} />
           <Route path="/reset-password" element={<PasswordRecoveryPage key="confirm" />} />
+          <Route path="/confirm-email-change" element={<EmailChangeConfirmPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
           <Route element={<PrivateRoute />}>

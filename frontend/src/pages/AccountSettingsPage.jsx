@@ -16,6 +16,7 @@ import api from '../services/api'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '../hooks/useTheme'
 import { profileEditState } from '@/lib/profileEditing'
+import EmailChangeSettings from '@/components/EmailChangeSettings'
 import InstagramAccounts from '../components/InstagramAccounts'
 import FacebookPages from '../components/FacebookPages'
 import XAccounts from '../components/XAccounts'
@@ -25,7 +26,7 @@ import TikTokAccounts from '../components/TikTokAccounts'
  * Configuración de cuenta (portado de Stitch: account_settings, adaptado a los
  * endpoints REALES):
  * - GET /api/auth/me/            → perfil + tokens_disponibles
- * - PATCH /api/auth/me/          → editar nombre (email y rol los gestiona el SuperAdmin)
+ * - PATCH /api/auth/me/          → editar nombre (correo se verifica por separado)
  * - POST /api/auth/me/change-password/ → cambio de contraseña (exige la actual)
  * La sección "Suscripción/Upgrade Plan" del mockup NO se porta: no existe billing.
  */
@@ -194,7 +195,7 @@ export default function AccountSettingsPage() {
             <div>
               <h2 className="text-xl font-semibold text-on-surface">Datos del perfil</h2>
               <p className="text-sm text-on-surface-variant">
-                Edita tu nombre y guarda cuando estés listo. El email y el rol los gestiona el SuperAdmin.
+                Edita tu nombre y guarda cuando estés listo. El cambio de correo se verifica por separado; el rol lo gestiona el SuperAdmin.
               </p>
             </div>
           </div>
@@ -255,6 +256,8 @@ export default function AccountSettingsPage() {
             </div>
           </form>
         </section>
+
+        <EmailChangeSettings currentEmail={user.email} />
 
         {user.rol === 'marketero' && (
           <section aria-labelledby="social-connections-heading" className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">

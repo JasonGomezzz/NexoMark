@@ -9,12 +9,15 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import AuthBrandContentView, ChangePasswordView, LogoutView, MeView, RegisterView
 from .token_views import CustomTokenObtainPairView
 from .password_reset import PasswordResetRequestView, PasswordResetConfirmView
+from .email_change import EmailChangeView, EmailChangeConfirmView
 from .instagram import InstagramAccountsView, InstagramConnectView, InstagramCompleteView, InstagramDisconnectView
 from .facebook import FacebookPagesView, FacebookConnectView, FacebookCompleteView, FacebookDisconnectView, FacebookCallbackRelayView
 from .x_oauth import XAccountsView, XConnectView, XDisconnectView, XCallbackView
 from .tiktok import TikTokAccountsView, TikTokConnectView, TikTokCompleteView, TikTokDisconnectView, TikTokCallbackView
 
 urlpatterns = [
+    path('me/change-email/', EmailChangeView.as_view(), name='auth-change-email'),
+    path('email-change/confirm/', EmailChangeConfirmView.as_view(), name='auth-change-email-confirm'),
     path('tiktok/accounts/', TikTokAccountsView.as_view()),
     path('tiktok/accounts/<int:pk>/', TikTokDisconnectView.as_view()),
     path('tiktok/connect/', TikTokConnectView.as_view()),

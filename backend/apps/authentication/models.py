@@ -227,6 +227,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.rol == UserRole.CLIENTE
 
 
+class EmailChangeRequest(models.Model):
+    """One pending change per account; only digests of confirmation secrets persist."""
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_change')
+    old_email = models.EmailField(max_length=255)
+    new_email = models.EmailField(max_length=255)
+    old_token_hash = models.CharField(max_length=64)
+    new_token_hash = models.CharField(max_length=64)
+    old_confirmed = models.BooleanField(default=False)
+    new_confirmed = models.BooleanField(default=False)
+    token_version = models.IntegerField()
+    password_fingerprint = models.CharField(max_length=64)
+    expires_at = models.DateTimeField()
+
+
 class AuthBrandContent(models.Model):
     """Contenido editable/sembrado para el panel visual de Login y Register."""
 
