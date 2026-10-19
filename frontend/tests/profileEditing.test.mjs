@@ -17,7 +17,10 @@ test('only explicit valid edits can be saved', () => {
 test('profile form locks by default and only sends requests after guarded submit', () => {
   const source = readFileSync(new URL('../src/pages/AccountSettingsPage.jsx', import.meta.url), 'utf8')
   assert.match(source, /\[editingProfile, setEditingProfile\] = useState\(false\)/)
-  assert.match(source, /readOnly=\{!editingProfile \|\| savingProfile\}/)
+  assert.match(source, /\{editingProfile \? <label className="block">/)
+  assert.match(source, /disabled=\{savingProfile\}/)
+  assert.match(source, /<p className="break-words text-sm font-medium text-on-surface">\{user.nombre \|\| '—'\}<\/p>/)
+  assert.doesNotMatch(source, /readOnly=/)
   assert.match(source, /if \(!edit.canSave \|\| profileRequest.current\) return/)
   assert.match(source, /onSubmit=\{handleSaveProfile\}/)
   assert.match(source, /type="button".*onClick=\{handleCancelProfile\}>Cancelar/)

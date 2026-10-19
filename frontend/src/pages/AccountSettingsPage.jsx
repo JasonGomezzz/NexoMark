@@ -201,22 +201,25 @@ export default function AccountSettingsPage() {
 
           <form onSubmit={handleSaveProfile} aria-busy={savingProfile} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label className="block">
+              {editingProfile ? <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-on-surface">Nombre</span>
                 <input
                   type="text"
                   value={nombre}
                   onChange={(e) => { setNombre(e.target.value); setProfileError('') }}
-                  readOnly={!editingProfile || savingProfile}
+                  disabled={savingProfile}
                   autoComplete="name"
                   aria-describedby="profile-edit-help"
                   aria-invalid={profileError ? true : undefined}
                   minLength={2}
                   maxLength={150}
                   required
-                  className={`${inputCls} read-only:bg-surface-container-low read-only:cursor-default`}
+                  className={`${inputCls} disabled:cursor-wait disabled:opacity-70`}
                 />
-              </label>
+              </label> : <div className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Nombre</p>
+                <p className="break-words text-sm font-medium text-on-surface">{user.nombre || '—'}</p>
+              </div>}
               <ReadonlyField icon={Mail} label="Email" value={user.email} />
               <ReadonlyField
                 icon={ShieldCheck}
