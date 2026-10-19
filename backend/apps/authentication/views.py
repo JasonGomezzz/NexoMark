@@ -174,12 +174,12 @@ class MeView(APIView):
                 api_response(success=False, message="Datos inválidos.", data=serializer.errors),
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer.save()
+        user = serializer.save()
         return Response(
             api_response(
                 success=True,
                 message="Perfil actualizado.",
-                data={"user": UserResponseSerializer(request.user).data},
+                data={"user": UserResponseSerializer(user).data},
             ),
             status=status.HTTP_200_OK,
         )

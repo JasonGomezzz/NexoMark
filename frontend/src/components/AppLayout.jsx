@@ -15,6 +15,8 @@ import {
 import api from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import BrandLogo from '@/components/BrandLogo'
+import ProfileAvatar from '@/components/ProfileAvatar'
+import { getAuthItem } from '@/lib/authStorage'
 
 /**
  * Navegación por rol. Etiquetas en español, sin nav pública dentro del panel.
@@ -53,7 +55,12 @@ export default function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const role = getRole() || 'cliente'
-  const nombre = getNombre() || ''
+  const [nombre, setNombre] = useState(() => getNombre() || '')
+  useEffect(() => {
+    const refreshName = () => setNombre(getAuthItem('user_nombre') || '')
+    window.addEventListener('profile-updated', refreshName)
+    return () => window.removeEventListener('profile-updated', refreshName)
+  }, [])
   const navItems = NAV_ITEMS[role] ?? NAV_ITEMS.cliente
 
   // Créditos de IA vivos (solo roles que crean campañas en Django).
@@ -90,14 +97,6 @@ export default function AppLayout() {
     await logout()
     navigate('/login', { replace: true })
   }
-
-  const iniciales =
-    nombre
-      .split(' ')
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || 'U'
 
   return (
     <div className="app-shell liquid-app-shell flex h-screen bg-background p-3">
@@ -153,9 +152,7 @@ export default function AppLayout() {
         {/* Usuario + rol + acciones */}
         <div className="mx-4 mb-4 space-y-3 border-t border-outline-variant pt-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">
-              {iniciales}
-            </div>
+            <ProfileAvatar name={nombre} />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-on-surface">{nombre || 'Usuario'}</p>
               <span className="inline-block rounded-full bg-primary-fixed px-2 py-0.5 text-xs font-semibold text-on-primary-fixed">

@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import Token, RefreshToken
 from rest_framework_simplejwt.exceptions import InvalidToken
 
 from .models import AuthBrandContent, EmailChangeRequest, User, UserRole
+from .profile_avatar import normalize_avatar
 
 
 class VersionedTokenRefreshSerializer(TokenRefreshSerializer):
@@ -107,7 +108,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     """
     Serializer para que el usuario autenticado edite su propio perfil.
-    Solo permite 'nombre' — email es el identificador de login y el rol
+    Permite nombre y foto — email es el identificador de login y el rol
     lo administra el SuperAdmin (HU18); no se exponen aquí.
     """
 
@@ -119,10 +120,33 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "blank": "El nombre no puede estar vacío.",
         },
     )
+    avatar = serializers.FileField(required=False, write_only=True)
+    remove_avatar = serializers.BooleanField(required=False, write_only=True)
+
+    def validate_avatar(self, value):
+        return normalize_avatar(value)
+
+    def validate(self, attrs):
+        if attrs.get('remove_avatar') and 'avatar' in attrs:
+            raise serializers.ValidationError('No puedes subir y quitar la foto a la vez.')
+        return attrs
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        user = User.objects.select_for_update().get(pk=instance.pk)
+        if not user.is_active or user.token_version != instance.token_version:
+            raise AuthenticationFailed('La sesión ya no es válida. Inicia sesión nuevamente.')
+        if validated_data.pop('remove_avatar', False):
+            validated_data['avatar'] = None
+        for field, value in validated_data.items():
+            setattr(user, field, value)
+        if validated_data:
+            user.save(update_fields=[*validated_data, 'fecha_actualizacion'])
+        return user
 
     class Meta:
         model = User
-        fields = ["nombre"]
+        fields = ["nombre", "avatar", "remove_avatar"]
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -226,9 +250,14 @@ class UserResponseSerializer(serializers.ModelSerializer):
     Nunca expone campos sensibles como password o token_version.
     """
 
+    has_avatar = serializers.SerializerMethodField()
+
+    def get_has_avatar(self, obj):
+        return bool(obj.avatar)
+
     class Meta:
         model = User
-        fields = ["id", "email", "nombre", "rol", "is_active", "fecha_creacion", "tokens_disponibles"]
+        fields = ["id", "email", "nombre", "rol", "is_active", "fecha_creacion", "tokens_disponibles", "has_avatar"]
         read_only_fields = fields
 
 

@@ -10,12 +10,14 @@ from .views import AuthBrandContentView, ChangePasswordView, LogoutView, MeView,
 from .token_views import CustomTokenObtainPairView
 from .password_reset import PasswordResetRequestView, PasswordResetConfirmView
 from .email_change import EmailChangeView, EmailChangeConfirmView
+from .profile_avatar import MyAvatarView
 from .instagram import InstagramAccountsView, InstagramConnectView, InstagramCompleteView, InstagramDisconnectView
 from .facebook import FacebookPagesView, FacebookConnectView, FacebookCompleteView, FacebookDisconnectView, FacebookCallbackRelayView
 from .x_oauth import XAccountsView, XConnectView, XDisconnectView, XCallbackView
 from .tiktok import TikTokAccountsView, TikTokConnectView, TikTokCompleteView, TikTokDisconnectView, TikTokCallbackView
 
 urlpatterns = [
+    path('me/avatar/', MyAvatarView.as_view(), name='auth-avatar'),
     path('me/change-email/', EmailChangeView.as_view(), name='auth-change-email'),
     path('email-change/confirm/', EmailChangeConfirmView.as_view(), name='auth-change-email-confirm'),
     path('tiktok/accounts/', TikTokAccountsView.as_view()),

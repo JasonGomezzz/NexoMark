@@ -144,6 +144,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=150,
         verbose_name="Nombre completo",
     )
+    # Small normalized JPEG, served only by the authenticated /me/avatar/ endpoint.
+    # No public media URL or original upload is retained.
+    avatar = models.BinaryField(null=True, blank=True, editable=False)
 
     # ── Rol ─────────────────────────────────────────────────
     rol = models.CharField(

@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button'
 import { useTheme } from '../hooks/useTheme'
 import { profileEditState } from '@/lib/profileEditing'
 import EmailChangeSettings from '@/components/EmailChangeSettings'
+import ProfileAvatar from '@/components/ProfileAvatar'
+import { profilePhotoError } from '@/lib/profilePhoto'
 import InstagramAccounts from '../components/InstagramAccounts'
 import FacebookPages from '../components/FacebookPages'
 import XAccounts from '../components/XAccounts'
@@ -51,6 +53,35 @@ export default function AccountSettingsPage() {
   const [editingProfile, setEditingProfile] = useState(false)
   const [profileError, setProfileError] = useState('')
   const profileRequest = useRef(false)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState('')
+  const [removeAvatar, setRemoveAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
+  const photoInput = useRef(null)
+
+  useEffect(() => {
+    return () => { if (avatarPreview) URL.revokeObjectURL(avatarPreview) }
+  }, [avatarPreview])
+
+  function resetPhotoDraft() {
+    setAvatarFile(null)
+    setAvatarPreview('')
+    setRemoveAvatar(false)
+    setAvatarError('')
+    if (photoInput.current) photoInput.current.value = ''
+  }
+
+  function selectPhoto(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const message = profilePhotoError(file)
+    setAvatarError(message)
+    setProfileError('')
+    setAvatarFile(message ? null : file)
+    setAvatarPreview(message ? '' : URL.createObjectURL(file))
+    setRemoveAvatar(false)
+    if (message) event.target.value = ''
+  }
 
   // Contraseña
   const [currentPassword, setCurrentPassword] = useState('')
@@ -96,20 +127,28 @@ export default function AccountSettingsPage() {
 
   async function handleSaveProfile(e) {
     e.preventDefault()
-    const edit = profileEditState({ draft: nombre, saved: user?.nombre, editing: editingProfile, saving: savingProfile })
+    const edit = profileEditState({ draft: nombre, saved: user?.nombre, editing: editingProfile, saving: savingProfile, avatarChanged: Boolean(avatarFile || removeAvatar) })
     if (!edit.canSave || profileRequest.current) return
+    if (avatarError) return
     profileRequest.current = true
     setProfileError('')
     setSavingProfile(true)
     try {
-      const { data } = await api.patch('/api/auth/me/', { nombre: edit.name })
+      const payload = new FormData()
+      payload.append('nombre', edit.name)
+      if (avatarFile) payload.append('avatar', avatarFile)
+      if (removeAvatar) payload.append('remove_avatar', 'true')
+      const { data } = await api.patch('/api/auth/me/', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
       setUser(data.data.user)
       setNombre(data.data.user.nombre || '')
       setEditingProfile(false)
       setAuthItem('user_nombre', data.data.user.nombre)
+      resetPhotoDraft()
+      window.dispatchEvent(new Event('profile-updated'))
       toast.success('Perfil actualizado')
     } catch (err) {
-      const fieldError = err.response?.data?.data?.nombre?.[0]
+      const errors = err.response?.data?.data?.errors || err.response?.data?.data
+      const fieldError = errors?.avatar?.[0] || errors?.nombre?.[0] || errors?.non_field_errors?.[0]
       const message = fieldError || err.response?.data?.message || 'No se pudo actualizar el perfil'
       setProfileError(message)
       toast.error(message)
@@ -122,6 +161,7 @@ export default function AccountSettingsPage() {
   function handleCancelProfile() {
     if (profileRequest.current) return
     setNombre(user.nombre || '')
+    resetPhotoDraft()
     setProfileError('')
     setEditingProfile(false)
   }
@@ -188,18 +228,10 @@ export default function AccountSettingsPage() {
     )
   }
 
-  const iniciales =
-    (user.nombre || '')
-      .split(' ')
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || 'U'
-
   const usaCreditos = user.rol === 'marketero' || user.rol === 'superadmin'
   const tokens = user.tokens_disponibles ?? 0
   const pct = Math.min(100, Math.round((tokens / QUOTA_DEFAULT) * 100))
-  const profileEdit = profileEditState({ draft: nombre, saved: user.nombre, editing: editingProfile, saving: savingProfile })
+  const profileEdit = profileEditState({ draft: nombre, saved: user.nombre, editing: editingProfile, saving: savingProfile, avatarChanged: Boolean(avatarFile || removeAvatar) })
   const passwordValido =
     currentPassword.length > 0 && newPassword.length >= 8 && newPassword === confirmPassword && newPassword !== currentPassword
   const passwordWait = Math.max(0, Math.ceil((passwordRetryUntil - passwordNow) / 1000))
@@ -224,18 +256,25 @@ export default function AccountSettingsPage() {
         {/* Perfil */}
         <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-bold text-on-primary">
-              {iniciales}
-            </div>
+            <ProfileAvatar name={editingProfile ? nombre : user.nombre} preview={avatarPreview} remove={removeAvatar} className="h-16 w-16 text-xl" />
             <div>
               <h2 className="text-xl font-semibold text-on-surface">Datos del perfil</h2>
               <p className="text-sm text-on-surface-variant">
-                Edita tu nombre y guarda cuando estés listo. El cambio de correo se verifica por separado; el rol lo gestiona el SuperAdmin.
+                Edita tu nombre y foto, y guarda cuando estés listo. El cambio de correo se verifica por separado; el rol lo gestiona el SuperAdmin.
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSaveProfile} aria-busy={savingProfile} className="space-y-4">
+            {editingProfile && <div className="space-y-3">
+              <label className="block text-sm font-medium text-on-surface">Foto de perfil
+                <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" disabled={savingProfile} onChange={selectPhoto} aria-describedby="profile-photo-help" aria-invalid={avatarError ? true : undefined} className="mt-2 block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-primary file:px-4 file:py-2 file:font-medium file:text-on-primary disabled:opacity-60" />
+              </label>
+              <p id="profile-photo-help" className="text-xs text-on-surface-variant">JPG, PNG o WebP, hasta 2 MB. Mínimo 64 × 64 píxeles; hasta 16 megapíxeles. Se ajustará al centro en formato cuadrado. Solo se guarda al pulsar «Guardar cambios».</p>
+              {(user.has_avatar || avatarFile) && !removeAvatar && <Button type="button" variant="outline" disabled={savingProfile} onClick={() => { resetPhotoDraft(); setRemoveAvatar(Boolean(user.has_avatar)) }}>Quitar foto</Button>}
+              {removeAvatar && <p role="status" className="text-sm text-on-surface-variant">Al guardar se quitará tu foto y se usarán tus iniciales.</p>}
+              {avatarError && <p role="alert" className="text-sm text-error">{avatarError}</p>}
+            </div>}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {editingProfile ? <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-on-surface">Nombre</span>
@@ -277,17 +316,17 @@ export default function AccountSettingsPage() {
               />
             </div>
             <p id="profile-edit-help" className="text-sm text-on-surface-variant">
-              {editingProfile ? 'Los cambios solo se guardan al pulsar «Guardar cambios».' : 'Pulsa «Editar perfil» para modificar tu nombre.'}
+              {editingProfile ? 'Los cambios solo se guardan al pulsar «Guardar cambios».' : 'Pulsa «Editar perfil» para modificar tu nombre o foto.'}
             </p>
             {editingProfile && profileEdit.dirty && <p role="status" className="text-sm text-on-surface-variant">Tienes cambios sin guardar.</p>}
             {profileError && <p role="alert" className="text-sm text-error">{profileError}</p>}
             <div className="flex flex-wrap justify-end gap-3">
               {editingProfile ? <>
                 <Button type="button" variant="outline" disabled={savingProfile} onClick={handleCancelProfile}>Cancelar</Button>
-                <Button type="submit" disabled={!profileEdit.canSave}>
+                <Button type="submit" disabled={!profileEdit.canSave || Boolean(avatarError)}>
                   {savingProfile ? 'Guardando…' : 'Guardar cambios'}
                 </Button>
-              </> : <Button type="button" onClick={() => { setNombre(user.nombre || ''); setProfileError(''); setEditingProfile(true) }}>Editar perfil</Button>}
+              </> : <Button type="button" onClick={() => { setNombre(user.nombre || ''); resetPhotoDraft(); setProfileError(''); setEditingProfile(true) }}>Editar perfil</Button>}
             </div>
           </form>
         </section>
