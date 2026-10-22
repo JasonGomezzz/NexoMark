@@ -138,4 +138,39 @@ class SocialRepository {
         final r = await _dj.post<dynamic>('/api/social/x-variants/$id/rechazar/', data: {'feedback': feedback});
         return XVariant.fromJson(envelopeData(r)['variante'] as Map<String, dynamic>);
       });
+
+  // ── TikTok (Sandbox): buzón, sin publicación automática ni métricas ──
+
+  Future<TikTokConfig> tiktokConfig() async {
+    try {
+      final r = await _dj.get<dynamic>('/api/social/tiktok/config/');
+      return TikTokConfig.fromJson(envelopeData(r));
+    } catch (_) {
+      return const TikTokConfig();
+    }
+  }
+
+  Future<List<SocialConnection>> tiktokDestinos(int campaignId) => _call(() async {
+        final r = await _dj.get<dynamic>('/api/social/tiktok/destinos/', queryParameters: {'campaign': campaignId});
+        return _lista(envelopeData(r)['conexiones'], SocialConnection.fromJson);
+      });
+
+  Future<({Publication publicacion, String mensaje})> tiktokEnviar(int campaignId, int conexionId) => _call(() async {
+        final r = await _dj.post<dynamic>(
+          '/api/social/tiktok/enviar/',
+          data: {'campaign': campaignId, 'conexion': conexionId, 'confirmo': true},
+        );
+        return (
+          publicacion: Publication.fromJson(envelopeData(r)['publicacion'] as Map<String, dynamic>),
+          mensaje: envelopeMessage(r) ?? 'Enviada a TikTok.',
+        );
+      });
+
+  Future<({Publication publicacion, String mensaje})> tiktokEstado(int publicacionId) => _call(() async {
+        final r = await _dj.post<dynamic>('/api/social/tiktok/estado/$publicacionId/');
+        return (
+          publicacion: Publication.fromJson(envelopeData(r)['publicacion'] as Map<String, dynamic>),
+          mensaje: envelopeMessage(r) ?? 'Estado actualizado.',
+        );
+      });
 }

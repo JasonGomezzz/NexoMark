@@ -32,3 +32,7 @@ final campaignPublicationsProvider = FutureProvider.autoDispose.family<List<Publ
 final xConfigProvider = FutureProvider.autoDispose<XConfig>(
   (ref) => ref.watch(socialRepositoryProvider).xConfig(),
 );
+
+final tiktokConfigProvider = FutureProvider.autoDispose<TikTokConfig>(
+  (ref) => ref.watch(socialRepositoryProvider).tiktokConfig(),
+);

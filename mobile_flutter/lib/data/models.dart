@@ -605,3 +605,16 @@ class EmailChangePending {
     );
   }
 }
+
+class TikTokConfig {
+  const TikTokConfig({this.configurado = false, this.mediosVerificados = false, this.maxTexto = 4000});
+  final bool configurado;
+  final bool mediosVerificados;
+  final int maxTexto;
+
+  factory TikTokConfig.fromJson(Map<String, dynamic> j) => TikTokConfig(
+        configurado: j['configurado'] == true,
+        mediosVerificados: j['medios_verificados'] == true,
+        maxTexto: _int(j, 'max_texto') ?? 4000,
+      );
+}

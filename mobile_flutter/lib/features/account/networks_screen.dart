@@ -10,7 +10,7 @@ import '../../data/models.dart';
 import '../../widgets/motion_widgets.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../../widgets/publication_widgets.dart';
-import '../marketero/providers.dart' show xConfigProvider;
+import '../marketero/providers.dart' show tiktokConfigProvider, xConfigProvider;
 import '../../core/theme/tokens.dart';
 
 final connectionsProvider = FutureProvider.autoDispose<List<SocialConnection>>(
@@ -100,6 +100,7 @@ class _NetworksScreenState extends ConsumerState<NetworksScreen> {
   Widget build(BuildContext context) {
     final conexiones = ref.watch(connectionsProvider);
     final xActivo = ref.watch(xConfigProvider).value?.habilitado ?? false;
+    final tiktok = ref.watch(tiktokConfigProvider).value?.configurado ?? false;
     final user = ref.watch(currentUserProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Redes conectadas')),
@@ -123,6 +124,16 @@ class _NetworksScreenState extends ConsumerState<NetworksScreen> {
                 cargando: _conectando == 'meta',
                 onTap: _conectando == null ? () => _conectar('meta') : null,
               ),
+              if (tiktok) ...[
+                const SizedBox(height: 10),
+                _Conectar(
+                  redes: const ['tiktok'],
+                  titulo: 'TikTok',
+                  detalle: 'Recibes las campañas aprobadas en tu buzón de TikTok y terminas de publicarlas allí.',
+                  cargando: _conectando == 'tiktok',
+                  onTap: _conectando == null ? () => _conectar('tiktok') : null,
+                ),
+              ],
               if (xActivo) ...[
                 const SizedBox(height: 10),
                 _Conectar(
@@ -158,7 +169,7 @@ class _NetworksScreenState extends ConsumerState<NetworksScreen> {
                           child: NetworkConnectionRow(
                             red: c.red,
                             titulo: c.cuentaNombre,
-                            detalle: '${etiquetaRed[c.red]} · conectada',
+                            detalle: c.red == 'tiktok' ? 'TikTok · nombre visible (TikTok no comparte el @usuario)' : '${etiquetaRed[c.red]} · conectada',
                             trailing: TextButton(onPressed: () => _desconectar(c), child: const Text('Desconectar')),
                           ),
                         ),

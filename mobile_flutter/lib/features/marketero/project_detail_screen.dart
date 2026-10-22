@@ -201,7 +201,13 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                                 index: i,
                                 child: PublicationTile(
                                   publicacion: p,
-                                  onReintentar: p.estado == 'fallido'
+                                  onConsultar: p.red == 'tiktok' && (p.estado == 'publicando' || p.estado == 'en_buzon')
+                                      ? () => _accion(() async {
+                                            final r = await ref.read(socialRepositoryProvider).tiktokEstado(p.id);
+                                            return r.mensaje;
+                                          })
+                                      : null,
+                                  onReintentar: p.estado == 'fallido' && p.red != 'tiktok' && p.red != 'x'
                                       ? () => _accion(() async {
                                             await ref.read(socialRepositoryProvider).publish(p.id);
                                             return 'Publicando de nuevo…';

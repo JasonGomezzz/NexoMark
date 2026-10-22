@@ -19,11 +19,14 @@ String etiquetaPublicacion(Publication p) => switch (p.estado) {
 /// Una publicación con su recorrido: aprobada → publicada (o enviada a
 /// TikTok) → medida. Las métricas que Meta aún no entrega dicen "sin dato".
 class PublicationTile extends StatelessWidget {
-  const PublicationTile({super.key, required this.publicacion, this.onReintentar, this.onTap});
+  const PublicationTile({super.key, required this.publicacion, this.onReintentar, this.onTap, this.onConsultar});
 
   final Publication publicacion;
   final VoidCallback? onReintentar;
   final VoidCallback? onTap;
+
+  /// TikTok: pregunta el estado del envío (no reenvía).
+  final VoidCallback? onConsultar;
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +89,17 @@ class PublicationTile extends StatelessWidget {
           if (publicada) ...[
             const SizedBox(height: 12),
             _MetricasMini(metrica: p.ultimaMetrica, red: p.red),
+          ],
+          if (onConsultar != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: onConsultar,
+                icon: const Icon(Icons.sync_rounded, size: 18),
+                label: const Text('Consultar estado en TikTok'),
+              ),
+            ),
           ],
           if (onReintentar != null) ...[
             const SizedBox(height: 8),
