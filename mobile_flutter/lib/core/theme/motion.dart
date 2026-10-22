@@ -23,8 +23,12 @@ abstract final class Motion {
   /// Separación entre elementos que entran juntos.
   static const stagger = Duration(milliseconds: 50);
 
-  /// "Reducir movimiento" (iOS) o "Quitar animaciones" (Android).
-  static bool reduced(BuildContext context) => MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  /// "Reducir movimiento" (iOS) o "Quitar animaciones" (Android). Flutter los
+  /// expone por separado: `disableAnimations` solo trae el de Android y el de
+  /// iOS llega como `reduceMotion`, así que hay que mirar los dos.
+  static bool reduced(BuildContext context) =>
+      (MediaQuery.maybeDisableAnimationsOf(context) ?? false) ||
+      (View.maybeOf(context)?.platformDispatcher.accessibilityFeatures.reduceMotion ?? false);
 
   /// Duración efectiva: cero si el sistema pide no animar.
   static Duration of(BuildContext context, Duration d) => reduced(context) ? Duration.zero : d;
