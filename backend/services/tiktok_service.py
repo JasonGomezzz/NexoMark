@@ -178,8 +178,10 @@ def _fallar(publicacion: Publication, mensaje: str) -> None:
 def consultar(publicacion_id: int, usuario: User) -> tuple[Publication, str | None]:
     """Actualiza el estado desde TikTok si pasaron 30 s. Devuelve (publicación, aviso)."""
     with transaction.atomic():
+        # of=("self",): PostgreSQL no permite FOR UPDATE sobre el lado nulo del
+        # LEFT JOIN de conexion; basta con bloquear la fila de la publicación.
         publicacion = (
-            Publication.objects.select_for_update()
+            Publication.objects.select_for_update(of=("self",))
             .select_related("campaign", "conexion")
             .filter(pk=publicacion_id, red=RedSocial.TIKTOK)
             .first()
