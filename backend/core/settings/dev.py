@@ -4,6 +4,8 @@ Extiende base.py con configuraciones solo para desarrollo local.
 Uso: DJANGO_SETTINGS_MODULE=core.settings.dev
 """
 
+from decouple import Csv, config
+
 from .base import *  # noqa: F401, F403
 
 # ─────────────────────────────────────────────
@@ -12,6 +14,9 @@ from .base import *  # noqa: F401, F403
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.0.2.2", "host.docker.internal"]
+# IP del Mac en la Wi-Fi para probar la app en un teléfono real (p. ej. 192.168.1.67).
+# Django debe correr con `runserver 0.0.0.0:8000`; solo en desarrollo.
+ALLOWED_HOSTS += config("DEV_HOSTS_EXTRA", cast=Csv(), default="")
 
 # ─────────────────────────────────────────────
 # APPS EXTRA solo en dev
