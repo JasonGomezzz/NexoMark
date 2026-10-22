@@ -35,7 +35,8 @@ from services.version_service import restore_campaign_version, save_campaign_ver
 
 from .models import Campaign, CampaignStatus, CampaignVersion, CreditPurchase
 from .permissions import N8nCallbackPermission
-from .serializers import CampaignEditSerializer, CampaignSerializer, CampaignVersionSerializer
+from .serializers import CampaignEditSerializer, CampaignListaSerializer, CampaignSerializer, CampaignVersionSerializer
+from .thumbnails import miniatura_jpeg
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +115,12 @@ class CampaignViewSet(viewsets.ModelViewSet):
     serializer_class = CampaignSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_serializer_class(self):
+        # La app móvil pide la lista sin imágenes en base64 y carga miniaturas aparte.
+        if self.action == "list" and self.request.query_params.get("vista") == "ligera":
+            return CampaignListaSerializer
+        return CampaignSerializer
 
     def get_queryset(self):
         """
@@ -375,6 +382,21 @@ class CampaignViewSet(viewsets.ModelViewSet):
             ),
             status=status.HTTP_202_ACCEPTED,
         )
+
+    @action(detail=True, methods=["get"], url_path="miniatura")
+    def miniatura(self, request: Request, pk: int = None) -> HttpResponse:
+        """
+        GET /api/campaigns/{id}/miniatura/ — JPEG de 480 px de la imagen generada.
+
+        Para las tarjetas de la app: ~30 KB en vez de ~1,5 MB en base64. 204 si
+        la campaña no tiene imagen. Solo la ve quien puede ver la campaña.
+        """
+        campaign = self.get_object()
+        contenido = miniatura_jpeg(campaign.pk, campaign.imagen_b64)
+        response = HttpResponse(contenido or b"", content_type="image/jpeg", status=200 if contenido else 204)
+        response["Cache-Control"] = "private, max-age=3600"
+        response["X-Content-Type-Options"] = "nosniff"
+        return response
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """GET /api/campaigns/{id}/ — devuelve campaña individual con envoltura api_response."""

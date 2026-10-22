@@ -177,6 +177,24 @@ class CampaignSerializer(serializers.ModelSerializer):
         return value
 
 
+class CampaignListaSerializer(CampaignSerializer):
+    """
+    Lista liviana para la app móvil (GET /api/campaigns/?vista=ligera).
+
+    Igual que CampaignSerializer pero sin `imagen_b64` (cada imagen pesa
+    ~1,5 MB en base64): trae `tiene_imagen` y la app pide la miniatura JPEG
+    aparte, solo para las tarjetas que se ven.
+    """
+
+    tiene_imagen = serializers.SerializerMethodField()
+
+    class Meta(CampaignSerializer.Meta):
+        fields = [f for f in CampaignSerializer.Meta.fields if f != "imagen_b64"] + ["tiene_imagen"]
+
+    def get_tiene_imagen(self, obj: Campaign) -> bool:
+        return bool(obj.imagen_b64)
+
+
 class CampaignEditSerializer(serializers.ModelSerializer):
     """Serializer para edición de prompt y texto_generado por el marketero."""
 
