@@ -91,6 +91,11 @@ class ProveedorOAuth(models.TextChoices):
     X = "x", "X"
 
 
+class PlataformaOAuth(models.TextChoices):
+    WEB = "web", "Web"
+    APP = "app", "App móvil (Android o iOS)"
+
+
 class OAuthAutorizacion(models.Model):
     """
     Intento de conectar cuentas por OAuth, ligado al usuario que lo inició.
@@ -108,6 +113,12 @@ class OAuthAutorizacion(models.Model):
         related_name="autorizaciones_oauth",
     )
     proveedor = models.CharField(max_length=20, choices=ProveedorOAuth.choices, default=ProveedorOAuth.META)
+    plataforma = models.CharField(
+        max_length=10,
+        choices=PlataformaOAuth.choices,
+        default=PlataformaOAuth.WEB,
+        help_text="Adónde vuelve el callback: la página web de retorno o la app (esquema nexomark://).",
+    )
     state_hash = models.CharField(max_length=64, unique=True, help_text="sha256 del state; el state no se guarda.")
     token_version = models.IntegerField(help_text="token_version del usuario al iniciar la conexión.")
     redirect_uri = models.CharField(

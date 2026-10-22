@@ -17,6 +17,13 @@ Así un atacante no puede hacer que la víctima termine el flujo con un state
 ajeno (vincularía la cuenta de Meta del atacante a la víctima) ni usar el
 código de la víctima con su propio state.
 
+App móvil: `iniciar(..., plataforma="app")` hace que el callback devuelva
+code y state a `APP_OAUTH_RETORNO/<proveedor>#…` (esquema nexomark://) en vez
+de a la página web. La app abre al proveedor con ASWebAuthenticationSession
+(iOS) o Custom Tabs (Android) y presenta code + state con su JWT, igual que
+la web. Que otra app registre el mismo esquema no le sirve: sin el JWT del
+usuario que inició el flujo, `reclamar` rechaza el state.
+
 X usa el mismo flujo con PKCE (RFC 7636): `iniciar` recibe además el
 code_verifier, que se guarda cifrado en la autorización (nunca viaja por el
 navegador; solo su sha256, el code_challenge). `reclamar` lo borra de la base
@@ -26,13 +33,16 @@ en el mismo UPDATE que marca el state usado.
 import hashlib
 import secrets
 from datetime import timedelta
+from urllib.parse import urlencode
 
+from django.conf import settings
+from django.http import HttpResponseRedirect
 from django.utils import timezone
 
 from apps.authentication.models import User
 from services.social_tokens import cifrar, descifrar
 
-from .models import OAuthAutorizacion, ProveedorOAuth
+from .models import OAuthAutorizacion, PlataformaOAuth, ProveedorOAuth
 
 VIGENCIA = timedelta(minutes=10)
 # Las autorizaciones viejas solo sirven de rastro un día; luego se borran.
@@ -44,7 +54,11 @@ def hash_state(state: str) -> str:
 
 
 def iniciar(
-    usuario: User, redirect_uri: str, proveedor: str = ProveedorOAuth.META, code_verifier: str = ""
+    usuario: User,
+    redirect_uri: str,
+    proveedor: str = ProveedorOAuth.META,
+    code_verifier: str = "",
+    plataforma: str = PlataformaOAuth.WEB,
 ) -> str:
     """Crea la autorización y devuelve el state en claro (solo viaja en la URL del proveedor)."""
     ahora = timezone.now()
@@ -53,6 +67,7 @@ def iniciar(
     OAuthAutorizacion.objects.create(
         usuario=usuario,
         proveedor=proveedor,
+        plataforma=plataforma,
         state_hash=hash_state(state),
         token_version=usuario.token_version,
         redirect_uri=redirect_uri,
@@ -138,3 +153,41 @@ def reclamar(usuario: User, state: str, proveedor: str = ProveedorOAuth.META) ->
         )
     autorizacion.usada_at = ahora
     return autorizacion
+
+
+def plataforma_pedida(request) -> str:
+    """`?plataforma=app` en el connect: la app recibe el retorno por su esquema."""
+    return PlataformaOAuth.APP if request.query_params.get("plataforma") == PlataformaOAuth.APP else PlataformaOAuth.WEB
+
+
+def plataforma_de(state: str, proveedor: str) -> str:
+    """Plataforma que inició este state (usado o no). Web si no se reconoce."""
+    if not state or len(state) > 512:
+        return PlataformaOAuth.WEB
+    valor = (
+        OAuthAutorizacion.objects.filter(state_hash=hash_state(state), proveedor=proveedor)
+        .values_list("plataforma", flat=True)
+        .first()
+    )
+    return valor or PlataformaOAuth.WEB
+
+
+class RedireccionApp(HttpResponseRedirect):
+    """Django solo permite http(s) y ftp por defecto; la app vuelve por su esquema propio."""
+
+    allowed_schemes = ["http", "https", "nexomark"]
+
+
+def redirigir_retorno(plataforma: str, ruta_web: str, proveedor: str, **params: str) -> HttpResponseRedirect:
+    """
+    Fin del callback: el fragmento (#) no llega a ningún servidor, así que code
+    y state solo los lee la página web o la app del usuario.
+    """
+    fragmento = urlencode(params)
+    if plataforma == PlataformaOAuth.APP:
+        response = RedireccionApp(f"{settings.APP_OAUTH_RETORNO.rstrip('/')}/{proveedor}#{fragmento}")
+    else:
+        response = HttpResponseRedirect(f"{settings.FRONTEND_URL.rstrip('/')}{ruta_web}#{fragmento}")
+    response["Cache-Control"] = "no-store"
+    response["Referrer-Policy"] = "no-referrer"
+    return response

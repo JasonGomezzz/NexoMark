@@ -19,7 +19,6 @@ MarketMind Voice — Endpoints de redes sociales.
 
 import hmac
 import logging
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core import signing
@@ -54,7 +53,7 @@ from services.publication_service import (
 from services.social_tokens import cifrar
 
 from . import oauth
-from .models import ConexionEstado, PublicacionEstado, Publication, RedSocial, SocialConnection
+from .models import ConexionEstado, ProveedorOAuth, PublicacionEstado, Publication, RedSocial, SocialConnection
 from .serializers import (
     PublicationDetailSerializer,
     PublicationMetricSerializer,
@@ -101,12 +100,9 @@ def _sin_permiso_para_conectar() -> Response:
     )
 
 
-def _redirigir_al_frontend(**params: str) -> HttpResponseRedirect:
-    """El fragmento (#) no se envía a ningún servidor: code y state solo los lee la página del usuario."""
-    response = HttpResponseRedirect(f"{settings.FRONTEND_URL.rstrip('/')}{RUTA_RETORNO_META}#{urlencode(params)}")
-    response["Cache-Control"] = "no-store"
-    response["Referrer-Policy"] = "no-referrer"
-    return response
+def _redirigir_al_frontend(plataforma: str = "web", **params: str) -> HttpResponseRedirect:
+    """A la página web de retorno o a la app (nexomark://oauth/meta), con code y state en el fragmento."""
+    return oauth.redirigir_retorno(plataforma, RUTA_RETORNO_META, "meta", **params)
 
 
 class MetaConnectView(APIView):
@@ -123,7 +119,7 @@ class MetaConnectView(APIView):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         redirect_uri = settings.META_REDIRECT_URI
-        state = oauth.iniciar(request.user, redirect_uri)
+        state = oauth.iniciar(request.user, redirect_uri, plataforma=oauth.plataforma_pedida(request))
         return Response(api_response(True, "Redirige al usuario a Meta.", {
             "url": meta_graph.url_autorizacion(state, redirect_uri),
         }))
@@ -141,15 +137,16 @@ class MetaCallbackView(APIView):
 
     def get(self, request: Request) -> HttpResponseRedirect:
         state = request.query_params.get("state", "")
+        plataforma = oauth.plataforma_de(state, ProveedorOAuth.META)
         if request.query_params.get("error"):
             oauth.cancelar(state)
-            return _redirigir_al_frontend(error="cancelado")
+            return _redirigir_al_frontend(plataforma, error="cancelado")
         if oauth.vigente_para_callback(state) is None:
-            return _redirigir_al_frontend(error="sesion")
+            return _redirigir_al_frontend(plataforma, error="sesion")
         code = request.query_params.get("code", "")
         if not code or len(code) > MAX_LARGO_CODE:
-            return _redirigir_al_frontend(error="sin_codigo")
-        return _redirigir_al_frontend(code=code, state=state)
+            return _redirigir_al_frontend(plataforma, error="sin_codigo")
+        return _redirigir_al_frontend(plataforma, code=code, state=state)
 
 
 class MetaCompleteView(APIView):

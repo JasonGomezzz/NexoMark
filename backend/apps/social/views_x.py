@@ -27,7 +27,6 @@ informa habilitado=false para que la UI no muestre nada de X.
 
 import logging
 from datetime import timedelta
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import transaction
@@ -83,12 +82,9 @@ def _x_configurado() -> bool:
     return bool(settings.X_CLIENT_ID and settings.X_CLIENT_SECRET and settings.X_REDIRECT_URI)
 
 
-def _redirigir_al_frontend(**params: str) -> HttpResponseRedirect:
-    """El fragmento (#) no se envía a ningún servidor: code y state solo los lee la página del usuario."""
-    response = HttpResponseRedirect(f"{settings.FRONTEND_URL.rstrip('/')}{RUTA_RETORNO_X}#{urlencode(params)}")
-    response["Cache-Control"] = "no-store"
-    response["Referrer-Policy"] = "no-referrer"
-    return response
+def _redirigir_al_frontend(plataforma: str = "web", **params: str) -> HttpResponseRedirect:
+    """A la página web de retorno o a la app (nexomark://oauth/x), con code y state en el fragmento."""
+    return oauth.redirigir_retorno(plataforma, RUTA_RETORNO_X, "x", **params)
 
 
 def _tope_alcanzado(mensaje: str) -> Response:
@@ -127,7 +123,13 @@ class XConnectView(APIView):
             return _tope_alcanzado("Se alcanzó el tope mensual de gasto en X; no se puede conectar una cuenta.")
         verifier = x_api.nuevo_code_verifier()
         redirect_uri = settings.X_REDIRECT_URI
-        state = oauth.iniciar(request.user, redirect_uri, proveedor=ProveedorOAuth.X, code_verifier=verifier)
+        state = oauth.iniciar(
+            request.user,
+            redirect_uri,
+            proveedor=ProveedorOAuth.X,
+            code_verifier=verifier,
+            plataforma=oauth.plataforma_pedida(request),
+        )
         return Response(api_response(True, "Redirige al usuario a X.", {
             "url": x_api.url_autorizacion(state, verifier, redirect_uri),
         }))
@@ -144,17 +146,18 @@ class XCallbackView(APIView):
 
     def get(self, request: Request) -> HttpResponseRedirect:
         state = request.query_params.get("state", "")
+        plataforma = oauth.plataforma_de(state, ProveedorOAuth.X)
         if not x_habilitado():
-            return _redirigir_al_frontend(error="desactivado")
+            return _redirigir_al_frontend(plataforma, error="desactivado")
         if request.query_params.get("error"):
             oauth.cancelar(state, proveedor=ProveedorOAuth.X)
-            return _redirigir_al_frontend(error="cancelado")
+            return _redirigir_al_frontend(plataforma, error="cancelado")
         if oauth.vigente_para_callback(state, proveedor=ProveedorOAuth.X) is None:
-            return _redirigir_al_frontend(error="sesion")
+            return _redirigir_al_frontend(plataforma, error="sesion")
         code = request.query_params.get("code", "")
         if not code or len(code) > MAX_LARGO_CODE:
-            return _redirigir_al_frontend(error="sin_codigo")
-        return _redirigir_al_frontend(code=code, state=state)
+            return _redirigir_al_frontend(plataforma, error="sin_codigo")
+        return _redirigir_al_frontend(plataforma, code=code, state=state)
 
 
 class XCompleteView(APIView):

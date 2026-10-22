@@ -305,6 +305,8 @@ RECOVERY_IP_HOURLY_LIMIT = 20
 # META — publicación en Instagram y Facebook (Fase 3)
 # ─────────────────────────────────────────────
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
+# Adónde vuelve la app móvil después de autorizar una red (esquema registrado por la app Flutter)
+APP_OAUTH_RETORNO = config("APP_OAUTH_RETORNO", default="nexomark://oauth")
 
 # ── Acceso con Google (ID token). Sin GOOGLE_CLIENT_ID el botón no aparece ──
 # GOOGLE_CLIENT_ID es el cliente web (Android lo usa como serverClientId);

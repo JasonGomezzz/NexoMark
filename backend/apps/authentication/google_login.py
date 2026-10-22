@@ -47,7 +47,7 @@ from django.utils import timezone
 from django.utils.crypto import constant_time_compare
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
