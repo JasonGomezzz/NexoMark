@@ -279,13 +279,20 @@ class _PanelRedState extends State<_PanelRed> {
               style: context.text.bodySmall,
             )
           else
-            Row(
-              children: [
-                _Total(etiquetaLikes, m.meGusta),
-                _Total('Comentarios', m.comentarios),
-                _Total('Compartidos', m.compartidos),
-                _Total('Alcance', m.alcance),
-              ],
+            // 2 × 2: cuatro rótulos en una fila se pisan a 360–412 dp.
+            LayoutBuilder(
+              builder: (context, c) => Wrap(
+                runSpacing: 12,
+                children: [
+                  for (final (label, valor) in [
+                    (etiquetaLikes, m.meGusta),
+                    ('Comentarios', m.comentarios),
+                    ('Compartidos', m.compartidos),
+                    ('Alcance', m.alcance),
+                  ])
+                    SizedBox(width: c.maxWidth / 2, child: _Total(label, valor)),
+                ],
+              ),
             ),
           if (!sinMetricas && r.publicaciones > 0 && r.conMetricas < r.publicaciones) ...[
             const SizedBox(height: 8),
@@ -295,13 +302,15 @@ class _PanelRedState extends State<_PanelRed> {
             ),
           ],
           const SizedBox(height: 16),
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              Expanded(
-                child: Text(
-                  _meGusta ? '$etiquetaLikes por mes' : 'Publicaciones por mes',
-                  style: context.text.labelLarge,
-                ),
+              Text(
+                _meGusta ? '$etiquetaLikes por mes' : 'Publicaciones por mes',
+                style: context.text.labelLarge,
               ),
               if (!sinMetricas)
                 SegmentedButton<bool>(
@@ -338,7 +347,8 @@ class _Total extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
