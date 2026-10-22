@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/preferences.dart';
 import 'core/providers.dart';
+import 'core/session/splash_gate.dart';
 import 'core/theme/app_theme.dart';
 import 'data/models.dart';
 import 'features/account/account_screen.dart';
@@ -31,6 +32,7 @@ final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'raiz');
 
 GoRouter _buildRouter(WidgetRef ref) {
   final session = ref.read(sessionProvider.notifier);
+  final splash = ref.read(splashGateProvider);
 
   /// Pantallas de cuenta compartidas por ambos roles; se abren sobre las pestañas.
   List<RouteBase> cuenta() => [
@@ -44,12 +46,13 @@ GoRouter _buildRouter(WidgetRef ref) {
   return GoRouter(
     navigatorKey: _rootKey,
     initialLocation: '/inicio',
-    refreshListenable: session.routerRefresh,
+    refreshListenable: Listenable.merge([session.routerRefresh, splash]),
     redirect: (context, state) {
       final s = ref.read(sessionProvider);
       final loc = state.matchedLocation;
       final publica = loc == '/login' || loc == '/olvide';
-      if (s is SessionLoading) return loc == '/cargando' ? null : '/cargando';
+      // Cargando, o la N todavía encajando: la pantalla de carga se queda hasta que termine.
+      if (s is SessionLoading || !splash.released) return loc == '/cargando' ? null : '/cargando';
       if (s is SignedOut) return publica ? null : '/login';
       final user = (s as SignedIn).user;
       final raiz = switch (user.rol) {

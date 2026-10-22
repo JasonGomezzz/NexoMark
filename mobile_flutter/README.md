@@ -57,6 +57,13 @@ keystore; el servidor entrega el client ID web (`GET /api/auth/google/config/`).
 - **Destinos sin marcar por defecto**: publicar en una cuenta real es una decisión explícita.
 - **Movimiento** (`lib/core/theme/motion.dart`): curvas de `index.css`, 140–320 ms,
   nada desde escala 0, escalonado de 50 ms y todo se apaga con "reducir movimiento".
+- **Pantalla de carga** (`features/auth/splash_screen.dart`): momento firma, una vez por
+  arranque (0,8 s). La N es `widgets/nexo_mark_logo.dart`, dos `Path` ajustados al maestro
+  de `brand/`: la pieza clara y la turquesa parten separadas por la diagonal, encajan y el
+  nombre se funde. Termina en el mismo tamaño y lugar que el arranque nativo (120 pt al
+  centro). `SplashGate` retiene la entrada hasta que acaba (como mucho 0,8 s, y nada si la
+  sesión tarda más) y el reloj arranca con el primer cuadro a la vista. Con "reducir
+  movimiento" la N ya está encajada y solo se funde el nombre.
 
 ## Pruebas
 
