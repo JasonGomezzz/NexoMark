@@ -8,7 +8,9 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import AuthBrandContentView, ChangePasswordView, LogoutView, MeView, RegisterView
 from .credit_views import MyCreditRequestsView
+from .email_change import EmailChangeConfirmView, EmailChangeView
 from .password_reset import PasswordResetConfirmView, PasswordResetRequestView
+from .profile_avatar import MyAvatarView
 from .token_views import CustomTokenObtainPairView
 
 urlpatterns = [
@@ -30,6 +32,11 @@ urlpatterns = [
 
     # Settings: cambio de contraseña del propio usuario
     path("me/change-password/", ChangePasswordView.as_view(), name="auth-change-password"),
+
+    # Foto de perfil (se sube con PATCH me/ multipart) y cambio de correo con doble confirmación
+    path("me/avatar/", MyAvatarView.as_view(), name="auth-avatar"),
+    path("me/change-email/", EmailChangeView.as_view(), name="auth-change-email"),
+    path("email-change/confirm/", EmailChangeConfirmView.as_view(), name="auth-change-email-confirm"),
 
     # Recuperación de contraseña por correo (enlace de un solo uso)
     path("password-reset/", PasswordResetRequestView.as_view(), name="auth-password-reset"),

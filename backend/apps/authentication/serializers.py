@@ -7,13 +7,16 @@ Criterios HU1 y HU2.
 from typing import Any
 
 from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 
-from .models import AuthBrandContent, User, UserRole
+from .models import AuthBrandContent, FotoPerfil, User, UserRole
+from .profile_avatar import normalizar_foto
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -95,7 +98,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     """
     Serializer para que el usuario autenticado edite su propio perfil.
-    Solo permite 'nombre' — email es el identificador de login y el rol
+    Permite 'nombre' y la foto (multipart `avatar` o `remove_avatar`).
+    El email se cambia con doble confirmación (email_change.py) y el rol
     lo administra el SuperAdmin (HU18); no se exponen aquí.
     """
 
@@ -107,10 +111,36 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "blank": "El nombre no puede estar vacío.",
         },
     )
+    avatar = serializers.FileField(required=False, write_only=True)
+    remove_avatar = serializers.BooleanField(required=False, write_only=True)
+
+    def validate_avatar(self, value) -> bytes:
+        return normalizar_foto(value)
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        if attrs.get("remove_avatar") and "avatar" in attrs:
+            raise serializers.ValidationError("No puedes subir y quitar la foto a la vez.")
+        return attrs
+
+    @transaction.atomic
+    def update(self, instance: User, validated_data: dict[str, Any]) -> User:
+        foto = validated_data.pop("avatar", None)
+        quitar = validated_data.pop("remove_avatar", False)
+        if foto is not None:
+            FotoPerfil.objects.update_or_create(
+                usuario=instance, defaults={"imagen": foto, "actualizada_en": timezone.now()}
+            )
+        elif quitar:
+            FotoPerfil.objects.filter(usuario=instance).delete()
+        if validated_data:
+            for campo, valor in validated_data.items():
+                setattr(instance, campo, valor)
+            instance.save(update_fields=[*validated_data, "fecha_actualizacion"])
+        return instance
 
     class Meta:
         model = User
-        fields = ["nombre"]
+        fields = ["nombre", "avatar", "remove_avatar"]
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -224,9 +254,45 @@ class UserResponseSerializer(serializers.ModelSerializer):
     Nunca expone campos sensibles como password o token_version.
     """
 
+    has_avatar = serializers.SerializerMethodField()
+    avatar_version = serializers.SerializerMethodField()
+    has_password = serializers.SerializerMethodField()
+
+    def _foto_actualizada(self, obj: User):
+        """Una sola consulta por usuario serializado (has_avatar y avatar_version la comparten)."""
+        leidas = self.__dict__.setdefault("_fotos_leidas", {})
+        if obj.pk not in leidas:
+            leidas[obj.pk] = (
+                FotoPerfil.objects.filter(usuario_id=obj.pk).values_list("actualizada_en", flat=True).first()
+            )
+        return leidas[obj.pk]
+
+    def get_has_avatar(self, obj: User) -> bool:
+        return self._foto_actualizada(obj) is not None
+
+    def get_avatar_version(self, obj: User) -> int | None:
+        """Cambia cada vez que se sube una foto: sirve para que la app refresque su copia."""
+        actualizada = self._foto_actualizada(obj)
+        return int(actualizada.timestamp()) if actualizada else None
+
+    def get_has_password(self, obj: User) -> bool:
+        """False en cuentas creadas con Google: deben crear una con el enlace del correo."""
+        return obj.has_usable_password()
+
     class Meta:
         model = User
-        fields = ["id", "email", "nombre", "rol", "is_active", "fecha_creacion", "tokens_disponibles"]
+        fields = [
+            "id",
+            "email",
+            "nombre",
+            "rol",
+            "is_active",
+            "fecha_creacion",
+            "tokens_disponibles",
+            "has_avatar",
+            "avatar_version",
+            "has_password",
+        ]
         read_only_fields = fields
 
 

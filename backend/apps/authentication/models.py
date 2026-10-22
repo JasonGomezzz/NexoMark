@@ -334,3 +334,65 @@ class CreditRequest(models.Model):
 
     def __str__(self) -> str:
         return f"Solicitud {self.pk} de {self.solicitante_id} [{self.estado}]"
+
+
+class FotoPerfil(models.Model):
+    """
+    Foto de perfil normalizada: JPEG de 256×256 sin EXIF ni nombre original.
+
+    Va en una tabla aparte para no leer el binario en cada consulta de
+    usuarios (cada petición autenticada carga el User). Solo la sirve
+    /api/auth/me/avatar/ al propio usuario autenticado; no hay URL pública.
+    """
+
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="foto_perfil",
+    )
+    imagen = models.BinaryField()
+    actualizada_en = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Foto de perfil"
+        verbose_name_plural = "Fotos de perfil"
+        db_table = "user_avatars"
+
+    def __str__(self) -> str:
+        return f"Foto de {self.usuario_id}"
+
+
+class EmailChangeRequest(models.Model):
+    """
+    Cambio de correo pendiente, con doble confirmación (correo actual y nuevo).
+
+    Adaptado de la rama de Piero (email_change.py). Una sola solicitud por
+    cuenta; en la BD solo quedan los SHA-256 de los enlaces. Deja de valer si
+    vence (30 minutos), si cambia el token_version, el correo actual o la
+    contraseña (huella HMAC del hash de la contraseña).
+    """
+
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="cambio_correo",
+    )
+    correo_actual = models.EmailField(max_length=255)
+    correo_nuevo = models.EmailField(max_length=255)
+    hash_token_actual = models.CharField(max_length=64, blank=True, default="")
+    hash_token_nuevo = models.CharField(max_length=64, blank=True, default="")
+    actual_confirmado = models.BooleanField(default=False)
+    nuevo_confirmado = models.BooleanField(default=False)
+    token_version = models.IntegerField()
+    huella_password = models.CharField(max_length=64)
+    expira_en = models.DateTimeField()
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Cambio de correo"
+        verbose_name_plural = "Cambios de correo"
+        db_table = "email_change_requests"
+
+    def __str__(self) -> str:
+        return f"Cambio de correo de {self.usuario_id}"
