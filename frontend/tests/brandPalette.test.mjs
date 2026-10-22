@@ -70,9 +70,9 @@ test('campaign demonstration is automatic, labelled, and never calls a service',
   assert.doesNotMatch(css, /animation: workflow-progress/)
 })
 
-test('monthly charts and public theme toggle follow the active theme', () => {
+test('comparison charts and public theme toggle follow the active theme', () => {
   const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
-  const chart = read('../src/components/campaign/PublicationStatistics.jsx')
+  const chart = read('../src/components/campaign/PlatformComparison.jsx')
   const toggle = read('../src/components/ui/ThemeToggle.jsx')
   assert.match(chart, /fill: 'var\(--color-on-surface-variant\)'/)
   assert.match(chart, /backgroundColor: 'var\(--color-surface-container-lowest\)'/)
@@ -83,6 +83,15 @@ test('monthly charts and public theme toggle follow the active theme', () => {
   assert.match(flutter, /ThemeMode.system/)
   assert.match(flutter, /darkTheme: ThemeData/)
   assert.match(flutter, /brightness: Brightness.light/)
+})
+
+test('comparison series are distinct and readable on both chart themes', () => {
+  const chartLight = css.split('@theme static {')[1].split('\n}')[0] + light
+  for (const block of [chartLight, dark]) {
+    const series = ['facebook', 'instagram', 'twitter', 'tiktok'].map(key => color(block, `chart-${key}`))
+    assert.equal(new Set(series).size, 4)
+    for (const foreground of series) assert.ok(contrast(foreground, color(block, 'surface-container-low')) >= 3)
+  }
 })
 
 test('photographic hero background is a local asset with overlays for both themes', () => {

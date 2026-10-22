@@ -257,6 +257,17 @@ Mientras Axios trae datos (uniforme en toda la app):
 <div className="h-8 w-16 animate-pulse rounded bg-surface-container-high" />
 ```
 
+## Comparativa de publicaciones (dashboard)
+
+- Tres gráficas de barras: publicaciones confirmadas, Me gusta y compartidos/reposts, para el mismo año seleccionado.
+- Cada gráfica compara Facebook, Instagram, X y TikTok; no mezcla vistas con impresiones.
+- Colores de series `chart-facebook`, `chart-instagram`, `chart-twitter`, `chart-tiktok`, con variantes claras/oscuras. Se emiten con `@theme static` para que también estén disponibles en SVG.
+- Los colores se acompañan de nombres, iconos, cifras y cobertura de medición legibles sin hover. No se depende solo del color ni de la gráfica para leer los datos.
+- Valores ausentes no se transforman en cero; las sumas de cobertura incompleta se identifican como parciales. No se estiman compartidos a partir de likes.
+- Esta primera etapa sustituye las tarjetas mensuales separadas del dashboard por la comparativa anual. El contrato mensual del backend se conserva; el acceso interactivo al detalle mensual por red queda para una etapa posterior.
+- El historial y la consulta manual de métricas se conservan; esta presentación no añade consultas a proveedores, permisos ni consumo de API.
+- Validación visual del componente con datos de prueba explícitamente etiquetados (fuera del producto); no constituye una nueva comprobación de métricas reales.
+
 ## Toasts (react-hot-toast)
 
 Vocabulario fijo y coherente con la acción (la acción "Aprobar" → toast "Aprobada"):

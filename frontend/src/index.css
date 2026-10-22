@@ -34,6 +34,7 @@
   --color-outline: #607983;
   --color-outline-variant: #b6cdd1;
 
+
   /* --- Color: primary (turquesa accesible) --- */
   --color-primary: #087b75;
   --color-on-primary: #ffffff;
@@ -82,6 +83,14 @@
   --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(20 40 63 / 0.25);
+}
+
+/* Recharts usa variables en SVG: deben emitirse aunque no haya utilidades Tailwind. */
+@theme static {
+  --color-chart-facebook: #2563eb;
+  --color-chart-instagram: #b72f76;
+  --color-chart-twitter: #996100;
+  --color-chart-tiktok: #087b75;
 }
 
 * {
@@ -135,6 +144,10 @@ html[data-theme='dark'] {
   --color-inverse-on-surface: #14283f;
   --color-outline: #90acba;
   --color-outline-variant: #4f6b7d;
+  --color-chart-facebook: #70adff;
+  --color-chart-instagram: #f28cc0;
+  --color-chart-twitter: #f5bc62;
+  --color-chart-tiktok: #35d3c5;
   --color-primary: #17b8ad;
   --color-on-primary: #14283f;
   --color-primary-container: #21c9bb;

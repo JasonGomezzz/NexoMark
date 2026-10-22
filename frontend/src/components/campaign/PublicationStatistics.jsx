@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import api from '@/services/api'
 import PlatformIcon from './PlatformIcon'
-import { monthlyChartData } from '@/services/publicationStatistics'
+import PlatformComparison from './PlatformComparison'
 
 const labels = { facebook: 'Facebook', instagram: 'Instagram', twitter: 'Twitter / X', tiktok: 'TikTok' }
 const metrics = { likes: 'Me gusta', shares: 'Compartidos', views: 'Vistas' }
@@ -42,7 +41,7 @@ export default function PublicationStatistics({ campaignId }) {
     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
         <h2 className="text-xl font-semibold text-on-surface">Estadísticas de publicaciones</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">Publicaciones e interacciones registradas, separadas por plataforma.</p>
+        <p className="mt-1 text-sm text-on-surface-variant">{campaignId ? 'Publicaciones e interacciones registradas, separadas por plataforma.' : 'Compara el rendimiento registrado en tus cuatro redes sociales.'}</p>
       </div>
       <label className="text-sm text-on-surface-variant">Año de estadísticas <select aria-label="Año de estadísticas"
         className="ml-2 rounded-lg border border-outline-variant p-2" value={year} onChange={e => setYear(Number(e.target.value))}>
@@ -50,9 +49,10 @@ export default function PublicationStatistics({ campaignId }) {
       </select></label>
     </div>
     {error && <p role="alert" className="text-error">{error} <button className="underline" onClick={() => setRefresh(v => v + 1)}>Reintentar</button></p>}
-    {!data && !error && <p role="status">Cargando estadísticas…</p>}
-    {data && <>
-      <div className="grid gap-6 xl:grid-cols-2">
+    {(!data || data.year !== year) && !error && <p role="status">Cargando estadísticas…</p>}
+    {data && data.year === year && <>
+      {!campaignId && <PlatformComparison platforms={data.platforms} year={data.year} />}
+      {campaignId && <div className="grid gap-6 xl:grid-cols-2">
         {Object.entries(labels).map(([platform, label]) => {
           const group = data.platforms[platform]
           return <article key={platform} className="min-w-0 rounded-xl bg-surface-container-low p-5">
@@ -67,22 +67,10 @@ export default function PublicationStatistics({ campaignId }) {
                 <dd className="text-xs text-on-surface-variant">{group.metrics[key].covered}/{group.publications} publicaciones con dato</dd>
               </div>)}
             </dl>
-            {!campaignId && <>
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <MonthlyBars title="Publicaciones por mes" label={label} platform={platform}
-                  rows={data.monthly} year={data.year} metric="Publicaciones"
-                  description="Según la fecha de registro del envío confirmado." />
-                <MonthlyBars title="Me gusta por mes" label={label} platform={platform}
-                  rows={data.monthly_likes} year={data.year} metric="Me gusta acumulados"
-                  description="Likes acumulados de las publicaciones registradas en cada mes."
-                  empty="Sin publicaciones con medición de likes. Los meses sin datos no equivalen a cero." />
-              </div>
-            </>}
           </article>
         })}
-      </div>
+      </div>}
       <p className="mt-4 text-xs leading-relaxed text-on-surface-variant">{data.note}</p>
-      <p className="mt-2 text-xs text-on-surface-variant">Me gusta por mes agrupa el último contador acumulado de cada publicación según su mes de registro. No indica cuándo se recibió cada like; los totales pueden cambiar al consultar nuevas mediciones. Se muestra solo la suma de publicaciones con dato; al pasar el cursor por las barras puedes consultar la cifra exacta y la cobertura de medición de likes.</p>
       {notice && <p role="status" className="my-3 text-sm">{notice}</p>}
       {data.publications.length === 0 ? <p className="mt-5 text-sm">Aún no hay publicaciones confirmadas para mostrar.</p> :
         <div className="mt-6 overflow-x-auto"><table className="w-full text-left text-sm">
@@ -104,32 +92,5 @@ export default function PublicationStatistics({ campaignId }) {
           </tr>)}</tbody>
         </table></div>}
     </>}
-  </section>
-}
-
-function MonthlyBars({ title, label, platform, rows, year, metric, description, empty }) {
-  const hasData = rows.some(row => row[platform] != null)
-  const colors = { facebook: 'var(--color-primary)', instagram: 'var(--color-primary)', twitter: 'var(--color-primary)', tiktok: 'var(--color-primary)' }
-  return <section className="min-w-0 rounded-lg bg-surface-container-low p-3">
-    <h4 className="text-sm font-semibold">{title} · {year}</h4>
-    <p className="mt-1 min-h-10 text-xs text-on-surface-variant">{description}</p>
-    <div className="mt-3 h-52" role="img" aria-label={`${title} de ${label}, ${year}${hasData ? '' : ': sin datos'}`}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={monthlyChartData(rows)} margin={{ top: 8, right: 0, left: -20, bottom: 16 }}>
-          <CartesianGrid stroke="var(--color-outline-variant)" strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="name" interval={0} angle={-45} textAnchor="end" height={42} stroke="var(--color-outline)" tick={{ fontSize: 10, fill: 'var(--color-on-surface-variant)' }} />
-          <YAxis allowDecimals={false} stroke="var(--color-outline)" tick={{ fontSize: 10, fill: 'var(--color-on-surface-variant)' }} />
-          <Tooltip contentStyle={{ backgroundColor: 'var(--color-surface-container-lowest)', color: 'var(--color-on-surface)', border: 'none', borderRadius: 4 }}
-            labelStyle={{ color: 'var(--color-on-surface)' }} cursor={{ fill: 'var(--color-surface-container-high)' }}
-            formatter={(value, name, item) => [value,
-            metric === 'Me gusta acumulados'
-              ? `${metric} · ${item.payload[`${platform}_covered`]}/${item.payload[`${platform}_publications`]} publicaciones con dato`
-              : name]} />
-          <Bar name={metric} dataKey={platform} fill={colors[platform]} radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-    {!hasData && <p className="text-xs text-on-surface-variant">{empty}</p>}
-    <p className="text-center text-xs text-on-surface-variant">Meses</p>
   </section>
 }
