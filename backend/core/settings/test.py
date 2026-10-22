@@ -60,3 +60,7 @@ X_REDIRECT_URI = "http://testserver/api/social/x/callback/"
 X_COSTO_POST_USD = "0.015"
 X_COSTO_LECTURA_USD = "0.010"
 X_TOPE_MENSUAL_USD = "0.30"
+
+# ── Google: sin configurar salvo que el test lo encienda ──
+GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_IDS_NATIVOS = []

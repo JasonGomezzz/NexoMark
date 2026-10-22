@@ -305,6 +305,12 @@ RECOVERY_IP_HOURLY_LIMIT = 20
 # META — publicación en Instagram y Facebook (Fase 3)
 # ─────────────────────────────────────────────
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
+
+# ── Acceso con Google (ID token). Sin GOOGLE_CLIENT_ID el botón no aparece ──
+# GOOGLE_CLIENT_ID es el cliente web (Android lo usa como serverClientId);
+# GOOGLE_CLIENT_IDS_NATIVOS, los de Android e iOS, también válidos como audiencia.
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
+GOOGLE_CLIENT_IDS_NATIVOS = config("GOOGLE_CLIENT_IDS_NATIVOS", cast=Csv(), default="")
 META_APP_ID = config("META_APP_ID", default="")
 META_APP_SECRET = config("META_APP_SECRET", default="")
 META_GRAPH_VERSION = config("META_GRAPH_VERSION", default="v25.0")

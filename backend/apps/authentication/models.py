@@ -5,6 +5,8 @@ Criterios HU1: registro con roles, email único, password bcrypt.
 """
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import uuid
+
 from django.db import models
 from django.utils import timezone
 
@@ -129,6 +131,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     nombre = models.CharField(
         max_length=150,
         verbose_name="Nombre completo",
+    )
+    # Identificador estable de la cuenta de Google vinculada (claim `sub`), no el correo.
+    google_subject = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        verbose_name="Cuenta de Google vinculada",
     )
 
     # ── Rol ─────────────────────────────────────────────────
@@ -396,3 +407,29 @@ class EmailChangeRequest(models.Model):
 
     def __str__(self) -> str:
         return f"Cambio de correo de {self.usuario_id}"
+
+
+class GoogleLoginTicket(models.Model):
+    """
+    Intento de entrar con Google: un solo uso y 10 minutos.
+
+    Solo guarda los SHA-256 del nonce (que Google firma dentro del ID token) y
+    de la prueba que conserva el cliente. Liga el propósito (login o registro)
+    y el rol elegido antes de abrir Google.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nonce_hash = models.CharField(max_length=64)
+    proof_hash = models.CharField(max_length=64)
+    proposito = models.CharField(max_length=10)
+    rol = models.CharField(max_length=20, blank=True, default="")
+    expira_en = models.DateTimeField()
+    usado = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Intento de acceso con Google"
+        verbose_name_plural = "Intentos de acceso con Google"
+        db_table = "google_login_tickets"
+
+    def __str__(self) -> str:
+        return f"Google {self.proposito} ({'usado' if self.usado else 'pendiente'})"

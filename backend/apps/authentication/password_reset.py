@@ -101,7 +101,8 @@ def enviar_correo(user: User, token: str) -> None:
 def procesar_solicitud(email: str) -> bool:
     """Envía el enlace si el correo es de una cuenta activa. Devuelve si se envió."""
     user = User.objects.filter(email__iexact=email, is_active=True).first()
-    if user is None or not user.has_usable_password():
+    # Las cuentas creadas con Google no tienen contraseña: este enlace es su "Crear contraseña".
+    if user is None or not (user.has_usable_password() or user.google_subject):
         return False
     enviar_correo(user, crear_token(user))
     return True

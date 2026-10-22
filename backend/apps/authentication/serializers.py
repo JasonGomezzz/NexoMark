@@ -257,6 +257,7 @@ class UserResponseSerializer(serializers.ModelSerializer):
     has_avatar = serializers.SerializerMethodField()
     avatar_version = serializers.SerializerMethodField()
     has_password = serializers.SerializerMethodField()
+    google_connected = serializers.SerializerMethodField()
 
     def _foto_actualizada(self, obj: User):
         """Una sola consulta por usuario serializado (has_avatar y avatar_version la comparten)."""
@@ -279,6 +280,9 @@ class UserResponseSerializer(serializers.ModelSerializer):
         """False en cuentas creadas con Google: deben crear una con el enlace del correo."""
         return obj.has_usable_password()
 
+    def get_google_connected(self, obj: User) -> bool:
+        return bool(obj.google_subject)
+
     class Meta:
         model = User
         fields = [
@@ -292,6 +296,7 @@ class UserResponseSerializer(serializers.ModelSerializer):
             "has_avatar",
             "avatar_version",
             "has_password",
+            "google_connected",
         ]
         read_only_fields = fields
 

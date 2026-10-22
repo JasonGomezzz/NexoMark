@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import AuthBrandContentView, ChangePasswordView, LogoutView, MeView, RegisterView
 from .credit_views import MyCreditRequestsView
 from .email_change import EmailChangeConfirmView, EmailChangeView
+from .google_login import GoogleChallengeView, GoogleCompleteView, GoogleConfigView, GoogleDisconnectView
 from .password_reset import PasswordResetConfirmView, PasswordResetRequestView
 from .profile_avatar import MyAvatarView
 from .token_views import CustomTokenObtainPairView
@@ -37,6 +38,12 @@ urlpatterns = [
     path("me/avatar/", MyAvatarView.as_view(), name="auth-avatar"),
     path("me/change-email/", EmailChangeView.as_view(), name="auth-change-email"),
     path("email-change/confirm/", EmailChangeConfirmView.as_view(), name="auth-change-email-confirm"),
+
+    # Entrar o registrarse con Google (web y app); desvincular exige contraseña local
+    path("google/config/", GoogleConfigView.as_view(), name="auth-google-config"),
+    path("google/challenge/", GoogleChallengeView.as_view(), name="auth-google-challenge"),
+    path("google/complete/", GoogleCompleteView.as_view(), name="auth-google-complete"),
+    path("google/disconnect/", GoogleDisconnectView.as_view(), name="auth-google-disconnect"),
 
     # Recuperación de contraseña por correo (enlace de un solo uso)
     path("password-reset/", PasswordResetRequestView.as_view(), name="auth-password-reset"),
