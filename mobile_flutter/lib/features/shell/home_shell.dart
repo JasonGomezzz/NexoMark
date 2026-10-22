@@ -15,15 +15,15 @@ class HomeShell extends StatelessWidget {
 
   static const _marketero = [
     (Icons.home_outlined, Icons.home_rounded, 'Inicio'),
-    (Icons.mic_none_rounded, Icons.mic_rounded, 'Laboratorio'),
+    (Icons.mic_none_rounded, Icons.mic_rounded, 'Dictar'),
     (Icons.folder_outlined, Icons.folder_rounded, 'Proyectos'),
-    (Icons.insights_outlined, Icons.insights_rounded, 'Estadísticas'),
+    (Icons.insights_outlined, Icons.insights_rounded, 'Métricas'),
     (Icons.person_outline_rounded, Icons.person_rounded, 'Cuenta'),
   ];
 
   static const _cliente = [
     (Icons.inbox_outlined, Icons.inbox_rounded, 'Inicio'),
-    (Icons.insights_outlined, Icons.insights_rounded, 'Estadísticas'),
+    (Icons.insights_outlined, Icons.insights_rounded, 'Métricas'),
     (Icons.person_outline_rounded, Icons.person_rounded, 'Cuenta'),
   ];
 
@@ -32,17 +32,26 @@ class HomeShell extends StatelessWidget {
     final items = rol == Rol.cliente ? _cliente : _marketero;
     return Scaffold(
       body: shell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (i) {
-          HapticFeedback.selectionClick();
-          // Tocar la pestaña activa vuelve a su raíz.
-          shell.goBranch(i, initialLocation: i == shell.currentIndex);
-        },
-        destinations: [
-          for (final (icon, selected, label) in items)
-            NavigationDestination(icon: Icon(icon), selectedIcon: Icon(selected), label: label),
-        ],
+      // Las etiquetas de la barra crecen con la letra del sistema hasta 1.15×: más grandes se parten
+      // en dos líneas a 360–412 dp. El contenido de las pantallas sí escala completo.
+      bottomNavigationBar: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.15,
+        child: NavigationBar(
+          selectedIndex: shell.currentIndex,
+          onDestinationSelected: (i) {
+            HapticFeedback.selectionClick();
+            // Tocar la pestaña activa vuelve a su raíz.
+            shell.goBranch(i, initialLocation: i == shell.currentIndex);
+          },
+          destinations: [
+            for (final (icon, selected, label) in items)
+              NavigationDestination(
+                icon: Icon(icon),
+                selectedIcon: Icon(selected),
+                label: label,
+              ),
+          ],
+        ),
       ),
     );
   }
