@@ -366,3 +366,14 @@ X_OAUTH_SCOPES = ["tweet.read", "tweet.write", "users.read", "media.write", "off
 X_COSTO_POST_USD = config("X_COSTO_POST_USD", default="0.015")
 X_COSTO_LECTURA_USD = config("X_COSTO_LECTURA_USD", default="0.010")
 X_TOPE_MENSUAL_USD = config("X_TOPE_MENSUAL_USD", default="0.30")
+
+# ── TikTok (Sandbox): conectar y enviar al buzón. Sin credenciales no aparece ──
+# TikTok exige redirect HTTPS y descarga la imagen solo de un prefijo verificado
+# en su portal (PUBLIC_BASE_URL/api/public/media/). Hasta verificarlo,
+# TIKTOK_MEDIA_VERIFIED=False bloquea los envíos.
+TIKTOK_CLIENT_KEY = config("TIKTOK_CLIENT_KEY", default="")
+TIKTOK_CLIENT_SECRET = config("TIKTOK_CLIENT_SECRET", default="")
+TIKTOK_REDIRECT_URI = config("TIKTOK_REDIRECT_URI", default=f"{DJANGO_BASE_URL}/api/social/tiktok/callback/")
+TIKTOK_MEDIA_VERIFIED = config("TIKTOK_MEDIA_VERIFIED", cast=bool, default=False)
+# Ruta absoluta del archivo tiktok….txt que entrega el portal (no se copia al repo)
+TIKTOK_VERIFICATION_FILE = config("TIKTOK_VERIFICATION_FILE", default="")

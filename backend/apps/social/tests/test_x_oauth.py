@@ -341,7 +341,7 @@ class TestXFueraDeLaPublicacionAutomatica:
     def test_programar_rechaza_ids_de_x(self, x_on, campana, user_marketero, cliente):
         x = conexion(cliente, red=RedSocial.X, cuenta_id="111", cuenta_nombre="@cafe", pagina_id="")
         ig = conexion(cliente)
-        with pytest.raises(DestinoInvalido, match="X no se publican al aprobar"):
+        with pytest.raises(DestinoInvalido, match="X y TikTok no se publican al aprobar"):
             programar_publicaciones(campana, [ig.id, x.id], user_marketero)
 
     def test_submit_con_destino_x_responde_400_y_no_envia(self, x_on, api_client, user_marketero, cliente):

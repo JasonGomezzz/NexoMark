@@ -36,6 +36,7 @@ from django.utils import timezone
 from apps.authentication.models import User, UserRole
 from apps.campaigns.models import Campaign, CampaignStatus
 from apps.social.models import (
+    REDES_META,
     ConexionEstado,
     PublicacionEstado,
     Publication,
@@ -74,8 +75,7 @@ def conexiones_disponibles(marketero: User, cliente_email: str | None) -> list[S
     if cliente_email:
         filtro |= Q(usuario__email__iexact=cliente_email, usuario__rol=UserRole.CLIENTE)
     return list(
-        SocialConnection.objects.filter(filtro, estado=ConexionEstado.ACTIVA)
-        .exclude(red=RedSocial.X)
+        SocialConnection.objects.filter(filtro, estado=ConexionEstado.ACTIVA, red__in=REDES_META)
         .select_related("usuario")
     )
 
@@ -112,10 +112,10 @@ def programar_publicaciones(campaign: Campaign, conexion_ids: list[int], markete
     """
     if not conexion_ids:
         return []
-    if SocialConnection.objects.filter(id__in=conexion_ids, red=RedSocial.X).exists():
+    if SocialConnection.objects.filter(id__in=conexion_ids).exclude(red__in=REDES_META).exists():
         raise DestinoInvalido(
-            "Las cuentas de X no se publican al aprobar: cuando la campaña esté aprobada, "
-            "prepara su versión para X."
+            "X y TikTok no se publican al aprobar: cuando la campaña esté aprobada, prepara su "
+            "versión para X o envíala al buzón de TikTok."
         )
     permitidas = {c.id: c for c in conexiones_disponibles(marketero, campaign.cliente_email)}
     desconocidas = [cid for cid in conexion_ids if cid not in permitidas]
@@ -155,9 +155,8 @@ def publicar_campana_aprobada(campaign_id: int) -> ResumenPublicacion:
     resumen = ResumenPublicacion()
     ids = list(
         Publication.objects.filter(
-            campaign_id=campaign_id, estado=PublicacionEstado.ESPERANDO_APROBACION
+            campaign_id=campaign_id, estado=PublicacionEstado.ESPERANDO_APROBACION, red__in=REDES_META
         )
-        .exclude(red=RedSocial.X)
         .values_list("id", flat=True)
     )
     for publication_id in ids:
@@ -181,6 +180,10 @@ def reintentar_publicacion(publication: Publication, usuario: User) -> Publicati
     if publication.red == RedSocial.X:
         raise PublicacionNoPermitida(
             "Las publicaciones en X se hacen desde la versión para X de la campaña, confirmando el costo."
+        )
+    if publication.red == RedSocial.TIKTOK:
+        raise PublicacionNoPermitida(
+            "Los envíos a TikTok no se reintentan: consulta su estado o revisa tu buzón de TikTok."
         )
     if publication.campaign.estado != CampaignStatus.APROBADO:
         raise PublicacionNoPermitida("La campaña todavía no fue aprobada por el cliente.")

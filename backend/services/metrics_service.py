@@ -50,6 +50,9 @@ def refrescar_metricas(publicacion: Publication, forzar: bool = False) -> Public
     if publicacion.red == RedSocial.X:
         # Leer posts en la API de X cuesta (pago por uso): en esta entrega no se consulta.
         raise MetricasNoDisponibles("Las métricas de X no se leen para no generar costo")
+    if publicacion.red == RedSocial.TIKTOK:
+        # Con user.info.basic y video.upload TikTok no entrega métricas de las publicaciones.
+        raise MetricasNoDisponibles("TikTok no entrega métricas con los permisos actuales")
     if publicacion.estado != PublicacionEstado.PUBLICADO:
         raise MetricasNoDisponibles("La publicación todavía no está en la red social.")
     if not publicacion.externo_id:

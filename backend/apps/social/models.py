@@ -24,6 +24,11 @@ class RedSocial(models.TextChoices):
     INSTAGRAM = "instagram", "Instagram"
     FACEBOOK = "facebook", "Facebook"
     X = "x", "X"
+    TIKTOK = "tiktok", "TikTok"
+
+
+# Redes que se publican solas cuando el cliente aprueba. X y TikTok van aparte.
+REDES_META = (RedSocial.INSTAGRAM, RedSocial.FACEBOOK)
 
 
 class ConexionEstado(models.TextChoices):
@@ -63,6 +68,16 @@ class SocialConnection(models.Model):
         blank=True,
         help_text="Null: el token de página no informa vencimiento. En X el token de acceso dura 2 horas.",
     )
+    refresh_expira_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Solo TikTok: vencimiento del refresh token (pasado este, hay que reconectar).",
+    )
+    permisos = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Solo TikTok: scopes concedidos (p. ej. user.info.basic, video.upload).",
+    )
     estado = models.CharField(
         max_length=20,
         choices=ConexionEstado.choices,
@@ -89,6 +104,7 @@ class SocialConnection(models.Model):
 class ProveedorOAuth(models.TextChoices):
     META = "meta", "Meta (Facebook e Instagram)"
     X = "x", "X"
+    TIKTOK = "tiktok", "TikTok"
 
 
 class PlataformaOAuth(models.TextChoices):
@@ -148,6 +164,8 @@ class PublicacionEstado(models.TextChoices):
     PUBLICADO = "publicado", "Publicado"
     FALLIDO = "fallido", "Fallido"
     CANCELADO = "cancelado", "Cancelado"
+    # Solo TikTok: el borrador llegó al buzón; la persona termina de publicar en la app de TikTok.
+    EN_BUZON = "en_buzon", "En el buzón de TikTok"
 
 
 class Publication(models.Model):
@@ -213,6 +231,11 @@ class Publication(models.Model):
         related_name="publicaciones_solicitadas",
     )
     publicado_at = models.DateTimeField(null=True, blank=True)
+    consultado_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Solo TikTok: última consulta real del estado del envío (mínimo 30 s entre consultas).",
+    )
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 

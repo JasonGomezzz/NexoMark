@@ -64,3 +64,10 @@ X_TOPE_MENSUAL_USD = "0.30"
 # ── Google: sin configurar salvo que el test lo encienda ──
 GOOGLE_CLIENT_ID = ""
 GOOGLE_CLIENT_IDS_NATIVOS = []
+
+# ── TikTok: valores ficticios; los tests simulan la API ──
+TIKTOK_CLIENT_KEY = "test-tiktok-key"
+TIKTOK_CLIENT_SECRET = "test-tiktok-secret"
+TIKTOK_REDIRECT_URI = "https://testserver/api/social/tiktok/callback/"
+TIKTOK_MEDIA_VERIFIED = False
+TIKTOK_VERIFICATION_FILE = ""

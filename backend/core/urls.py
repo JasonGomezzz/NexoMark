@@ -12,6 +12,7 @@ from apps.authentication.admin_views import (
 from apps.authentication.credit_views import AdminCreditRequestDetailView, AdminCreditRequestListView
 from apps.campaigns.views import AdminAnalyticsView
 from apps.social.views import InternalApprovedEventView, PublicMediaView
+from apps.social.views_tiktok import TikTokVerificacionView
 
 
 def health(request):
@@ -40,6 +41,7 @@ urlpatterns = [
     path('api/intents/', include('apps.campaigns.intent_urls')),
     path('api/social/', include('apps.social.urls')),
     path('api/public/media/<str:token>.jpg', PublicMediaView.as_view(), name='public-media'),
+    path('api/public/media/<str:archivo>.txt', TikTokVerificacionView.as_view(), name='tiktok-verificacion'),
     path('api/internal/campaign-events/approved', InternalApprovedEventView.as_view(), name='internal-approved'),
     path('api/admin/analytics/', AdminAnalyticsView.as_view(), name='admin-analytics'),
     path('api/admin/users/', AdminUsersListView.as_view(), name='admin-users-list'),

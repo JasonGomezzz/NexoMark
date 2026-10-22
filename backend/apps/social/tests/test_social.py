@@ -418,7 +418,7 @@ class TestMetricas:
         assert (facebook["publicaciones"], facebook["con_metricas"], facebook["me_gusta"]) == (1, 0, None)
         assert data["total_publicaciones"] == 3
         mes = timezone.now().strftime("%Y-%m")
-        assert data["por_mes"][-1] == {"mes": mes, "instagram": 2, "facebook": 1, "x": 0}
+        assert data["por_mes"][-1] == {"mes": mes, "instagram": 2, "facebook": 1, "x": 0, "tiktok": 0}
 
     def test_resumen_solo_cuenta_las_campanas_del_marketero(self, publicada, db):
         otro = User.objects.create_user(email="otro.mk@test.com", password="Test1234!", nombre="Otro",
