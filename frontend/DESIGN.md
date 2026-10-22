@@ -144,7 +144,7 @@ Todo en español (Perú). Voz activa, sentence case, acciones con el verbo de lo
 
 ## Coherencia con el backend (no inventar)
 
-- Solo JWT (sin login social). Roles: SuperAdmin, Marketero (crea campañas), Cliente (revisa y aprueba).
+- JWT propio de Django; se entra con correo y contraseña o con Google (ID token verificado en el servidor; las cuentas creadas con Google no tienen contraseña hasta que la crean con «Olvidé mi contraseña»). Roles: SuperAdmin, Marketero (crea campañas), Cliente (revisa y aprueba).
 - 1 crédito = 1 generación; mejorar texto y restaurar versiones no gastan. Planes reales: sin definir.
 - Rutas por rol verificadas con `GET /api/auth/me/` (`PrivateRoute` + `RoleRoute`); `/stats` es de los tres roles.
 
