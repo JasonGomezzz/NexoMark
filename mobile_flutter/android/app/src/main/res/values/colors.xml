@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Marino NexoMark (frontend/DESIGN.md): fondo del ícono adaptativo y del arranque. -->
+    <color name="ic_launcher_background">#FF14283F</color>
+    <color name="nexo_navy">#FF14283F</color>
+</resources>
