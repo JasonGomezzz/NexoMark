@@ -8,6 +8,7 @@ import { useTheme } from '../hooks/useTheme'
 import SocialConnectionsCard from '@/components/social/SocialConnectionsCard'
 import ProfilePhoto from '@/components/account/ProfilePhoto'
 import EmailChange, { SinContrasena } from '@/components/account/EmailChange'
+import GoogleLink from '@/components/account/GoogleLink'
 import { setAuthItem } from '../services/session'
 
 /**
@@ -15,6 +16,7 @@ import { setAuthItem } from '../services/session'
  * - GET/PATCH /api/auth/me/ → perfil, nombre y foto (multipart `avatar` o `remove_avatar`)
  * - /api/auth/me/change-email/ → cambio de correo con doble confirmación
  * - POST /api/auth/me/change-password/ → cambio de contraseña (exige la actual)
+ * - POST /api/auth/google/disconnect/ → desvincular Google (exige contraseña)
  * El rol lo administra el SuperAdmin. No hay planes ni facturación.
  */
 const ROLE_LABEL = {
@@ -192,7 +194,7 @@ export default function AccountSettingsPage() {
           {!user.has_password && (
             <SinContrasena email={user.email}>
               Tu cuenta entra con Google y aún no tiene contraseña. Créala con «Olvidé mi contraseña» (te enviamos un
-              enlace a {user.email}): sin ella no puedes cambiar el correo.
+              enlace a {user.email}): sin ella no puedes cambiar el correo ni desvincular Google.
             </SinContrasena>
           )}
 
@@ -252,6 +254,7 @@ export default function AccountSettingsPage() {
               )}
             </div>
 
+            <GoogleLink usuario={user} />
           </div>
         </section>
 

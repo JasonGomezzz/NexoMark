@@ -1,4 +1,4 @@
-/** Llamadas de la cuenta propia a /api/auth/ de Django (foto y cambio de correo). */
+/** Llamadas de la cuenta propia a /api/auth/ de Django (foto, cambio de correo, Google). */
 import api from './api'
 
 const usuario = (r) => r.data.data.user
@@ -28,4 +28,8 @@ export const cuentaApi = {
       .post('/api/auth/me/change-email/', { new_email: nuevo.trim(), current_password: password })
       .then((r) => ({ pendiente: r.data.data.pending, mensaje: r.data.message })),
   cancelarCambioCorreo: () => api.delete('/api/auth/me/change-email/').then((r) => r.data.message),
+
+  /** Exige la contraseña de NexoMark y cierra todas las sesiones (sube token_version). */
+  desvincularGoogle: (password) =>
+    api.post('/api/auth/google/disconnect/', { current_password: password }).then((r) => r.data.message),
 }
