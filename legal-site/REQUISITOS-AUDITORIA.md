@@ -1,6 +1,7 @@
 # Requisitos de auditoría y revisión — Meta, TikTok, X y ANPD
 
-Revisado el 16/10/2026 contra la documentación oficial enlazada en cada punto. Las plataformas
+Revisado el 16/10/2026 contra la documentación oficial enlazada en cada punto (las secciones 2,
+5 y 6 se actualizaron el 22/10/2026). Las plataformas
 cambian sus requisitos: volver a abrir la fuente antes de cada trámite. Este archivo no se publica
 en Pages (el preparador solo copia HTML de la lista permitida).
 
@@ -23,8 +24,8 @@ Fuente: https://developers.facebook.com/docs/development/create-an-app/app-dashb
 |---|---|---|
 | Nombre visible | `[~]` | Existe; decidir si pasa a «NexoMark IA» |
 | Correo de contacto | `[~]` | Usar `nexomarkia@gmail.com`; comprobar en el panel |
-| URL de la política de privacidad | `[~]` | `privacidad.html` v0.11 en este PR; en Pages sigue la v0.10 (borrador) |
-| URL de los términos de servicio | `[~]` | `terminos.html` v0.11; mismo estado |
+| URL de la política de privacidad | `[~]` | `privacidad.html` v0.13; en Pages sigue la v0.10 (borrador, estado del 16/10) |
+| URL de los términos de servicio | `[~]` | `terminos.html` v0.13; mismo estado |
 | Eliminación de datos (URL de instrucciones o callback) | `[~]` | `eliminacion-datos.html` nueva, sin publicar. No hay callback implementado |
 | Icono de la app (sin logos ni la palabra Facebook/FB) | `[ ]` | Comprobar en el panel |
 | Categoría y propósito de la app | `[ ]` | Comprobar en el panel |
@@ -86,8 +87,11 @@ Fuente: https://developers.facebook.com/docs/development/release/business-verifi
 
 ## 2. TikTok (Content Posting API)
 
-**Estado:** no implementado en `remejora`; fuera del alcance de la demo (CLAUDE.md). La rama
-`piero` tenía conexión probada con respuestas simuladas.
+**Estado (22/10/2026):** conexión (Login Kit) y envío al buzón implementados en la rama local
+`feat/app-flutter-y-cuentas` (`backend/apps/social/views_tiktok.py`, `services/tiktok_api.py`,
+`services/tiktok_service.py`), en modo Sandbox, con los permisos `user.info.basic` y `video.upload`
+y sin métricas. No probado con una cuenta real de TikTok (CLAUDE.md, 21/10). Los textos v0.13 lo
+describen.
 
 Fuentes:
 - https://developers.tiktok.com/doc/content-posting-api-get-started
@@ -95,8 +99,9 @@ Fuentes:
 - https://developers.tiktok.com/doc/content-sharing-guidelines
 - https://developers.tiktok.com/doc/app-review-guidelines
 
-- `[ ]` App con el producto Content Posting API y el permiso aprobado: `video.publish` (Direct
-  Post) o `video.upload` (envío como borrador a la bandeja, el usuario publica desde TikTok).
+- `[~]` App con el producto Content Posting API y el permiso aprobado: `video.publish` (Direct
+  Post) o `video.upload` (envío como borrador a la bandeja, el usuario publica desde TikTok). El
+  código usa solo `video.upload` en el Sandbox; `video.publish` no se pide.
 - `[ ]` **Auditoría** para publicar en público. Sin auditoría todo queda en visibilidad privada
   (`SELF_ONLY`), con un máximo de 5 usuarios publicando en 24 horas, y sus cuentas deben ser
   privadas al publicar.
@@ -106,8 +111,10 @@ Fuentes:
   divulgación de contenido comercial apagada por defecto y aviso de procesamiento.
 - `[ ]` URLs de privacidad y términos vigentes y un sitio funcional para la revisión de la app
   (Pages solo aloja los documentos).
-- `[ ]` Para `PULL_FROM_URL`, dominio verificado en TikTok.
-- `[ ]` Actualizar `privacidad.html` y `terminos.html` antes de activarlo.
+- `[ ]` Para `PULL_FROM_URL`, dominio verificado en TikTok. Mientras `TIKTOK_MEDIA_VERIFIED` sea
+  `False` el servidor bloquea los envíos (`tiktok_api.medios_verificados`).
+- `[~]` Actualizar `privacidad.html` y `terminos.html` antes de activarlo: hecho en la v0.13 (borrador
+  sin aprobar ni publicar). Al cambiar el código de TikTok, volver a contrastar el texto.
 
 ## 3. X (API v2)
 
@@ -152,7 +159,28 @@ Fuentes:
 - `[ ]` Procedimiento ante incidentes: el MINJUSDH indica comunicarlos en 48 horas en principio.
 - `[ ]` Registro privado de solicitudes ARCO y prueba del borrado manual de una cuenta.
 
-## 5. Otros pendientes que afectan a los textos
+## 5. Google (acceso con Google)
+
+**Estado (22/10/2026):** `backend/apps/authentication/google_login.py` verifica el ID token en el
+servidor y guarda solo `google_subject`. Sin probar con cuentas reales de Google (CLAUDE.md, 21/10).
+
+Fuente: https://support.google.com/cloud/answer/13806988?hl=en (política de privacidad de la app,
+consultada el 22/10/2026)
+
+- `[~]` La política debe ser una página HTML propia, distinta de la página de inicio, enlazada desde
+  la pantalla de consentimiento y visible dentro de la app, y debe explicar qué datos de Google se
+  tratan, cómo se usan, se guardan y se comparten, cómo se protegen y cómo se conservan y eliminan.
+  Cubierto en `privacidad.html` (secciones 3, 6, 9 y 10) y `eliminacion-datos.html` (sección 2); falta
+  aprobarlo y publicarlo.
+- `[ ]` Google pide que esté en un dominio propio o verificado, preferiblemente el de la página de
+  inicio de la app. Comprobar si el dominio de Pages sirve.
+- `[ ]` Client ID web (`GOOGLE_CLIENT_ID`), de Android (paquete `com.marketmind.nexomark` y SHA-1) y
+  de iOS (`GOOGLE_IOS_CLIENT_ID` y el esquema invertido en `Info.plist`), según
+  `mobile_flutter/README.md`. Pendientes de Piero (CLAUDE.md).
+- `[ ]` Revisar en Google Cloud (pantalla de consentimiento y Verification Center) si hace falta
+  verificar la marca de la app. No se pudo confirmar en esta revisión.
+
+## 6. Otros pendientes que afectan a los textos
 
 - `[ ]` Modalidad de facturación de la clave de Gemini: en los servicios gratuitos Google puede
   usar el contenido para mejorar productos y revisarlo con personas

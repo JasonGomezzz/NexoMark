@@ -1,8 +1,9 @@
 # Configurar GitHub Pages para documentos de NexoMark
 
 Estado (16/10/2026): el workflow `legal-pages.yml` ya está en `main` (PR #1) y se ejecutó una vez
-con `allow_drafts`: Pages sirve el borrador v0.10 con avisos de "no vigente". La v0.11 vive en
-`remejora` y no está publicada. Subir el código no despliega el sitio.
+con `allow_drafts`: Pages sirve el borrador v0.10 con avisos de "no vigente". El texto
+subió hasta la v0.13 (22/10), que no está publicada (el estado de Pages no se volvió a
+comprobar el 22/10). Subir el código no despliega el sitio.
 Pages no incluye servidor, PostgreSQL ni respaldos.
 
 ## Para Jason

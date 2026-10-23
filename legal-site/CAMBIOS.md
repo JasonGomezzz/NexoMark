@@ -1,5 +1,59 @@
 # Historial de documentos — NexoMark
 
+## Borrador v0.13 — 22 de octubre de 2026
+
+- Conservada la v0.12 de privacidad y términos en `historial/` (a pedido; hasta ahora solo estaba la
+  v0.10, la única publicada, y la v0.11 no se conservó). La eliminación de datos v0.11 no se copia:
+  el preparador de Pages solo admite privacidad y términos en `historial/`.
+- Texto contrastado con el código de la rama local `feat/app-flutter-y-cuentas` (commit `037df998`,
+  21/10), no con lo que dicen los avances:
+  - Google (`backend/apps/authentication/google_login.py`): se guarda solo `google_subject`; con
+    registro, el correo verificado y el nombre del ID token; sin tokens de Google ni foto de Google.
+    El ID token se verifica en el servidor (RS256, audiencia, emisor, correo verificado, nonce).
+    Intento de acceso de 10 minutos con huellas SHA-256. Desvincular exige la contraseña de NexoMark
+    y cierra las sesiones. Registro solo con Gmail o Google Workspace.
+  - Foto de perfil (`profile_avatar.py`): JPG, PNG o WebP de hasta 2 MB, 64 px mínimo, 16 MP máximo,
+    sin animación; se guarda solo un JPEG 256×256 sin EXIF; la sirve únicamente `/api/auth/me/avatar/`
+    a su dueño. Los administradores ven el indicador `has_avatar`, no la imagen.
+  - Cambio de correo (`email_change.py`): contraseña actual, un enlace a cada correo, vigencia de 30
+    minutos, solo SHA-256 de los tokens, cierra todas las sesiones al completarse. Una solicitud
+    vencida no se borra sola (se describe así en conservación).
+  - TikTok (`views_tiktok.py`, `tiktok_api.py`, `tiktok_service.py`): permisos `user.info.basic` y
+    `video.upload`; se guardan `open_id`, nombre visible, tokens cifrados, vencimientos y permisos.
+    Envía una foto con el texto aprobado (≤ 4000 UTF-16) en `MEDIA_UPLOAD` con `is_aigc=true`; TikTok
+    descarga la imagen de un enlace firmado de 1 h. Solo estado del envío (≤ 1 consulta/30 s), sin
+    métricas. Modo Sandbox. Desconectar (`SocialConnectionViewSet.destroy`) borra solo
+    `token_cifrado`, marca `desconectada` y no revoca nada en TikTok; el token de renovación y los
+    datos de la conexión se quedan. El texto lo dice tal cual.
+  - App Flutter (`mobile_flutter/`): tokens en Keychain/Keystore (`flutter_secure_storage`), tema en
+    `shared_preferences`, permisos de micrófono, reconocimiento de voz, cámara y fotos en `Info.plist`.
+  - Dictado en iPhone (`dictation.dart`, `AppDelegate.swift`): con español sin conexión se pide
+    `onDevice` (el plugin `speech_to_text` 7.5.0 lo traduce a `requiresOnDeviceRecognition`); si no,
+    la documentación de Apple dice que es un servicio de red. Se enlazan la documentación de Apple y
+    su política de privacidad.
+  - Tipografía: la web (`frontend/index.html`) y la app Flutter (`allowRuntimeFetching = true`, sin
+    fuente empaquetada) descargan Inter de los servidores de Google. No figuraba en la v0.12; se
+    añade a datos técnicos y a proveedores.
+- Privacidad: nuevos apartados de datos (Google, foto, cambio de correo), fila de TikTok y de Google
+  en proveedores, iOS en el dictado, TikTok en la sección 8, conservación y seguridad ampliadas.
+- Términos: Google, TikTok (Sandbox, borrador al buzón, sin métricas, desconexión sin revocar),
+  marca de contenido generado con IA y condiciones de TikTok.
+- Eliminación de datos: nuevas secciones para quitar solo Google, la foto o un cambio de correo, y
+  TikTok en acceso, datos eliminados y datos que no se pueden eliminar. Pasa a la v0.13.
+- URLs oficiales verificadas el 22/10 (respondieron 200): política de Google, ayuda de Google sobre
+  Iniciar sesión con Google, política y términos de TikTok, ayuda de TikTok sobre apps de terceros,
+  política de Apple y documentación de Apple (`SFSpeechRecognizer`, `requiresOnDeviceRecognition`).
+- No se pudo confirmar y por eso no se afirma: menús exactos de TikTok para retirar el permiso (la
+  página de ayuda carga con JavaScript; se enlaza sin nombrarlos); pantalla de Google Fonts sobre
+  privacidad (no se enlazó; se enlaza la política de Google); que la política de TikTok «row» sea la
+  que aplica a Perú; que la app de TikTok no haya pasado la auditoría (se deduce del Sandbox y de la
+  lista de `REQUISITOS-AUDITORIA.md`). Google y TikTok no se probaron con cuentas reales (CLAUDE.md,
+  21/10): el texto describe lo que hace el código.
+- La web (`frontend/`) todavía no tiene pantallas de Google, foto, cambio de correo ni TikTok (solo
+  `/confirm-email-change`); por eso el texto ubica esas acciones en la app para Android e iOS.
+  Revisar el texto si la rama de la web las añade antes de publicar.
+- Sigue siendo borrador: falta que Jason y Piero aprueben el texto.
+
 ## Borrador v0.12 — 18 de octubre de 2026
 
 - Gemini: confirmado por Jason que la clave es del nivel gratuito (Google AI Studio); se mantiene
