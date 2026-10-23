@@ -57,7 +57,7 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
 
   const p = datos?.publicacion
   const metrica = p?.ultima_metrica
-  const { principales, secundarias } = metricasDeRed(p?.red)
+  const { principales, secundarias, sinLectura, motivoSinLectura } = metricasDeRed(p?.red)
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-on-surface/40 backdrop-blur-sm" onClick={onClose}>
@@ -124,7 +124,7 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
                     <span className="text-xs text-on-surface-variant">Leídas {haceCuanto(metrica.obtenida_at)}</span>
                   )}
                 </div>
-                {datos.aviso && (
+                {datos.aviso && !sinLectura && (
                   <p className="mt-2 text-sm text-on-surface-variant">{datos.aviso}</p>
                 )}
                 {metrica ? (
@@ -150,9 +150,11 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
                   </dl>
                 ) : (
                   <p className="mt-3 text-sm text-on-surface-variant">
-                    {p.estado === 'publicado'
-                      ? 'Meta todavía no entrega métricas de esta publicación; pueden tardar hasta 48 horas.'
-                      : 'Las métricas aparecen cuando la publicación ya está en la red social.'}
+                    {sinLectura
+                      ? motivoSinLectura
+                      : p.estado === 'publicado'
+                        ? 'Meta todavía no entrega métricas de esta publicación; pueden tardar hasta 48 horas.'
+                        : 'Las métricas aparecen cuando la publicación ya está en la red social.'}
                   </p>
                 )}
               </section>
@@ -196,6 +198,8 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
 /** Aprobada → publicada → medida: cada número nace de una versión que el cliente aprobó. */
 function Cadena({ publicacion: p, metrica, lecturas }) {
   const publicada = p.estado === 'publicado'
+  const tiktok = p.red === 'tiktok'
+  const enBuzon = tiktok && p.estado === 'en_buzon'
   const pasos = [
     {
       hecho: p.version_aprobada != null,
@@ -203,19 +207,31 @@ function Cadena({ publicacion: p, metrica, lecturas }) {
       detalle: p.version_aprobada != null ? `Versión ${p.version_aprobada} de la campaña` : 'Esperando la aprobación',
     },
     {
-      hecho: publicada,
+      hecho: publicada || enBuzon,
       error: p.estado === 'fallido',
-      titulo: publicada ? `Publicada en ${p.cuenta_nombre}` : 'Publicación',
-      detalle: publicada ? fecha(p.publicado_at) : p.error || null,
-      badge: !publicada,
+      titulo: publicada
+        ? `Publicada en ${p.cuenta_nombre}`
+        : enBuzon
+          ? `En el buzón de ${p.cuenta_nombre}`
+          : tiktok
+            ? 'Envío a TikTok'
+            : 'Publicación',
+      detalle: publicada
+        ? fecha(p.publicado_at)
+        : enBuzon
+          ? 'Falta publicarla desde la app de TikTok.'
+          : p.error || null,
+      badge: !publicada && !enBuzon,
       enlace: publicada && p.permalink,
     },
     {
       hecho: Boolean(metrica),
-      titulo: 'Medida en Meta',
+      titulo: tiktok ? 'Medida en TikTok' : 'Medida en Meta',
       detalle: metrica
         ? `${lecturas === 1 ? '1 lectura' : `${lecturas} lecturas`}, la última ${haceCuanto(metrica.obtenida_at)}`
-        : 'Sin lecturas todavía',
+        : tiktok
+          ? 'Sin dato: TikTok no entrega métricas con los permisos actuales.'
+          : 'Sin lecturas todavía',
     },
   ]
 
@@ -252,7 +268,7 @@ function Cadena({ publicacion: p, metrica, lecturas }) {
           <div className="min-w-0 pt-0.5">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-on-surface">{paso.titulo}</p>
-              {paso.badge && <PublicationBadge estado={p.estado} />}
+              {paso.badge && <PublicationBadge estado={p.estado} red={p.red} />}
             </div>
             {paso.detalle && (
               <p className={`mt-0.5 text-sm ${paso.error ? 'text-error' : 'text-on-surface-variant'}`}>

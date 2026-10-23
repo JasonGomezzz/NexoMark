@@ -20,6 +20,7 @@ import {
   cuentasTikTokEnviadas,
   largoTextoTikTok,
   mensajeMotivoRetornoTikTok,
+  mostrarTikTok,
   puedeConsultarTikTok,
   textoTikTokValido,
 } from '../src/services/social.js'
@@ -166,6 +167,23 @@ test('TikTok and X never offer "Publicar ahora / Reintentar"', () => {
   assert.equal(puedeReintentar({ ...fallida, red: 'instagram' }, 'aprobado'), true)
   assert.equal(puedeReintentar({ ...fallida, red: 'tiktok' }, 'aprobado'), false)
   assert.equal(puedeReintentar({ ...fallida, red: 'x' }, 'aprobado'), false)
+})
+
+test('TikTok shows "sin dato" instead of metrics and explains why', () => {
+  const tiktok = metricasDeRed('tiktok')
+  assert.equal(tiktok.sinLectura, true)
+  assert.ok(tiktok.principales.length > 0)
+  assert.match(tiktok.motivoSinLectura, /no entrega métricas/)
+  assert.match(tiktok.motivoSinLectura, /sin dato/)
+  assert.match(metricasDeRed('x').motivoSinLectura, /pago por uso/)
+})
+
+test('mostrarTikTok appears when configured or when there are TikTok sends', () => {
+  assert.equal(mostrarTikTok({ tiktokConfig: { configurado: false } }), false)
+  assert.equal(mostrarTikTok({ tiktokConfig: { configurado: true } }), true)
+  assert.equal(mostrarTikTok({ resumen: { redes: { tiktok: { publicaciones: 1 } } } }), true)
+  assert.equal(mostrarTikTok({ publicaciones: [{ red: 'tiktok' }] }), true)
+  assert.equal(mostrarTikTok(), false)
 })
 
 test('the TikTok text limit counts UTF-16 units like the server', () => {

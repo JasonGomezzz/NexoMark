@@ -142,7 +142,25 @@ const METRICAS = {
     ],
   },
   // En X no se leen métricas: cada lectura de la API cuesta (pago por uso).
-  x: { principales: [], secundarias: [], sinLectura: true },
+  x: {
+    principales: [],
+    secundarias: [],
+    sinLectura: true,
+    motivoSinLectura:
+      'En X solo se cuentan las publicaciones: leer sus métricas cuesta en la API de pago por uso, así que NexoMark no las consulta.',
+  },
+  // TikTok con los permisos actuales (enviar al buzón) no entrega métricas: todo es "sin dato".
+  tiktok: {
+    principales: [
+      ['me_gusta', 'Me gusta'],
+      ['comentarios', 'Comentarios'],
+      ['compartidos', 'Compartidos'],
+    ],
+    secundarias: [],
+    sinLectura: true,
+    motivoSinLectura:
+      'TikTok no entrega métricas con los permisos actuales (solo envío al buzón): sus cifras quedan como «sin dato». Se cuentan las publicaciones.',
+  },
 }
 
 export function metricasDeRed(red) {
@@ -173,6 +191,16 @@ export function alcanceDelRol(rol) {
  */
 export function mostrarX({ xConfig, resumen, publicaciones = [] } = {}) {
   return Boolean(xConfig?.habilitado || resumen?.redes?.x?.publicaciones || publicaciones.some((p) => p.red === 'x'))
+}
+
+/**
+ * TikTok aparece en estadísticas si el servidor lo tiene configurado o si ya hay
+ * envíos a TikTok (aunque después se haya quitado la configuración).
+ */
+export function mostrarTikTok({ tiktokConfig, resumen, publicaciones = [] } = {}) {
+  return Boolean(
+    tiktokConfig?.configurado || resumen?.redes?.tiktok?.publicaciones || publicaciones.some((p) => p.red === 'tiktok'),
+  )
 }
 
 /** TikTok cuenta el texto en unidades UTF-16, igual que `String.length` en JavaScript. */

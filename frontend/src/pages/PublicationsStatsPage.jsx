@@ -9,7 +9,14 @@ import PublicationBadge from '../components/social/PublicationBadge'
 import PublicationStatsDrawer from '../components/social/PublicationStatsDrawer'
 import RedIcon from '../components/social/RedIcon'
 import { useAuth } from '../hooks/useAuth'
-import { alcanceDelRol, filtrarPublicaciones, formatoMetrica, metricasDeRed, mostrarX } from '../services/social'
+import {
+  alcanceDelRol,
+  filtrarPublicaciones,
+  formatoMetrica,
+  metricasDeRed,
+  mostrarTikTok,
+  mostrarX,
+} from '../services/social'
 import { socialApi } from '../services/socialApi'
 
 const FILTRO_RED = [
@@ -44,6 +51,7 @@ export default function PublicationsStatsPage() {
   const [estado, setEstado] = useState('todas')
   const [anio, setAnio] = useState(() => new Date().getFullYear())
   const [xConfig, setXConfig] = useState(null)
+  const [tiktokConfig, setTiktokConfig] = useState(null)
 
   const abierta = Number(params.get('publicacion')) || null
 
@@ -62,12 +70,16 @@ export default function PublicationsStatsPage() {
     }
   }, [recarga, anio])
 
-  // X es opcional: si el servidor no responde, simplemente no se muestra.
+  // X y TikTok son opcionales: si el servidor no responde, simplemente no se muestran.
   useEffect(() => {
     let vigente = true
     socialApi
       .xConfig()
       .then((c) => vigente && setXConfig(c))
+      .catch(() => {})
+    socialApi
+      .tiktokConfig()
+      .then((c) => vigente && setTiktokConfig(c))
       .catch(() => {})
     return () => {
       vigente = false
@@ -106,8 +118,16 @@ export default function PublicationsStatsPage() {
   const anios = resumen?.anual?.anios?.includes(anio) ? resumen.anual.anios : [anio, ...(resumen?.anual?.anios ?? [])]
   const conCliente = rol !== 'cliente'
   const conX = mostrarX({ xConfig, resumen, publicaciones })
-  const redesPanel = conX ? ['instagram', 'facebook', 'x'] : ['instagram', 'facebook']
-  const filtrosRed = conX ? [...FILTRO_RED, { valor: 'x', texto: 'X' }] : FILTRO_RED
+  const conTikTok = mostrarTikTok({ tiktokConfig, resumen, publicaciones })
+  const redesPanel = ['instagram', 'facebook', ...(conX ? ['x'] : []), ...(conTikTok ? ['tiktok'] : [])]
+  const filtrosRed = [
+    ...FILTRO_RED,
+    ...(conX ? [{ valor: 'x', texto: 'X' }] : []),
+    ...(conTikTok ? [{ valor: 'tiktok', texto: 'TikTok' }] : []),
+  ]
+  const filtrosEstado = conTikTok
+    ? [...FILTRO_ESTADO, { valor: 'en_buzon', texto: 'En el buzón de TikTok' }]
+    : FILTRO_ESTADO
   const conMarketero = rol === 'superadmin'
 
   return (
@@ -207,7 +227,7 @@ export default function PublicationsStatsPage() {
                     aria-label="Filtrar por estado"
                     className="appearance-none rounded-full border border-outline-variant bg-white py-2 pr-10 pl-4 text-sm text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    {FILTRO_ESTADO.map((f) => (
+                    {filtrosEstado.map((f) => (
                       <option key={f.valor} value={f.valor}>
                         {f.texto}
                       </option>
@@ -234,6 +254,7 @@ export default function PublicationsStatsPage() {
                 conCliente={conCliente}
                 conMarketero={conMarketero}
                 conX={conX}
+                conTikTok={conTikTok}
                 onAbrir={abrir}
               />
             )}
@@ -272,10 +293,10 @@ function LineaDeEstado({ resumen }) {
   )
 }
 
-function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, conX, onAbrir }) {
+function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, conX, conTikTok, onAbrir }) {
   // Facebook llama "reacciones" a lo que Instagram llama "me gusta"; X no tiene lectura.
   const encabezadoMeGusta =
-    red === 'todas' || red === 'x' ? 'Me gusta / reacciones' : metricasDeRed(red).principales[0][1]
+    red === 'todas' || red === 'x' || red === 'tiktok' ? 'Me gusta / reacciones' : metricasDeRed(red).principales[0][1]
   return (
     <div>
       <div className="overflow-x-auto rounded-xl border border-outline-variant bg-white shadow-sm">
@@ -319,16 +340,17 @@ function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, conX
                   {conCliente && <td className="px-4 py-3 whitespace-nowrap text-on-surface-variant">{p.cliente_nombre}</td>}
                   {conMarketero && <td className="px-4 py-3 whitespace-nowrap text-on-surface-variant">{p.marketero_nombre}</td>}
                   <td className="px-4 py-3">
-                    <PublicationBadge estado={p.estado} />
+                    <PublicationBadge estado={p.estado} red={p.red} />
                     {p.version_aprobada != null && (
                       <p className="mt-1 text-xs whitespace-nowrap text-on-surface-variant">
                         Versión {p.version_aprobada} aprobada
                       </p>
                     )}
                   </td>
-                  <CeldaMetrica valor={m?.me_gusta} titulo={meGusta[1]} hayLectura={Boolean(m)} />
-                  <CeldaMetrica valor={m?.comentarios} hayLectura={Boolean(m)} />
-                  <CeldaMetrica valor={m?.compartidos} hayLectura={Boolean(m)} />
+                  {/* TikTok nunca entrega métricas: "sin dato" en vez de "todavía no se leyeron". */}
+                  <CeldaMetrica valor={m?.me_gusta} titulo={meGusta[1]} hayLectura={Boolean(m) || p.red === 'tiktok'} />
+                  <CeldaMetrica valor={m?.comentarios} hayLectura={Boolean(m) || p.red === 'tiktok'} />
+                  <CeldaMetrica valor={m?.compartidos} hayLectura={Boolean(m) || p.red === 'tiktok'} />
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={(e) => {
@@ -348,8 +370,8 @@ function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, conX
         </table>
       </div>
       <p className="mt-3 text-xs text-on-surface-variant">
-        — todavía no se leyeron métricas{conX && ' (en X no se leen para no generar costo)'} · sin dato: Meta no
-        informa esa cifra
+        — todavía no se leyeron métricas{conX && ' (en X no se leen para no generar costo)'} · sin dato: la red no
+        informa esa cifra{conTikTok && ' (TikTok no entrega métricas con los permisos actuales)'}
       </p>
     </div>
   )

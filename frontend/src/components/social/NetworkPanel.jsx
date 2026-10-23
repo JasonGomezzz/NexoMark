@@ -14,7 +14,7 @@ const LOGOS = { instagram: instagramLogo, facebook: facebookLogo }
  */
 export default function NetworkPanel({ red, datos, anual, anio, puedeConectar }) {
   const nombre = etiquetaRed(red)
-  const { principales, secundarias, sinLectura } = metricasDeRed(red)
+  const { principales, secundarias, sinLectura, motivoSinLectura } = metricasDeRed(red)
   const total = datos?.publicaciones ?? 0
   const mesActual = indiceMesActual(anio)
   const esteAnio = mesActual !== -1
@@ -45,9 +45,11 @@ export default function NetworkPanel({ red, datos, anual, anio, puedeConectar })
             <>
               <p className="font-semibold text-on-surface">Aún no hay publicaciones en {nombre} este año</p>
               <p className="mt-1 max-w-sm text-sm text-on-surface-variant">
-                {sinLectura
-                  ? `Aparecen aquí cuando el marketero publica la versión para ${nombre} que aprobó el cliente.`
-                  : `Aparecen aquí cuando el cliente aprueba una campaña que tiene ${nombre} como destino.`}
+                {red === 'tiktok'
+                  ? 'Aparecen aquí cuando una campaña enviada al buzón se publica desde la app de TikTok. TikTok no entrega métricas: se verán como «sin dato».'
+                  : sinLectura
+                    ? `Aparecen aquí cuando el marketero publica la versión para ${nombre} que aprobó el cliente.`
+                    : `Aparecen aquí cuando el cliente aprueba una campaña que tiene ${nombre} como destino.`}
               </p>
               {puedeConectar && (
                 <Link to="/settings" className="mt-3 text-sm font-semibold text-primary hover:underline">
@@ -61,9 +63,15 @@ export default function NetworkPanel({ red, datos, anual, anio, puedeConectar })
         </div>
       ) : sinLectura ? (
         <>
+          {principales.length > 0 && (
+            <dl className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))] gap-4">
+              {principales.map(([campo, etiqueta]) => (
+                <Cifra key={campo} etiqueta={etiqueta} valor={null} grande />
+              ))}
+            </dl>
+          )}
           <p className="mt-6 rounded-2xl bg-surface-container-low px-5 py-4 text-sm text-on-surface-variant">
-            En {nombre} solo se cuentan las publicaciones: leer sus métricas cuesta en la API de pago por uso,
-            así que NexoMark no las consulta.
+            {motivoSinLectura}
           </p>
           <BarrasMensuales
             titulo="Publicaciones por mes"
