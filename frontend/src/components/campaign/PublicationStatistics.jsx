@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '@/services/api'
 import PlatformIcon from './PlatformIcon'
-import PlatformComparison from './PlatformComparison'
+import PlatformStatisticsExplorer from './PlatformStatisticsExplorer'
+import { statisticsHistory } from '@/services/publicationStatistics'
 
 const labels = { facebook: 'Facebook', instagram: 'Instagram', twitter: 'Twitter / X', tiktok: 'TikTok' }
 const metrics = { likes: 'Me gusta', shares: 'Compartidos', views: 'Vistas' }
@@ -15,6 +16,8 @@ export default function PublicationStatistics({ campaignId }) {
   const [busy, setBusy] = useState('')
   const [notice, setNotice] = useState('')
   const [year, setYear] = useState(new Date().getFullYear())
+  const [selectedPlatform, setSelectedPlatform] = useState(null)
+  const history = data ? (campaignId ? data.publications : statisticsHistory(data.publications, year, selectedPlatform)) : []
   const base = campaignId ? `/api/campaigns/${campaignId}/publication-statistics/` : '/api/campaigns/publication-statistics/'
   useEffect(() => {
     let active = true
@@ -51,7 +54,7 @@ export default function PublicationStatistics({ campaignId }) {
     {error && <p role="alert" className="text-error">{error} <button className="underline" onClick={() => setRefresh(v => v + 1)}>Reintentar</button></p>}
     {(!data || data.year !== year) && !error && <p role="status">Cargando estadísticas…</p>}
     {data && data.year === year && <>
-      {!campaignId && <PlatformComparison platforms={data.platforms} year={data.year} />}
+      {!campaignId && <PlatformStatisticsExplorer data={data} selected={selectedPlatform} onSelect={setSelectedPlatform} />}
       {campaignId && <div className="grid gap-6 xl:grid-cols-2">
         {Object.entries(labels).map(([platform, label]) => {
           const group = data.platforms[platform]
@@ -72,13 +75,13 @@ export default function PublicationStatistics({ campaignId }) {
       </div>}
       <p className="mt-4 text-xs leading-relaxed text-on-surface-variant">{data.note}</p>
       {notice && <p role="status" className="my-3 text-sm">{notice}</p>}
-      {data.publications.length === 0 ? <p className="mt-5 text-sm">Aún no hay publicaciones confirmadas para mostrar.</p> :
+      {history.length === 0 ? <p className="mt-5 text-sm">Aún no hay publicaciones confirmadas para {selectedPlatform ? labels[selectedPlatform] : 'mostrar'}{!campaignId ? ` en ${year}` : ''}.</p> :
         <div className="mt-6 overflow-x-auto"><table className="w-full text-left text-sm">
-          <caption className="mb-3 text-left font-semibold">Historial de publicaciones · incluye versiones anteriores</caption>
+          <caption className="mb-3 text-left font-semibold">Historial de publicaciones{!campaignId ? ` · ${selectedPlatform ? labels[selectedPlatform] : 'Todas las redes'} · ${year}` : ''} · incluye versiones anteriores</caption>
           <thead><tr className="border-b border-outline-variant">
             <th className="p-2">Publicación</th><th className="p-2">Me gusta</th><th className="p-2">Compartidos / Reposts</th><th className="p-2">Medición</th>
           </tr></thead>
-          <tbody>{data.publications.map(row => <tr key={`${row.platform}-${row.publication_id}`} className="border-b border-outline-variant">
+          <tbody>{history.map(row => <tr key={`${row.platform}-${row.publication_id}`} className="border-b border-outline-variant">
             <td className="p-2"><span className="flex items-center gap-2"><PlatformIcon platform={row.platform} />{labels[row.platform]} · {row.destination}</span>
               <Link className="underline" to={`/campaigns/${row.campaign_id}`}>{row.title}</Link><p className="text-xs">Versión {row.version}</p>
               {row.confirmation_source === 'user_confirmed_display_api' && <p className="text-xs">Publicación existente vinculada por el propietario y verificada por API; estado del envío original: {row.delivery_status}.</p>}

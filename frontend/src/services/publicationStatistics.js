@@ -34,3 +34,28 @@ export function platformComparisonData(platforms = {}, metric) {
     }
   })
 }
+
+export function platformMonthlyData(data, platform) {
+  if (!comparisonPlatforms.some(row => row.key === platform)) return []
+  return months.map((name, index) => {
+    const month = `${data.year}-${String(index + 1).padStart(2, '0')}`
+    const publications = data.monthly?.find(row => row.month === month)
+    const likes = data.monthly_likes?.find(row => row.month === month)
+    return {
+      month, name, publications: publications?.[platform] ?? null,
+      likes: likes?.[platform] ?? null,
+      covered: likes?.[`${platform}_covered`] ?? 0,
+      total: likes?.[`${platform}_publications`] ?? publications?.[platform] ?? null,
+    }
+  })
+}
+
+export function statisticsHistory(rows, year, platform = null) {
+  // Match the backend's publication_month(), independent of the browser timezone.
+  const calendar = new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone: 'America/Lima' })
+  return rows.filter(row => {
+    if (platform && row.platform !== platform) return false
+    const date = new Date(row.registered_at)
+    return !Number.isNaN(date.getTime()) && Number(calendar.format(date)) === Number(year)
+  })
+}

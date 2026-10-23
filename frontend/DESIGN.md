@@ -264,7 +264,9 @@ Mientras Axios trae datos (uniforme en toda la app):
 - Colores de series `chart-facebook`, `chart-instagram`, `chart-twitter`, `chart-tiktok`, con variantes claras/oscuras. Se emiten con `@theme static` para que también estén disponibles en SVG.
 - Los colores se acompañan de nombres, iconos, cifras y cobertura de medición legibles sin hover. No se depende solo del color ni de la gráfica para leer los datos.
 - Valores ausentes no se transforman en cero; las sumas de cobertura incompleta se identifican como parciales. No se estiman compartidos a partir de likes.
-- Esta primera etapa sustituye las tarjetas mensuales separadas del dashboard por la comparativa anual. El contrato mensual del backend se conserva; el acceso interactivo al detalle mensual por red queda para una etapa posterior.
+- La vista inicial es la comparativa anual. Un selector con iconos abre el detalle de cada red: totales, publicaciones/Me gusta mensuales y métricas específicas. «Volver a comparativa» restaura la vista general sin cambiar el año.
+- Los meses proceden de `monthly` y `monthly_likes`, sin nuevas consultas a proveedores. Los valores exactos y su cobertura están disponibles en un desplegable accesible, sin repetir una tabla abierta por defecto.
+- El historial del dashboard sigue el año y la red elegidos, usando el calendario America/Lima igual que el backend. La vista de estadísticas dentro de una campaña conserva su comportamiento previo.
 - El historial y la consulta manual de métricas se conservan; esta presentación no añade consultas a proveedores, permisos ni consumo de API.
 - Validación visual del componente con datos de prueba explícitamente etiquetados (fuera del producto); no constituye una nueva comprobación de métricas reales.
 

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { monthLabel, monthlyChartData, platformComparisonData } from '../src/services/publicationStatistics.js'
+import { monthLabel, monthlyChartData, platformComparisonData, platformMonthlyData, statisticsHistory } from '../src/services/publicationStatistics.js'
 
 test('months use unambiguous Spanish labels in calendar order', () => {
   assert.deepEqual(Array.from({ length: 12 }, (_, i) => monthLabel(`2026-${String(i + 1).padStart(2, '0')}`)),
@@ -48,4 +48,44 @@ test('chart labels preserve actual zeroes and missing measurements', () => {
   assert.equal(result[1].facebook, null)
   assert.equal(result[0].name, 'Ene')
   assert.equal(rows[0].name, undefined)
+})
+
+test('platform detail has twelve months, preserving zero and missing likes separately', () => {
+  const data = { year: 2026,
+    monthly: [{ month: '2026-01', instagram: 2 }, { month: '2026-02', instagram: 0 }],
+    monthly_likes: [{ month: '2026-01', instagram: 0, instagram_covered: 1, instagram_publications: 2 },
+      { month: '2026-02', instagram: null, instagram_covered: 0, instagram_publications: 0 }],
+  }
+  const rows = platformMonthlyData(data, 'instagram')
+  assert.equal(rows.length, 12)
+  assert.equal(rows[0].name, 'Ene')
+  assert.equal(rows[0].publications, 2)
+  assert.equal(rows[0].likes, 0)
+  assert.equal(rows[0].covered, 1)
+  assert.equal(rows[0].total, 2)
+  assert.equal(rows[1].publications, 0)
+  assert.equal(rows[1].likes, null)
+  assert.equal(rows[11].month, '2026-12')
+  assert.equal(rows[11].likes, null)
+  assert.equal(rows[11].publications, null)
+  assert.deepEqual(platformMonthlyData(data, 'linkedin'), [])
+})
+
+test('monthly detail never borrows another year or platform', () => {
+  const data = { year: 2025, monthly: [{ month: '2026-01', facebook: 99 }],
+    monthly_likes: [{ month: '2025-01', tiktok: 99 }] }
+  assert.ok(platformMonthlyData(data, 'facebook').every(row => row.publications === null && row.likes === null))
+})
+
+test('history follows the selected network and backend Lima calendar year', () => {
+  const rows = [
+    { platform: 'facebook', registered_at: '2026-01-01T04:59:59Z', id: 1 },
+    { platform: 'facebook', registered_at: '2026-01-01T05:00:00Z', id: 2 },
+    { platform: 'tiktok', registered_at: '2026-08-01T12:00:00Z', id: 3 },
+    { platform: 'twitter', registered_at: 'invalid', id: 4 },
+  ]
+  assert.deepEqual(statisticsHistory(rows, 2026, 'facebook').map(row => row.id), [2])
+  assert.deepEqual(statisticsHistory(rows, 2025, 'facebook').map(row => row.id), [1])
+  assert.deepEqual(statisticsHistory(rows, 2026).map(row => row.id), [2, 3])
+  assert.equal(rows.length, 4)
 })
