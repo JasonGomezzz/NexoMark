@@ -12,6 +12,8 @@ import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthBrandContent } from '../hooks/useAuthBrandContent'
+import GoogleAccess from '@/components/auth/GoogleAccess'
+import { setAuthItem, startSession } from '../services/session'
 import { cn } from '@/lib/utils'
 
 const ROLES = [
@@ -22,6 +24,8 @@ const ROLES = [
 /**
  * Registro: mismo marco que el login. POST /api/auth/register/ con
  * {email, nombre, password, rol}; solo marketero o cliente (nunca superadmin).
+ * El rol se elige primero: vale para el formulario y para "Registrarse con Google",
+ * que lo fija en el servidor antes de abrir la ventana de Google.
  */
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -38,6 +42,13 @@ export default function RegisterPage() {
 
   // Estado local en vez de watch(): el React Compiler puede optimizar el componente.
   const [rolSel, setRolSel] = useState('marketero')
+
+  async function entrarConGoogle(sesion) {
+    startSession(sesion)
+    if (sesion.email) setAuthItem('user_email', sesion.email)
+    toast.success('Listo. Ya estás dentro de NexoMark IA.')
+    navigate('/dashboard', { replace: true })
+  }
 
   async function onSubmit({ nombre, email, password, rol }) {
     setLoading(true)
@@ -95,40 +106,6 @@ export default function RegisterPage() {
             </p>
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-5">
-              <AuthField
-                id="nombre"
-                label="Nombre completo"
-                autoComplete="name"
-                error={errors.nombre?.message}
-                {...register('nombre', { required: 'Escribe tu nombre' })}
-              />
-
-              <AuthField
-                id="email"
-                type="email"
-                label="Correo electrónico"
-                autoComplete="email"
-                placeholder="nombre@empresa.com"
-                error={errors.email?.message}
-                {...register('email', {
-                  required: 'Escribe tu correo',
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Ese correo no parece válido' },
-                })}
-              />
-
-              <AuthField
-                id="password"
-                type="password"
-                label="Contraseña"
-                autoComplete="new-password"
-                hint="Mínimo 8 caracteres."
-                error={errors.password?.message}
-                {...register('password', {
-                  required: 'Escribe una contraseña',
-                  minLength: { value: 8, message: 'Usa al menos 8 caracteres' },
-                })}
-              />
-
               <fieldset>
                 <legend className="text-sm font-medium text-on-surface">¿Cómo usarás NexoMark?</legend>
                 <div role="radiogroup" aria-label="Tipo de cuenta" className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -171,10 +148,55 @@ export default function RegisterPage() {
                 <input type="hidden" {...register('rol', { required: true })} />
               </fieldset>
 
+              <AuthField
+                id="nombre"
+                label="Nombre completo"
+                autoComplete="name"
+                error={errors.nombre?.message}
+                {...register('nombre', { required: 'Escribe tu nombre' })}
+              />
+
+              <AuthField
+                id="email"
+                type="email"
+                label="Correo electrónico"
+                autoComplete="email"
+                placeholder="nombre@empresa.com"
+                error={errors.email?.message}
+                {...register('email', {
+                  required: 'Escribe tu correo',
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Ese correo no parece válido' },
+                })}
+              />
+
+              <AuthField
+                id="password"
+                type="password"
+                label="Contraseña"
+                autoComplete="new-password"
+                hint="Mínimo 8 caracteres."
+                error={errors.password?.message}
+                {...register('password', {
+                  required: 'Escribe una contraseña',
+                  minLength: { value: 8, message: 'Usa al menos 8 caracteres' },
+                })}
+              />
+
+
+
               <Button type="submit" size="lg" disabled={loading} className="w-full">
                 {loading ? 'Creando cuenta…' : 'Crear cuenta'}
               </Button>
             </form>
+
+            <div className="mt-6">
+              <GoogleAccess
+                proposito="register"
+                rol={rolSel}
+                rolEtiqueta={ROLES.find((r) => r.val === rolSel)?.label}
+                onSesion={entrarConGoogle}
+              />
+            </div>
 
             <p className="mt-8 text-[15px] text-on-surface-variant">
               ¿Ya tienes una cuenta?{' '}

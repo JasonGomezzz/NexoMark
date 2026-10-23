@@ -9,12 +9,15 @@ import AuthBrandPanel from '@/components/auth/AuthBrandPanel'
 import AuthField from '@/components/auth/AuthField'
 import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import GoogleAccess from '@/components/auth/GoogleAccess'
 import { useAuthBrandContent } from '../hooks/useAuthBrandContent'
+import { setAuthItem, startSession } from '../services/session'
 
 /**
  * Inicio de sesión: formulario a la izquierda, panel marino de marca a la derecha.
  * useAuth().login → JWT → /dashboard. "Mantener sesión iniciada" decide si la
- * sesión vive en este navegador o solo en esta pestaña. Sin OAuth social.
+ * sesión vive en este navegador o solo en esta pestaña (también al entrar con Google).
+ * "Continuar con Google" solo aparece si el servidor tiene client ID.
  */
 export default function LoginPage() {
   const { login, loading } = useAuth()
@@ -24,8 +27,16 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm()
+
+  // Google responde con los mismos JWT que /api/auth/token/.
+  async function entrarConGoogle(sesion) {
+    startSession(sesion, { remember: Boolean(getValues('remember')) })
+    if (sesion.email) setAuthItem('user_email', sesion.email)
+    navigate('/dashboard', { replace: true })
+  }
 
   async function onSubmit({ email, password, remember }) {
     const result = await login(email, password, { remember: Boolean(remember) })
@@ -124,6 +135,10 @@ export default function LoginPage() {
                 {loading ? 'Ingresando…' : 'Iniciar sesión'}
               </Button>
             </form>
+
+            <div className="mt-6">
+              <GoogleAccess proposito="login" onSesion={entrarConGoogle} />
+            </div>
 
             <p className="mt-8 text-[15px] text-on-surface-variant">
               ¿No tienes una cuenta?{' '}
