@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { MailCheck } from 'lucide-react'
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
@@ -15,9 +15,12 @@ const INPUT_CLASS =
  * "¿Olvidaste tu contraseña?" — POST /api/auth/password-reset/.
  * El backend responde lo mismo exista o no la cuenta, así que aquí tampoco se
  * distingue: siempre se muestra el mismo aviso tras enviar.
+ * Desde Configuración ("Crear contraseña", cuentas creadas con Google) llega
+ * con el correo de la cuenta ya escrito.
  */
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('')
+  const location = useLocation()
+  const [email, setEmail] = useState(() => (typeof location.state?.email === 'string' ? location.state.email : ''))
   const [enviando, setEnviando] = useState(false)
   const [enviado, setEnviado] = useState(false)
   const [aviso, setAviso] = useState('')

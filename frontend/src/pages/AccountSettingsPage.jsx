@@ -1,30 +1,21 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
-import {
-  Mail,
-  ShieldCheck,
-  Coins,
-  CalendarDays,
-  AlertCircle,
-  Lock,
-  Moon,
-  Sun,
-} from 'lucide-react'
+import { Coins, AlertCircle, KeyRound, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react'
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '../hooks/useTheme'
 import SocialConnectionsCard from '@/components/social/SocialConnectionsCard'
 import ProfilePhoto from '@/components/account/ProfilePhoto'
+import EmailChange, { SinContrasena } from '@/components/account/EmailChange'
 import { setAuthItem } from '../services/session'
 
 /**
- * Configuración de cuenta (portado de Stitch: account_settings, adaptado a los
- * endpoints REALES):
- * - GET /api/auth/me/            → perfil + tokens_disponibles
- * - PATCH /api/auth/me/          → editar nombre y foto (email y rol los gestiona el SuperAdmin)
+ * Configuración de cuenta, sobre los endpoints reales de Django:
+ * - GET/PATCH /api/auth/me/ → perfil, nombre y foto (multipart `avatar` o `remove_avatar`)
+ * - /api/auth/me/change-email/ → cambio de correo con doble confirmación
  * - POST /api/auth/me/change-password/ → cambio de contraseña (exige la actual)
- * La sección "Suscripción/Upgrade Plan" del mockup NO se porta: no existe billing.
+ * El rol lo administra el SuperAdmin. No hay planes ni facturación.
  */
 const ROLE_LABEL = {
   superadmin: 'SuperAdmin',
@@ -78,10 +69,10 @@ export default function AccountSettingsPage() {
       const { data } = await api.patch('/api/auth/me/', { nombre: nombre.trim() })
       setUser(data.data.user)
       setAuthItem('user_nombre', data.data.user.nombre)
-      toast.success('Perfil actualizado')
+      toast.success('Nombre actualizado')
     } catch (err) {
       const fieldError = err.response?.data?.data?.nombre?.[0]
-      toast.error(fieldError || err.response?.data?.message || 'No se pudo actualizar el perfil')
+      toast.error(fieldError || err.response?.data?.message || 'No se pudo actualizar el nombre')
     } finally {
       setSavingProfile(false)
     }
@@ -116,8 +107,8 @@ export default function AccountSettingsPage() {
     return (
       <div className="max-w-3xl space-y-4">
         <div className="h-10 w-64 animate-pulse rounded bg-surface-container-high" />
-        <div className="h-52 animate-pulse rounded-xl border border-outline-variant bg-white" />
-        <div className="h-40 animate-pulse rounded-xl border border-outline-variant bg-white" />
+        <div className="h-72 animate-pulse rounded-xl border border-outline-variant bg-white" />
+        <div className="h-96 animate-pulse rounded-xl border border-outline-variant bg-white" />
       </div>
     )
   }
@@ -130,6 +121,10 @@ export default function AccountSettingsPage() {
       </div>
     )
   }
+
+  const miembroDesde = user.fecha_creacion
+    ? new Date(user.fecha_creacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
 
   const usaCreditos = user.rol === 'marketero' || user.rol === 'superadmin'
   const tokens = user.tokens_disponibles ?? 0
@@ -148,124 +143,116 @@ export default function AccountSettingsPage() {
         <header>
           <h1 className="text-4xl font-bold tracking-tight text-on-surface">Configuración</h1>
           <p className="mt-2 text-base text-on-surface-variant">
-            Gestiona tu perfil, tu contraseña y el estado de tu cuenta.
+            Tu perfil, cómo entras a NexoMark y las redes donde se publica.
           </p>
         </header>
 
-        {/* Perfil */}
-        <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-on-surface">Datos del perfil</h2>
-            <p className="text-sm text-on-surface-variant">
-              Actualiza tu foto y tu nombre. El email y el rol los gestiona el SuperAdmin.
-            </p>
-          </div>
-          <div className="mb-6">
+        {/* Perfil: foto y nombre */}
+        <section aria-labelledby="perfil-titulo" className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+          <h2 id="perfil-titulo" className="flex items-center gap-2 text-xl font-semibold text-on-surface">
+            <UserRound className="h-5 w-5 text-primary" aria-hidden="true" />
+            Perfil
+          </h2>
+          <p className="mt-1 text-sm text-on-surface-variant">
+            {ROLE_LABEL[user.rol] ?? user.rol}
+            {miembroDesde && ` · en NexoMark desde el ${miembroDesde}`}. El rol lo administra el SuperAdmin.
+          </p>
+
+          <div className="mt-6">
             <ProfilePhoto usuario={user} onCambio={setUser} />
           </div>
 
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-on-surface">Nombre</span>
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  minLength={2}
-                  maxLength={150}
-                  required
-                  className={inputCls}
-                />
-              </label>
-              <ReadonlyField icon={Mail} label="Email" value={user.email} />
-              <ReadonlyField
-                icon={ShieldCheck}
-                label="Rol"
-                value={ROLE_LABEL[user.rol] ?? user.rol}
-              />
-              <ReadonlyField
-                icon={CalendarDays}
-                label="Miembro desde"
-                value={
-                  user.fecha_creacion
-                    ? new Date(user.fecha_creacion).toLocaleDateString('es-PE', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })
-                    : '—'
-                }
-              />
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={!nombreCambiado || savingProfile}>
-                {savingProfile ? 'Guardando…' : 'Guardar cambios'}
-              </Button>
-            </div>
-          </form>
-        </section>
-
-        {/* Seguridad */}
-        <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-          <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold text-on-surface">
-            <Lock className="h-5 w-5 text-primary" />
-            Seguridad
-          </h2>
-          <p className="mb-5 text-sm text-on-surface-variant">
-            Cambia tu contraseña. Necesitas la actual para confirmar.
-          </p>
-
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <label className="block sm:max-w-sm">
-              <span className="mb-1.5 block text-sm font-medium text-on-surface">
-                Contraseña actual
-              </span>
+          <form onSubmit={handleSaveProfile} className="mt-6 flex flex-col gap-3 border-t border-outline-variant/60 pt-6 sm:flex-row sm:items-end">
+            <label className="block flex-1">
+              <span className="mb-1.5 block text-sm font-medium text-on-surface">Nombre</span>
               <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
+                type="text"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                minLength={2}
+                maxLength={150}
                 required
+                autoComplete="name"
                 className={inputCls}
               />
             </label>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-on-surface">
-                  Nueva contraseña
-                </span>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  autoComplete="new-password"
-                  minLength={8}
-                  required
-                  className={inputCls}
-                />
-                <p className="mt-1 text-xs text-on-surface-variant">Mínimo 8 caracteres.</p>
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-on-surface">
-                  Confirmar nueva contraseña
-                </span>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                  className={inputCls}
-                />
-              </label>
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit" variant="outline" disabled={!passwordValido || savingPassword}>
-                {savingPassword ? 'Actualizando…' : 'Actualizar contraseña'}
-              </Button>
-            </div>
+            <Button type="submit" disabled={!nombreCambiado || savingProfile}>
+              {savingProfile ? 'Guardando…' : 'Guardar nombre'}
+            </Button>
           </form>
+        </section>
+
+        {/* Acceso y seguridad: correo, contraseña y Google */}
+        <section aria-labelledby="acceso-titulo" className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+          <h2 id="acceso-titulo" className="flex items-center gap-2 text-xl font-semibold text-on-surface">
+            <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+            Acceso y seguridad
+          </h2>
+          <p className="mt-1 text-sm text-on-surface-variant">Cómo entras a NexoMark en la web y en la app.</p>
+          {!user.has_password && (
+            <SinContrasena email={user.email}>
+              Tu cuenta entra con Google y aún no tiene contraseña. Créala con «Olvidé mi contraseña» (te enviamos un
+              enlace a {user.email}): sin ella no puedes cambiar el correo.
+            </SinContrasena>
+          )}
+
+          <div className="mt-6 divide-y divide-outline-variant/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
+            <EmailChange usuario={user} />
+
+            <div>
+              <h3 className="flex items-center gap-2 text-base font-semibold text-on-surface">
+                <KeyRound className="h-4 w-4 text-primary" aria-hidden="true" />
+                Contraseña
+              </h3>
+              {user.has_password ? (
+                <form onSubmit={handleChangePassword} className="mt-4 space-y-4">
+                  <label className="block sm:max-w-sm">
+                    <span className="mb-1.5 block text-sm font-medium text-on-surface">Contraseña actual</span>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      autoComplete="current-password"
+                      required
+                      className={inputCls}
+                    />
+                  </label>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm font-medium text-on-surface">Nueva contraseña</span>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                        className={inputCls}
+                      />
+                      <p className="mt-1 text-[13px] text-on-surface-variant">Mínimo 8 caracteres.</p>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm font-medium text-on-surface">Confirmar nueva contraseña</span>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        autoComplete="new-password"
+                        required
+                        className={inputCls}
+                      />
+                    </label>
+                  </div>
+                  <Button type="submit" size="sm" variant="outline" disabled={!passwordValido || savingPassword}>
+                    {savingPassword ? 'Actualizando…' : 'Actualizar contraseña'}
+                  </Button>
+                </form>
+              ) : (
+                <p className="mt-2 text-[13px] text-on-surface-variant">Aún no tienes: entras con Google.</p>
+              )}
+            </div>
+
+          </div>
         </section>
 
         {/* Redes conectadas — el dueño de la cuenta autoriza; el marketero elige destino al enviar */}
@@ -349,17 +336,5 @@ export default function AccountSettingsPage() {
         )}
       </div>
     </>
-  )
-}
-
-function ReadonlyField({ icon: Icon, label, value }) {
-  return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3">
-      <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-        <Icon className="h-3.5 w-3.5" />
-        {label}
-      </p>
-      <p className="truncate text-sm font-medium text-on-surface">{value || '—'}</p>
-    </div>
   )
 }

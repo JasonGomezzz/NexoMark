@@ -1,4 +1,4 @@
-/** Llamadas de la cuenta propia a /api/auth/ de Django (foto de perfil). */
+/** Llamadas de la cuenta propia a /api/auth/ de Django (foto y cambio de correo). */
 import api from './api'
 
 const usuario = (r) => r.data.data.user
@@ -21,4 +21,11 @@ export const cuentaApi = {
     api
       .get('/api/auth/me/avatar/', { responseType: 'blob' })
       .then((r) => (r.status === 200 && r.data?.size > 0 ? r.data : null)),
+
+  cambioCorreo: () => api.get('/api/auth/me/change-email/').then((r) => r.data.data.pending),
+  pedirCambioCorreo: (nuevo, password) =>
+    api
+      .post('/api/auth/me/change-email/', { new_email: nuevo.trim(), current_password: password })
+      .then((r) => ({ pendiente: r.data.data.pending, mensaje: r.data.message })),
+  cancelarCambioCorreo: () => api.delete('/api/auth/me/change-email/').then((r) => r.data.message),
 }

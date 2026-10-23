@@ -3,9 +3,13 @@ import assert from 'node:assert/strict'
 import {
   FOTO_MAX_BYTES,
   claveFoto,
+  formatoMinutos,
   formatoPeso,
   iniciales,
   mensajeApi,
+  pasosCambioCorreo,
+  segundosHasta,
+  validarCambioCorreo,
   validarFoto,
 } from '../src/services/cuenta.js'
 
@@ -55,4 +59,37 @@ test('mensajeApi prefers the field error, then the server message, then the defa
   assert.equal(mensajeApi(general), 'La contraseña actual no es correcta.')
   assert.equal(mensajeApi({ response: { data: {} } }, 'Falló'), 'Falló')
   assert.match(mensajeApi(new Error('red')), /conectar con el servidor/)
+})
+
+test('the email change countdown reads the server expiry and stops at zero', () => {
+  const ahora = Date.parse('2026-10-22T15:00:00Z')
+  assert.equal(segundosHasta('2026-10-22T15:30:00Z', ahora), 1800)
+  assert.equal(segundosHasta('2026-10-22T14:59:00Z', ahora), 0)
+  assert.equal(segundosHasta(null, ahora), 0)
+  assert.equal(formatoMinutos(1800), '30:00')
+  assert.equal(formatoMinutos(65), '1:05')
+  assert.equal(formatoMinutos(-3), '0:00')
+})
+
+test('pasosCambioCorreo lists the current and the new address with their confirmation', () => {
+  const pasos = pasosCambioCorreo(
+    { new_email: 'nuevo@agencia.pe', old_confirmed: true, new_confirmed: false, expires_at: '2026-10-22T15:30:00Z' },
+    'ana@agencia.pe',
+  )
+  assert.deepEqual(
+    pasos.map((p) => [p.lado, p.correo, p.confirmado]),
+    [
+      ['old', 'ana@agencia.pe', true],
+      ['new', 'nuevo@agencia.pe', false],
+    ],
+  )
+  assert.deepEqual(pasosCambioCorreo(null, 'ana@agencia.pe'), [])
+})
+
+test('validarCambioCorreo checks the new address and the password before calling Django', () => {
+  assert.equal(validarCambioCorreo({ nuevo: ' Nuevo@Agencia.pe ', password: 'x' }, 'ana@agencia.pe'), null)
+  assert.match(validarCambioCorreo({ nuevo: '', password: 'x' }, 'ana@agencia.pe'), /correo nuevo/)
+  assert.match(validarCambioCorreo({ nuevo: 'sin-arroba', password: 'x' }, 'ana@agencia.pe'), /no parece válido/)
+  assert.match(validarCambioCorreo({ nuevo: 'ANA@agencia.pe', password: 'x' }, 'ana@agencia.pe'), /ya es tu correo/)
+  assert.match(validarCambioCorreo({ nuevo: 'otro@agencia.pe', password: '' }, 'ana@agencia.pe'), /contraseña actual/)
 })
