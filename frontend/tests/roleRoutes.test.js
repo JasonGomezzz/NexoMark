@@ -18,7 +18,9 @@ function guardOf(path) {
 }
 
 test('/stats, /dashboard, /settings y el retorno de Meta quedan abiertos a los tres roles', () => {
-  for (const path of ['/stats', '/dashboard', '/settings', '/redes/meta-retorno']) assert.equal(guardOf(path), null, path)
+  for (const path of ['/stats', '/dashboard', '/settings', '/redes/meta-retorno', '/redes/tiktok-retorno']) {
+    assert.equal(guardOf(path), null, path)
+  }
 })
 
 test('cada ruta exclusiva tiene su rol', () => {

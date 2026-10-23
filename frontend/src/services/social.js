@@ -3,7 +3,10 @@
  * Las llamadas a la API están en socialApi.js.
  */
 
-const REDES = { instagram: 'Instagram', facebook: 'Facebook', x: 'X' }
+const REDES = { instagram: 'Instagram', facebook: 'Facebook', x: 'X', tiktok: 'TikTok' }
+
+/** Redes que se publican solas al aprobar (Instagram y Facebook, con el login de Meta). */
+export const REDES_META = ['instagram', 'facebook']
 
 export function etiquetaRed(red) {
   return REDES[red] ?? red
@@ -78,6 +81,17 @@ const MOTIVOS_RETORNO_X = {
 
 export function mensajeMotivoRetornoX(motivo) {
   return MOTIVOS_RETORNO_X[motivo] ?? 'No se pudo conectar la cuenta de X.'
+}
+
+const MOTIVOS_RETORNO_TIKTOK = {
+  cancelado: 'Cancelaste la conexión con TikTok. No se conectó ninguna cuenta.',
+  sesion: 'El enlace de conexión caducó o ya se usó. Vuelve a conectar la cuenta desde Redes conectadas.',
+  sin_codigo: 'TikTok no devolvió la autorización. Vuelve a intentarlo.',
+  sin_datos: 'No llegaron los datos de TikTok. Vuelve a conectar la cuenta desde Redes conectadas.',
+}
+
+export function mensajeMotivoRetornoTikTok(motivo) {
+  return MOTIVOS_RETORNO_TIKTOK[motivo] ?? 'No se pudo conectar la cuenta de TikTok.'
 }
 
 export function textoCuentasConectadas(cantidad) {

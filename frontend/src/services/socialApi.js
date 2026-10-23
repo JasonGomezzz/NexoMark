@@ -54,4 +54,11 @@ export const socialApi = {
         confirmo_revision: confirmoRevision,
       })
       .then((r) => r.data),
+
+  // ── TikTok (Sandbox): conectar y enviar campañas aprobadas al buzón; no da métricas ──
+  /** {configurado, medios_verificados, max_texto} */
+  tiktokConfig: () => api.get('/api/social/tiktok/config/').then((r) => r.data.data),
+  urlConexionTikTok: () => api.get('/api/social/tiktok/connect/').then((r) => r.data.data.url),
+  completarConexionTikTok: (code, state) =>
+    api.post('/api/social/tiktok/complete/', { code, state }).then((r) => r.data.data),
 }

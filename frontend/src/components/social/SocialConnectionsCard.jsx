@@ -3,8 +3,16 @@ import toast from 'react-hot-toast'
 import { Link2, Loader2, Unlink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import RedIcon from './RedIcon'
-import { etiquetaRed } from '../../services/social'
+import { REDES_META, etiquetaRed } from '../../services/social'
 import { socialApi } from '../../services/socialApi'
+
+/** URL de autorización de cada red (state de un solo uso en el servidor). */
+const URL_CONEXION = {
+  meta: socialApi.urlConexion,
+  x: socialApi.urlConexionX,
+  tiktok: socialApi.urlConexionTikTok,
+}
+const NOMBRE = { meta: 'Meta', x: 'X', tiktok: 'TikTok' }
 
 /**
  * "Redes conectadas": el dueño de la cuenta (cliente) o el marketero autoriza
@@ -12,12 +20,14 @@ import { socialApi } from '../../services/socialApi'
  * nunca pasa por MarketMind; el servidor guarda un token cifrado.
  * Al volver de Meta, /redes/meta-retorno termina la conexión y regresa aquí.
  * X es opcional: el botón solo aparece si el servidor la tiene encendida.
+ * TikTok aparece si el servidor lo tiene configurado; conectar no envía ni publica nada.
  */
 export default function SocialConnectionsCard() {
   const [conexiones, setConexiones] = useState([])
   const [cargando, setCargando] = useState(true)
   const [conectando, setConectando] = useState(null)
   const [xHabilitado, setXHabilitado] = useState(false)
+  const [tiktok, setTiktok] = useState(false)
 
   useEffect(() => {
     let vigente = true
@@ -30,6 +40,10 @@ export default function SocialConnectionsCard() {
       .xConfig()
       .then((config) => vigente && setXHabilitado(Boolean(config.habilitado)))
       .catch(() => vigente && setXHabilitado(false))
+    socialApi
+      .tiktokConfig()
+      .then((config) => vigente && setTiktok(Boolean(config.configurado)))
+      .catch(() => vigente && setTiktok(false))
     return () => {
       vigente = false
     }
@@ -38,11 +52,9 @@ export default function SocialConnectionsCard() {
   async function conectar(red) {
     setConectando(red)
     try {
-      window.location.assign(await (red === 'x' ? socialApi.urlConexionX() : socialApi.urlConexion()))
+      window.location.assign(await URL_CONEXION[red]())
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || `No se pudo iniciar la conexión con ${red === 'x' ? 'X' : 'Meta'}.`,
-      )
+      toast.error(err.response?.data?.message || `No se pudo iniciar la conexión con ${NOMBRE[red]}.`)
       setConectando(null)
     }
   }
@@ -71,6 +83,12 @@ export default function SocialConnectionsCard() {
         <p className="-mt-3 mb-5 text-sm text-on-surface-variant">
           X es opcional y no se publica al aprobar: el marketero prepara una versión corta, la apruebas y
           recién entonces se publica, con un costo por post.
+        </p>
+      )}
+      {tiktok && (
+        <p className="-mt-3 mb-5 text-sm text-on-surface-variant">
+          TikTok no publica solo: el marketero envía la campaña aprobada al buzón de la cuenta y su dueño termina
+          de publicarla en la app de TikTok. TikTok no entrega estadísticas.
         </p>
       )}
 
@@ -108,8 +126,14 @@ export default function SocialConnectionsCard() {
           disabled={conectando !== null}
         >
           {conectando === 'meta' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-          {conexiones.some((c) => c.red !== 'x') ? 'Conectar otra cuenta' : 'Conectar Instagram y Facebook'}
+          {conexiones.some((c) => REDES_META.includes(c.red)) ? 'Conectar otra cuenta' : 'Conectar Instagram y Facebook'}
         </Button>
+        {tiktok && (
+          <Button variant="outline" onClick={() => conectar('tiktok')} disabled={conectando !== null}>
+            {conectando === 'tiktok' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RedIcon red="tiktok" />}
+            Conectar TikTok
+          </Button>
+        )}
         {xHabilitado && (
           <Button variant="outline" onClick={() => conectar('x')} disabled={conectando !== null}>
             {conectando === 'x' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RedIcon red="x" />}

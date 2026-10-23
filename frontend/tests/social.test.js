@@ -16,6 +16,7 @@ import {
   mostrarX,
   serieAnual,
   textoCuentasConectadas,
+  mensajeMotivoRetornoTikTok,
 } from '../src/services/social.js'
 
 test('leerRetornoMeta reads code and state from the fragment and reports every error', () => {
@@ -56,7 +57,8 @@ test('a publication stuck in publicando for more than 5 minutes can be retried',
 
 test('labels fall back to the raw value for unknown networks and states', () => {
   assert.equal(etiquetaRed('instagram'), 'Instagram')
-  assert.equal(etiquetaRed('tiktok'), 'tiktok')
+  assert.equal(etiquetaRed('tiktok'), 'TikTok')
+  assert.equal(etiquetaRed('linkedin'), 'linkedin')
   assert.equal(estadoPublicacion('publicado').tono, 'ok')
   assert.equal(estadoPublicacion('fallido').tono, 'error')
   assert.equal(estadoPublicacion('nuevo').texto, 'nuevo')
@@ -142,4 +144,10 @@ test('haceCuanto and alcanceDelRol speak plain Spanish', () => {
   assert.equal(haceCuanto('2026-10-05T18:00:00Z', ahora), 'hace 1 día')
   assert.match(alcanceDelRol('marketero'), /tus clientes/)
   assert.match(alcanceDelRol('desconocido'), /tus publicaciones/)
+})
+
+test('mensajeMotivoRetornoTikTok explains each way back from TikTok', () => {
+  assert.match(mensajeMotivoRetornoTikTok('cancelado'), /Cancelaste la conexión con TikTok/)
+  assert.match(mensajeMotivoRetornoTikTok('sesion'), /caducó/)
+  assert.match(mensajeMotivoRetornoTikTok('otro'), /No se pudo conectar la cuenta de TikTok/)
 })
