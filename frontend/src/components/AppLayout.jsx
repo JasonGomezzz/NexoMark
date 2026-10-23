@@ -21,6 +21,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useVerifiedUser } from '../hooks/useVerifiedUser'
 import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import Avatar from '@/components/account/Avatar'
+import { useFotoPerfil } from '../hooks/useFotoPerfil'
 import { cn } from '@/lib/utils'
 
 /**
@@ -59,16 +61,8 @@ const ROLE_LABEL = {
   cliente: 'Cliente',
 }
 
-function SidebarContent({ role, nombre, tokens, showCredits, onNavigate, onLogout, onCredits }) {
+function SidebarContent({ role, nombre, foto, tokens, showCredits, onNavigate, onLogout, onCredits }) {
   const navItems = NAV_ITEMS[role] ?? NAV_ITEMS.cliente
-  const iniciales =
-    nombre
-      .split(' ')
-      .filter(Boolean)
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || 'U'
 
   return (
     <div className="flex h-full flex-col">
@@ -131,12 +125,7 @@ function SidebarContent({ role, nombre, tokens, showCredits, onNavigate, onLogou
 
       <div className="border-t border-navy-line px-3 pb-4 pt-4">
         <div className="flex items-center gap-3 px-2">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-turquoise text-sm font-bold text-navy"
-            aria-hidden="true"
-          >
-            {iniciales}
-          </div>
+          <Avatar nombre={nombre} src={foto} tono="navy" className="h-10 w-10 text-sm" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-on-navy">{nombre || 'Usuario'}</p>
             <p className="text-[13px] text-on-navy-muted">{ROLE_LABEL[role] ?? role}</p>
@@ -173,6 +162,8 @@ export default function AppLayout() {
   const verified = useVerifiedUser()
   const role = verified?.rol || 'cliente'
   const nombre = getNombre() || verified?.nombre || ''
+  // Foto de perfil: se descarga una vez y cambia en el acto si se sube otra en Configuración.
+  const foto = useFotoPerfil(verified)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const menuButtonRef = useRef(null)
   const drawerRef = useRef(null)
@@ -234,6 +225,7 @@ export default function AppLayout() {
   const sidebarProps = {
     role,
     nombre,
+    foto,
     tokens,
     showCredits,
     onNavigate: () => setDrawerOpen(false),

@@ -15,13 +15,14 @@ import api from '../services/api'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '../hooks/useTheme'
 import SocialConnectionsCard from '@/components/social/SocialConnectionsCard'
+import ProfilePhoto from '@/components/account/ProfilePhoto'
 import { setAuthItem } from '../services/session'
 
 /**
  * Configuración de cuenta (portado de Stitch: account_settings, adaptado a los
  * endpoints REALES):
  * - GET /api/auth/me/            → perfil + tokens_disponibles
- * - PATCH /api/auth/me/          → editar nombre (email y rol los gestiona el SuperAdmin)
+ * - PATCH /api/auth/me/          → editar nombre y foto (email y rol los gestiona el SuperAdmin)
  * - POST /api/auth/me/change-password/ → cambio de contraseña (exige la actual)
  * La sección "Suscripción/Upgrade Plan" del mockup NO se porta: no existe billing.
  */
@@ -130,14 +131,6 @@ export default function AccountSettingsPage() {
     )
   }
 
-  const iniciales =
-    (user.nombre || '')
-      .split(' ')
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || 'U'
-
   const usaCreditos = user.rol === 'marketero' || user.rol === 'superadmin'
   const tokens = user.tokens_disponibles ?? 0
   const pct = Math.min(100, Math.round((tokens / QUOTA_DEFAULT) * 100))
@@ -161,16 +154,14 @@ export default function AccountSettingsPage() {
 
         {/* Perfil */}
         <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-bold text-on-primary">
-              {iniciales}
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-on-surface">Datos del perfil</h2>
-              <p className="text-sm text-on-surface-variant">
-                Actualiza tu nombre. El email y el rol los gestiona el SuperAdmin.
-              </p>
-            </div>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-on-surface">Datos del perfil</h2>
+            <p className="text-sm text-on-surface-variant">
+              Actualiza tu foto y tu nombre. El email y el rol los gestiona el SuperAdmin.
+            </p>
+          </div>
+          <div className="mb-6">
+            <ProfilePhoto usuario={user} onCambio={setUser} />
           </div>
 
           <form onSubmit={handleSaveProfile} className="space-y-4">
