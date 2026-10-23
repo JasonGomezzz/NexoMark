@@ -109,9 +109,16 @@ export default function SocialConnectionsCard() {
                 <p className="truncate text-sm font-semibold text-on-surface">{c.cuenta_nombre}</p>
                 <p className="text-xs text-on-surface-variant">{etiquetaRed(c.red)}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => desconectar(c)}>
-                <Unlink className="h-4 w-4" />
-                Desconectar
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => desconectar(c)}
+                aria-label={`Desconectar ${c.cuenta_nombre} (${etiquetaRed(c.red)})`}
+                className="shrink-0 px-3 sm:px-4"
+              >
+                <Unlink className="h-4 w-4" aria-hidden="true" />
+                {/* En pantallas angostas solo el ícono: el nombre de la cuenta necesita el espacio. */}
+                <span className="hidden sm:inline">Desconectar</span>
               </Button>
             </li>
           ))}
