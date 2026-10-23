@@ -8,6 +8,9 @@ const REDES = { instagram: 'Instagram', facebook: 'Facebook', x: 'X', tiktok: 'T
 /** Redes que se publican solas al aprobar (Instagram y Facebook, con el login de Meta). */
 export const REDES_META = ['instagram', 'facebook']
 
+/** X y TikTok van aparte: no entran en "Publicar ahora / Reintentar". */
+const REDES_SIN_REINTENTO = ['x', 'tiktok']
+
 export function etiquetaRed(red) {
   return REDES[red] ?? red
 }
@@ -18,9 +21,18 @@ const ESTADOS = {
   publicado: { texto: 'Publicado', tono: 'ok' },
   fallido: { texto: 'No se pudo publicar', tono: 'error' },
   cancelado: { texto: 'Cancelado', tono: 'neutral' },
+  // Solo TikTok: el borrador llegó al buzón; la persona termina de publicar en la app de TikTok.
+  en_buzon: { texto: 'En el buzón de TikTok', tono: 'buzon' },
 }
 
-export function estadoPublicacion(estado) {
+/** TikTok no publica: envía al buzón. Sus estados intermedios se nombran así. */
+const ESTADOS_TIKTOK = {
+  publicando: { texto: 'Enviando a TikTok…', tono: 'neutral' },
+  fallido: { texto: 'No se pudo enviar', tono: 'error' },
+}
+
+export function estadoPublicacion(estado, red) {
+  if (red === 'tiktok' && ESTADOS_TIKTOK[estado]) return ESTADOS_TIKTOK[estado]
   return ESTADOS[estado] ?? { texto: estado, tono: 'neutral' }
 }
 
@@ -34,11 +46,12 @@ export function publicacionAtascada(publicacion, ahora = new Date()) {
 }
 
 /**
- * ¿Puede el marketero pulsar "Publicar ahora / Reintentar"? Nunca en X: allí se
- * publica desde la versión para X, confirmando el costo.
+ * ¿Puede el marketero pulsar "Publicar ahora / Reintentar"? Nunca en X (se publica
+ * desde la versión para X, confirmando el costo) ni en TikTok (un envío al buzón
+ * no se repite: se consulta su estado).
  */
 export function puedeReintentar(publicacion, estadoCampana, ahora = new Date()) {
-  if (estadoCampana !== 'aprobado' || publicacion.red === 'x') return false
+  if (estadoCampana !== 'aprobado' || REDES_SIN_REINTENTO.includes(publicacion.red)) return false
   if (publicacionAtascada(publicacion, ahora)) return true
   return (
     ['fallido', 'esperando_aprobacion'].includes(publicacion.estado) && (publicacion.intentos ?? 0) < 3
@@ -160,6 +173,29 @@ export function alcanceDelRol(rol) {
  */
 export function mostrarX({ xConfig, resumen, publicaciones = [] } = {}) {
   return Boolean(xConfig?.habilitado || resumen?.redes?.x?.publicaciones || publicaciones.some((p) => p.red === 'x'))
+}
+
+/** TikTok cuenta el texto en unidades UTF-16, igual que `String.length` en JavaScript. */
+export const MAX_TEXTO_TIKTOK = 4000
+
+export function largoTextoTikTok(texto) {
+  return (texto ?? '').trim().length
+}
+
+/** Lo que se enviaría a TikTok: el texto aprobado debe tener entre 1 y el máximo de caracteres. */
+export function textoTikTokValido(texto, maximo = MAX_TEXTO_TIKTOK) {
+  const largo = largoTextoTikTok(texto)
+  return largo > 0 && largo <= maximo
+}
+
+/** Cuentas de TikTok (por nombre) a las que ya se envió esta campaña: no se reenvía. */
+export function cuentasTikTokEnviadas(publicaciones = []) {
+  return new Set(publicaciones.filter((p) => p.red === 'tiktok').map((p) => p.cuenta_nombre))
+}
+
+/** ¿Tiene sentido preguntar a TikTok por este envío? Solo mientras no terminó. */
+export function puedeConsultarTikTok(publicacion) {
+  return publicacion?.red === 'tiktok' && ['publicando', 'en_buzon'].includes(publicacion.estado)
 }
 
 /** Filtros de la tabla. `estado` acepta 'todas' o un estado de publicación. */

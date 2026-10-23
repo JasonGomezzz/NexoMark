@@ -16,7 +16,12 @@ import {
   mostrarX,
   serieAnual,
   textoCuentasConectadas,
+  MAX_TEXTO_TIKTOK,
+  cuentasTikTokEnviadas,
+  largoTextoTikTok,
   mensajeMotivoRetornoTikTok,
+  puedeConsultarTikTok,
+  textoTikTokValido,
 } from '../src/services/social.js'
 
 test('leerRetornoMeta reads code and state from the fragment and reports every error', () => {
@@ -144,6 +149,46 @@ test('haceCuanto and alcanceDelRol speak plain Spanish', () => {
   assert.equal(haceCuanto('2026-10-05T18:00:00Z', ahora), 'hace 1 día')
   assert.match(alcanceDelRol('marketero'), /tus clientes/)
   assert.match(alcanceDelRol('desconocido'), /tus publicaciones/)
+})
+
+test('TikTok has its own labels: sending is not publishing', () => {
+  assert.equal(etiquetaRed('tiktok'), 'TikTok')
+  assert.equal(estadoPublicacion('en_buzon').texto, 'En el buzón de TikTok')
+  assert.equal(estadoPublicacion('en_buzon').tono, 'buzon')
+  assert.equal(estadoPublicacion('publicando', 'tiktok').texto, 'Enviando a TikTok…')
+  assert.equal(estadoPublicacion('fallido', 'tiktok').texto, 'No se pudo enviar')
+  assert.equal(estadoPublicacion('publicando', 'instagram').texto, 'Publicando…')
+  assert.equal(estadoPublicacion('publicado', 'tiktok').tono, 'ok')
+})
+
+test('TikTok and X never offer "Publicar ahora / Reintentar"', () => {
+  const fallida = { estado: 'fallido', intentos: 1 }
+  assert.equal(puedeReintentar({ ...fallida, red: 'instagram' }, 'aprobado'), true)
+  assert.equal(puedeReintentar({ ...fallida, red: 'tiktok' }, 'aprobado'), false)
+  assert.equal(puedeReintentar({ ...fallida, red: 'x' }, 'aprobado'), false)
+})
+
+test('the TikTok text limit counts UTF-16 units like the server', () => {
+  assert.equal(MAX_TEXTO_TIKTOK, 4000)
+  assert.equal(largoTextoTikTok('  hola  '), 4)
+  assert.equal(largoTextoTikTok('🎉'), 2)
+  assert.equal(textoTikTokValido('hola'), true)
+  assert.equal(textoTikTokValido('   '), false)
+  assert.equal(textoTikTokValido('a'.repeat(4001)), false)
+  assert.equal(textoTikTokValido('a'.repeat(4000)), true)
+})
+
+test('a TikTok account receives a campaign once; only live sends can be queried', () => {
+  const enviadas = cuentasTikTokEnviadas([
+    { red: 'tiktok', cuenta_nombre: '@nexomarkia' },
+    { red: 'instagram', cuenta_nombre: '@otra' },
+  ])
+  assert.deepEqual([...enviadas], ['@nexomarkia'])
+  assert.equal(puedeConsultarTikTok({ red: 'tiktok', estado: 'en_buzon' }), true)
+  assert.equal(puedeConsultarTikTok({ red: 'tiktok', estado: 'publicando' }), true)
+  assert.equal(puedeConsultarTikTok({ red: 'tiktok', estado: 'publicado' }), false)
+  assert.equal(puedeConsultarTikTok({ red: 'tiktok', estado: 'fallido' }), false)
+  assert.equal(puedeConsultarTikTok({ red: 'instagram', estado: 'publicando' }), false)
 })
 
 test('mensajeMotivoRetornoTikTok explains each way back from TikTok', () => {

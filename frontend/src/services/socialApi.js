@@ -61,4 +61,17 @@ export const socialApi = {
   urlConexionTikTok: () => api.get('/api/social/tiktok/connect/').then((r) => r.data.data.url),
   completarConexionTikTok: (code, state) =>
     api.post('/api/social/tiktok/complete/', { code, state }).then((r) => r.data.data),
+  /** Cuentas de TikTok del marketero y del cliente de la campaña. */
+  destinosTikTok: (campaignId) =>
+    api.get('/api/social/tiktok/destinos/', { params: { campaign: campaignId } }).then((r) => r.data.data.conexiones),
+  /** Envía exactamente lo aprobado; repetirlo con la misma cuenta devuelve el envío existente. */
+  enviarTikTok: (campaignId, conexionId) =>
+    api
+      .post('/api/social/tiktok/enviar/', { campaign: campaignId, conexion: conexionId, confirmo: true })
+      .then((r) => ({ publicacion: r.data.data.publicacion, nueva: r.data.data.nueva, mensaje: r.data.message })),
+  /** Pregunta a TikTok (como mucho cada 30 s); nunca reenvía. */
+  estadoTikTok: (publicacionId) =>
+    api
+      .post(`/api/social/tiktok/estado/${publicacionId}/`)
+      .then((r) => ({ publicacion: r.data.data.publicacion, mensaje: r.data.message })),
 }

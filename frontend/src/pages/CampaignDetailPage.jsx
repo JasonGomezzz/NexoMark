@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import PublicationsPanel from '@/components/social/PublicationsPanel'
 import XVariantPanel from '@/components/social/XVariantPanel'
+import TikTokPanel from '@/components/social/TikTokPanel'
+import { useVerifiedUser } from '../hooks/useVerifiedUser'
 import RedIcon from '@/components/social/RedIcon'
 import { socialApi } from '../services/socialApi'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -35,6 +37,8 @@ function wordCount(text) {
 export default function CampaignDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  // Solo el marketero dueño envía a TikTok (el servidor lo vuelve a comprobar).
+  const esMarketero = useVerifiedUser()?.rol === 'marketero'
 
   const [campaign, setCampaign] = useState(null)
   const [text, setText] = useState('')
@@ -480,6 +484,9 @@ export default function CampaignDetailPage() {
 
           {/* Publicación en redes: estado por cuenta y "Publicar ahora / Reintentar" */}
           <PublicationsPanel campaignId={campaign.id} estadoCampana={campaign.estado} />
+
+          {/* TikTok: el marketero envía lo aprobado al buzón; no se muestra si TikTok no está configurado */}
+          {campaign.estado === 'aprobado' && esMarketero && <TikTokPanel campaign={campaign} />}
 
           {/* X opcional: versión corta que el cliente aprueba aparte (no se muestra si X está apagada) */}
           {campaign.estado === 'aprobado' && <XVariantPanel campaign={campaign} />}

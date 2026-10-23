@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { ChartColumnIncreasing, ExternalLink, Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import RedIcon from './RedIcon'
-import { estadoPublicacion, etiquetaRed, puedeReintentar } from '../../services/social'
+import { REDES_META, estadoPublicacion, etiquetaRed, puedeReintentar } from '../../services/social'
 import { socialApi } from '../../services/socialApi'
 
 const TONOS = {
@@ -15,7 +15,8 @@ const TONOS = {
 
 /**
  * Estado de publicación por cuenta destino, con "Publicar ahora / Reintentar" para el marketero.
- * Las publicaciones en X se muestran en "Versión para X" (XVariantPanel): no se publican al aprobar.
+ * Las publicaciones en X se muestran en "Versión para X" (XVariantPanel) y los envíos a TikTok en
+ * "Enviar a TikTok" (TikTokPanel): ninguna de las dos se publica al aprobar.
  */
 export default function PublicationsPanel({ campaignId, estadoCampana }) {
   const [todas, setPublicaciones] = useState([])
@@ -33,7 +34,7 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
     }
   }, [campaignId, estadoCampana, recarga])
 
-  const publicaciones = todas.filter((p) => p.red !== 'x')
+  const publicaciones = todas.filter((p) => REDES_META.includes(p.red))
   if (!publicaciones.length) return null
 
   async function publicar(publicacion) {
