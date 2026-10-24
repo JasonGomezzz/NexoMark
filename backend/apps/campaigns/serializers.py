@@ -248,6 +248,8 @@ class IntentInterpretSerializer(serializers.Serializer):
 
     texto = serializers.CharField(min_length=10, max_length=2000, trim_whitespace=True)
     origen = serializers.ChoiceField(choices=IntentOrigen.choices, default=IntentOrigen.VOZ)
+    # Milisegundos que tardó en dictar o escribir el brief (opcional; tope 1 hora).
+    captura_ms = serializers.IntegerField(min_value=0, max_value=3_600_000, required=False, allow_null=True)
 
 
 class IntentCamposSerializer(serializers.Serializer):

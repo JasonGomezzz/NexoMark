@@ -412,6 +412,10 @@ class CampaignIntent(models.Model):
     modelo_ia = models.CharField(max_length=80, blank=True, default="")
     uso_ia = models.JSONField(null=True, blank=True)
     interpretacion_ms = models.PositiveIntegerField(null=True, blank=True)
+    # Medición voz vs. formulario (tesis): lo que tardó la persona en dictar o
+    # escribir el brief, desde el primer toque del micrófono o la primera tecla
+    # hasta pulsar "Interpretar". Lo informa el cliente; null si no lo envía.
+    captura_ms = models.PositiveIntegerField(null=True, blank=True)
     schema_version = models.PositiveSmallIntegerField(default=1)
 
     fecha_creacion = models.DateTimeField(auto_now_add=True)

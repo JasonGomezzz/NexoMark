@@ -14,7 +14,10 @@ POST /api/campaigns/ sigue igual: el formulario clásico no depende de esto.
 import logging
 from typing import Any
 
+from datetime import date
+
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -24,8 +27,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
-from apps.authentication.permissions import IsMarketero
+from apps.authentication.models import UserRole
+from apps.authentication.permissions import IsMarketero, IsMarketeroOrSuperAdmin
 from core.exceptions import api_response
+from services import medicion_service
 from services.intent_service import IntentInterpretationError, interpretar_brief
 from services.n8n_service import describir_resultado, trigger_ia_generation
 
@@ -69,6 +74,35 @@ class CampaignIntentViewSet(viewsets.GenericViewSet):
         intents = CampaignIntentSerializer(queryset[:20], many=True).data
         return Response(api_response(True, "Intenciones obtenidas.", {"intents": intents}))
 
+    @action(detail=False, methods=["get"], url_path="medicion", permission_classes=[IsAuthenticated, IsMarketeroOrSuperAdmin])
+    def medicion(self, request: Request) -> Response | HttpResponse:
+        """
+        GET /api/intents/medicion/?desde=AAAA-MM-DD&hasta=AAAA-MM-DD[&formato=csv]
+
+        Voz vs. formulario para la tesis (ver services/medicion_service.py).
+        El superadmin ve todas las intenciones; el marketero, las suyas.
+        Con `formato=csv` devuelve una fila por intención, sin el texto del brief.
+        """
+        qs = CampaignIntent.objects.all()
+        if request.user.rol != UserRole.SUPERADMIN:
+            qs = qs.filter(usuario=request.user)
+        try:
+            desde = request.query_params.get("desde")
+            hasta = request.query_params.get("hasta")
+            if desde:
+                qs = qs.filter(fecha_creacion__date__gte=date.fromisoformat(desde))
+            if hasta:
+                qs = qs.filter(fecha_creacion__date__lte=date.fromisoformat(hasta))
+        except ValueError:
+            return Response(api_response(False, "Usa fechas con formato AAAA-MM-DD.", {}),
+                            status=status.HTTP_400_BAD_REQUEST)
+        if request.query_params.get("formato") == "csv":
+            response = HttpResponse(medicion_service.csv_por_intencion(qs), content_type="text/csv; charset=utf-8")
+            response["Content-Disposition"] = 'attachment; filename="medicion-voz-formulario.csv"'
+            response["Cache-Control"] = "no-store"
+            return response
+        return Response(api_response(True, "Medición voz vs. formulario.", medicion_service.resumen(qs)))
+
     def retrieve(self, request: Request, pk: str | None = None) -> Response:
         intent = get_object_or_404(self.get_queryset(), pk=pk)
         return self._respuesta(intent, "Intención obtenida.")
@@ -102,6 +136,7 @@ class CampaignIntentViewSet(viewsets.GenericViewSet):
             modelo_ia=resultado.modelo,
             uso_ia=resultado.uso,
             interpretacion_ms=resultado.duracion_ms,
+            captura_ms=entrada.validated_data.get("captura_ms"),
         )
         return self._respuesta(
             intent, "Brief interpretado. Revisa los campos antes de confirmar.",
