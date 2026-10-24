@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Mic, Square, Wand2, Loader2, TriangleAlert, CircleCheck, Cloud, Laptop } from 'lucide-react'
 import api from '../../services/api'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,11 @@ export default function VoiceBriefCard({ onInterpreted, resumen, disabled }) {
   const [dictado, setDictado] = useState(false)
   const [interpretando, setInterpretando] = useState(false)
   const [error, setError] = useState('')
+  // Medición voz vs. formulario: desde el primer toque del micrófono o la primera tecla.
+  const inicioCaptura = useRef(null)
+  const marcarInicio = () => {
+    if (inicioCaptura.current === null) inicioCaptura.current = Date.now()
+  }
 
   const agregarDictado = useCallback((frase) => {
     setDictado(true)
@@ -45,7 +50,9 @@ export default function VoiceBriefCard({ onInterpreted, resumen, disabled }) {
       const { data } = await api.post('/api/intents/interpret/', {
         texto: texto.trim(),
         origen: dictado ? 'voz' : 'formulario',
+        captura_ms: inicioCaptura.current === null ? null : Math.min(Date.now() - inicioCaptura.current, 3_600_000),
       })
+      inicioCaptura.current = null
       onInterpreted(data.data.intent)
     } catch (err) {
       const status = err.response?.status
@@ -76,7 +83,10 @@ export default function VoiceBriefCard({ onInterpreted, resumen, disabled }) {
         <textarea
           rows={4}
           value={texto}
-          onChange={(e) => setTexto(e.target.value.slice(0, MAX_BRIEF))}
+          onChange={(e) => {
+            marcarInicio()
+            setTexto(e.target.value.slice(0, MAX_BRIEF))
+          }}
           disabled={ocupado}
           aria-label="Brief de la campaña"
           placeholder="Ej: Quiero una campaña para una cafetería en Instagram, tono casual, con un 2x1 en capuchinos para universitarios."
@@ -94,7 +104,14 @@ export default function VoiceBriefCard({ onInterpreted, resumen, disabled }) {
           <Button
             type="button"
             variant={voz.listening ? 'secondary' : 'outline'}
-            onClick={voz.listening ? voz.stop : voz.start}
+            onClick={
+              voz.listening
+                ? voz.stop
+                : () => {
+                    marcarInicio()
+                    voz.start()
+                  }
+            }
             disabled={ocupado || voz.procesamiento === PROCESAMIENTO.COMPROBANDO}
             aria-pressed={voz.listening}
           >
