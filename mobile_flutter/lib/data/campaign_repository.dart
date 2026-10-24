@@ -50,10 +50,15 @@ class CampaignRepository {
   // ── Voz → campaña ────────────────────────────────────────
 
   /// Interpretar no genera ni cobra crédito.
-  Future<CampaignIntent> interpret(String texto, {required bool porVoz}) => _call(() async {
+  /// [capturaMs]: lo que tardó en dictar o escribir el brief (medición voz vs. formulario).
+  Future<CampaignIntent> interpret(String texto, {required bool porVoz, int? capturaMs}) => _call(() async {
         final r = await _dj.post<dynamic>(
           '/api/intents/interpret/',
-          data: {'texto': texto.trim(), 'origen': porVoz ? 'voz' : 'formulario'},
+          data: {
+            'texto': texto.trim(),
+            'origen': porVoz ? 'voz' : 'formulario',
+            'captura_ms': ?capturaMs,
+          },
         );
         return CampaignIntent.fromJson(envelopeData(r)['intent'] as Map<String, dynamic>);
       });

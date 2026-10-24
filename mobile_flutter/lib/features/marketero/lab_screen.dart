@@ -58,6 +58,10 @@ class _LabScreenState extends ConsumerState<LabScreen> {
   Campaign? _campana;
   bool _ocupado = false;
   bool _porVoz = false;
+
+  /// Medición voz vs. formulario: desde el primer toque del micrófono o la primera letra.
+  DateTime? _inicioCaptura;
+  void _marcarInicio() => _inicioCaptura ??= DateTime.now();
   String? _error;
   Timer? _sondeo;
 
@@ -66,9 +70,15 @@ class _LabScreenState extends ConsumerState<LabScreen> {
     super.initState();
     // Solo para probar en el simulador (no hay micrófono): `--dart-define=DEMO_BRIEF=…`.
     if (kDebugMode) _brief.text = const String.fromEnvironment('DEMO_BRIEF');
+    _brief.addListener(() {
+      if (_brief.text.isNotEmpty) _marcarInicio();
+    });
     _dictado.preparar();
     _dictado.addListener(() {
-      if (_dictado.escuchando) _porVoz = true;
+      if (_dictado.escuchando) {
+        _porVoz = true;
+        _marcarInicio();
+      }
     });
   }
 
@@ -95,7 +105,14 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       _error = null;
     });
     try {
-      final intent = await ref.read(campaignRepositoryProvider).interpret(_brief.text, porVoz: _porVoz);
+      final inicio = _inicioCaptura;
+      final capturaMs = inicio == null ? null : DateTime.now().difference(inicio).inMilliseconds.clamp(0, 3600000);
+      final intent = await ref.read(campaignRepositoryProvider).interpret(
+            _brief.text,
+            porVoz: _porVoz,
+            capturaMs: capturaMs,
+          );
+      _inicioCaptura = null;
       for (final campo in camposIntent) {
         _campos[campo]!.text = intent.campos[campo] ?? '';
       }
@@ -198,6 +215,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       _intent = null;
       _campana = null;
       _porVoz = false;
+      _inicioCaptura = null;
       _error = null;
     });
   }
