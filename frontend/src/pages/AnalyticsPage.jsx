@@ -14,6 +14,7 @@ import {
 } from 'recharts'
 import { Megaphone, CircleCheck, Clock, AlertCircle } from 'lucide-react'
 import api from '../services/api'
+import MedicionVozFormulario from '@/components/analytics/MedicionVozFormulario'
 import { STATES } from '@/lib/campaignStates'
 
 /**
@@ -266,6 +267,8 @@ export default function AnalyticsPage() {
           )}
         </>
       )}
+
+      <MedicionVozFormulario />
     </div>
   )
 }
