@@ -270,6 +270,15 @@ Mientras Axios trae datos (uniforme en toda la app):
 - El historial y la consulta manual de métricas se conservan; esta presentación no añade consultas a proveedores, permisos ni consumo de API.
 - Validación visual del componente con datos de prueba explícitamente etiquetados (fuera del producto); no constituye una nueva comprobación de métricas reales.
 
+## Ranking de campañas por Me gusta
+
+- Bloque del dashboard debajo de la comparativa/detalle; reutiliza el mismo año y plataforma seleccionados, sin solicitudes adicionales ni consumo de créditos.
+- Hasta tres campañas, agrupadas por ID, sumando contadores acumulados guardados de publicaciones del año (incluidas versiones anteriores). El año sigue America/Lima igual que las estadísticas.
+- Cero medido participa; sin mediciones no equivale a cero y se excluye con aviso. Si falta alguna medición, se advierte que la comparación está incompleta y se muestra cobertura por campaña.
+- Empates comparten puesto y se ordenan por ID ascendente. Si el corte de tres deja otra campaña empatada fuera, se informa explícitamente.
+- Cada nombre enlaza a la campaña. El título es «Campañas con más Me gusta», no «más exitosas»: no demuestra ventas, rentabilidad ni usuarios únicos.
+- No cambia la pantalla individual de campañas ni la obtención, autorización o actualización de contadores.
+
 ## Toasts (react-hot-toast)
 
 Vocabulario fijo y coherente con la acción (la acción "Aprobar" → toast "Aprobada"):

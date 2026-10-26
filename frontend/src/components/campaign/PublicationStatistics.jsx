@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '@/services/api'
 import PlatformIcon from './PlatformIcon'
 import PlatformStatisticsExplorer from './PlatformStatisticsExplorer'
+import CampaignLikesRanking from './CampaignLikesRanking'
 import { statisticsHistory } from '@/services/publicationStatistics'
 
 const labels = { facebook: 'Facebook', instagram: 'Instagram', twitter: 'Twitter / X', tiktok: 'TikTok' }
@@ -73,6 +74,7 @@ export default function PublicationStatistics({ campaignId }) {
           </article>
         })}
       </div>}
+      {!campaignId && <CampaignLikesRanking rows={data.publications} year={year} platform={selectedPlatform} />}
       <p className="mt-4 text-xs leading-relaxed text-on-surface-variant">{data.note}</p>
       {notice && <p role="status" className="my-3 text-sm">{notice}</p>}
       {history.length === 0 ? <p className="mt-5 text-sm">Aún no hay publicaciones confirmadas para {selectedPlatform ? labels[selectedPlatform] : 'mostrar'}{!campaignId ? ` en ${year}` : ''}.</p> :

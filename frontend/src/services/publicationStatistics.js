@@ -59,3 +59,40 @@ export function statisticsHistory(rows, year, platform = null) {
     return !Number.isNaN(date.getTime()) && Number(calendar.format(date)) === Number(year)
   })
 }
+
+export function campaignLikesRanking(rows = [], year, platform = null) {
+  const campaigns = new Map()
+  for (const row of statisticsHistory(rows, year, platform)) {
+    if (!comparisonPlatforms.some(item => item.key === row.platform)) continue
+    if (!Number.isSafeInteger(row.campaign_id) || row.campaign_id <= 0) continue
+    const group = campaigns.get(row.campaign_id) ?? {
+      campaignId: row.campaign_id, title: row.title, likes: 0, covered: 0, publications: 0,
+    }
+    const count = Number.isSafeInteger(row.publication_count) && row.publication_count > 0 ? row.publication_count : 1
+    group.publications += count
+    // A missing or invalid counter must not promote an unmeasured campaign as zero.
+    if (Number.isSafeInteger(row.metrics?.likes) && row.metrics.likes >= 0) {
+      group.likes += row.metrics.likes
+      group.covered += count
+    }
+    campaigns.set(row.campaign_id, group)
+  }
+  const measured = [...campaigns.values()].filter(row => row.covered > 0)
+    .sort((a, b) => b.likes - a.likes || a.campaignId - b.campaignId)
+  let rank = 0
+  const ranked = measured.map((row, index) => {
+    if (index === 0 || measured[index - 1].likes !== row.likes) rank = index + 1
+    return {
+      ...row, rank,
+      tied: measured[index - 1]?.likes === row.likes || measured[index + 1]?.likes === row.likes,
+      partial: row.covered < row.publications,
+    }
+  })
+  return {
+    campaigns: ranked.slice(0, 3),
+    excluded: campaigns.size - measured.length,
+    incomplete: [...campaigns.values()].some(row => row.covered < row.publications),
+    total: campaigns.size,
+    tiedAtCutoff: ranked.length > 3 && ranked[2].likes === ranked[3].likes,
+  }
+}
