@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Solo en depuración: Django y Spring corren por HTTP en el Mac (10.0.2.2 o la IP de la Wi-Fi). -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

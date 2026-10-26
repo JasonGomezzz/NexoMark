@@ -21,7 +21,7 @@ test('brand and favicon reference the approved icon rather than the old SVG', as
   const [logo, entry, mobile] = await Promise.all([
     'frontend/src/components/BrandLogo.jsx',
     'frontend/index.html',
-    'mobile_flutter/lib/src/login_screen.dart',
+    'mobile_flutter/lib/widgets/nexo_widgets.dart',
   ].map(path => readFile(new URL(path, root), 'utf8')))
   assert.match(logo, /src="\/nexomark-icon\.png"/)
   assert.match(entry, /rel="icon" type="image\/png" href="\/nexomark-icon\.png"/)

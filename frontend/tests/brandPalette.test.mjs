@@ -38,7 +38,7 @@ test('brand text and actions meet WCAG AA contrast in both themes', () => {
 
 test('mobile themes, legal pages and PDF export use the same brand', () => {
   const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
-  const flutter = read('../../mobile_flutter/lib/main.dart')
+  const flutter = read('../../mobile_flutter/lib/core/theme/tokens.dart')
   const android = read('../../mobile/app/src/main/java/com/marketmind/mobile/ui/theme/Color.kt')
   const legal = read('../../legal-site/styles.css')
   const pdf = read('../../backend/templates/campaigns/campaign_pdf.html')
@@ -79,10 +79,11 @@ test('comparison charts and public theme toggle follow the active theme', () => 
   assert.match(toggle, /Activar tema claro/)
   assert.match(toggle, /Activar tema oscuro/)
   assert.match(toggle, /onClick=\{toggleTheme\}/)
-  const flutter = read('../../mobile_flutter/lib/main.dart')
-  assert.match(flutter, /ThemeMode.system/)
-  assert.match(flutter, /darkTheme: ThemeData/)
-  assert.match(flutter, /brightness: Brightness.light/)
+  const flutter = read('../../mobile_flutter/lib/app.dart')
+  const preferences = read('../../mobile_flutter/lib/core/preferences.dart')
+  assert.match(preferences, /ThemeMode.system/)
+  assert.match(flutter, /darkTheme: buildTheme\(Brightness.dark\)/)
+  assert.match(flutter, /theme: buildTheme\(Brightness.light\)/)
 })
 
 test('comparison series are distinct and readable on both chart themes', () => {
