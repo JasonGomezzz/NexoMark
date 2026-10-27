@@ -31,14 +31,22 @@ class CampaignSerializer(serializers.ModelSerializer):
     publication_status = serializers.SerializerMethodField()
 
     def get_publication_status(self, campaign):
-        from .models import InstagramPublication, FacebookPublication, XPublication, TikTokUpload
+        from .models import InstagramPublication, FacebookPublication, XPublication, TikTokUpload, PublicationAvailability
         result = {}
         for platform, model in [('instagram', InstagramPublication), ('facebook', FacebookPublication), ('twitter', XPublication), ('tiktok', TikTokUpload)]:
-            records = list(model.objects.filter(campaign=campaign, campaign_version=campaign.version).values_list('status', flat=True))
+            publications = model.objects.filter(campaign=campaign, campaign_version=campaign.version)
+            checks = PublicationAvailability.objects.filter(campaign=campaign, platform=platform,
+                                                            publication_id__in=publications.values('pk'))
+            missing = set(checks.filter(state='unavailable').values_list('publication_id', flat=True))
+            records = list(publications.exclude(pk__in=missing).values_list('status', flat=True))
             result[platform] = ('published' if 'published' in records else records[-1] if records else 'not_published')
+            if missing and not records:
+                result[platform] = 'unavailable'
             if platform == 'tiktok' and result[platform] != 'published' and model.objects.filter(
-                    campaign=campaign, campaign_version=campaign.version, publication_link__isnull=False).exists():
+                    campaign=campaign, campaign_version=campaign.version, publication_link__isnull=False).exclude(pk__in=missing).exists():
                 result[platform] = 'linked'
+            if checks.filter(state='unverified').exists() and result[platform] in ('published', 'linked'):
+                result[platform] = 'unverified'
         return result
     cliente_email = serializers.EmailField(required=True)
     plataforma = serializers.ChoiceField(

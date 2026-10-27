@@ -87,6 +87,13 @@ export default function CampaignDetailPage() {
     })
   }
 
+  const refreshPublicationStatus = useCallback(async () => {
+    try {
+      const { data } = await api.get(`/api/campaigns/${id}/`)
+      setCampaign(previous => previous ? { ...previous, publication_status: data.data.campaign.publication_status } : previous)
+    } catch { /* Keep the current form and saved status if this read fails. */ }
+  }, [id])
+
   const fetchCampaign = useCallback(
     async ({ useDraft = true } = {}) => {
       const { data } = await api.get(`/api/campaigns/${id}/`)
@@ -393,7 +400,7 @@ export default function CampaignDetailPage() {
 
         {/* ── Columna derecha: Editor + Imagen ── */}
         <div className="min-w-0 flex-1">
-          <PublicationStatistics campaignId={campaign.id} />
+          <PublicationStatistics campaignId={campaign.id} onSynchronized={refreshPublicationStatus} />
           {campaign.texto_generado && <PlatformContentEditor key={`${campaign.id}-${campaign.version}`} campaign={campaign}
             onPrepareX={() => setShowX(true)}
             disabled={saving || submitting || text !== campaign.texto_generado || promptText !== campaign.prompt}

@@ -4,13 +4,13 @@ import api from '@/services/api'
 import PlatformIcon from './PlatformIcon'
 import PlatformStatisticsExplorer from './PlatformStatisticsExplorer'
 import CampaignLikesRanking from './CampaignLikesRanking'
-import { statisticsHistory } from '@/services/publicationStatistics'
+import { statisticsHistory, publicationsToSynchronize } from '@/services/publicationStatistics'
 
 const labels = { facebook: 'Facebook', instagram: 'Instagram', twitter: 'Twitter / X', tiktok: 'TikTok' }
 const metrics = { likes: 'Me gusta', shares: 'Compartidos', views: 'Vistas' }
 const number = value => value == null ? 'No disponible' : value.toLocaleString('es-PE')
 
-export default function PublicationStatistics({ campaignId }) {
+export default function PublicationStatistics({ campaignId, onSynchronized }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
@@ -22,11 +22,37 @@ export default function PublicationStatistics({ campaignId }) {
   const base = campaignId ? `/api/campaigns/${campaignId}/publication-statistics/` : '/api/campaigns/publication-statistics/'
   useEffect(() => {
     let active = true
-    api.get(base, { params: { year } }).then(res => {
-      if (active) { setData(res.data.data); setError('') }
-    }).catch(() => { if (active) setError('No se pudieron cargar las estadísticas.') })
+    async function load() {
+      try {
+        const res = await api.get(base, { params: { year } })
+        if (!active) return
+        setData(res.data.data); setError('')
+        // Only owner-authorized, non-X reads. X keeps its explicit paid action.
+        const stale = publicationsToSynchronize(res.data.data.publications)
+        for (const row of stale) {
+          if (!active) return
+          try {
+            await api.post(`/api/campaigns/${row.campaign_id}/publication-statistics/refresh/`,
+              { platform: row.platform, publication_id: row.publication_id })
+          } catch { /* Server retains counters and exposes the last check failure. */ }
+        }
+        if (active && stale.length) {
+          const updated = await api.get(base, { params: { year } })
+          if (active) setData(updated.data.data)
+          if (active) onSynchronized?.()
+        }
+      } catch { if (active) setError('No se pudieron cargar las estadísticas.') }
+    }
+    load()
     return () => { active = false }
-  }, [base, year, refresh])
+  }, [base, year, refresh, onSynchronized])
+
+  useEffect(() => {
+    const reload = () => { if (document.visibilityState === 'visible') setRefresh(value => value + 1) }
+    const timer = setInterval(reload, 300000)
+    document.addEventListener('visibilitychange', reload)
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', reload) }
+  }, [])
 
   async function update(row) {
     setBusy(`${row.platform}-${row.publication_id}`)
@@ -36,8 +62,10 @@ export default function PublicationStatistics({ campaignId }) {
         { platform: row.platform, publication_id: row.publication_id })
       setNotice(res.data.message || 'Métricas actualizadas.')
       setRefresh(v => v + 1)
+      onSynchronized?.()
     } catch (e) {
       setNotice(e.response?.data?.message || 'No se pudieron actualizar. Se conservan los datos anteriores.')
+      setRefresh(v => v + 1)
     } finally { setBusy('') }
   }
 
@@ -55,6 +83,8 @@ export default function PublicationStatistics({ campaignId }) {
     {error && <p role="alert" className="text-error">{error} <button className="underline" onClick={() => setRefresh(v => v + 1)}>Reintentar</button></p>}
     {(!data || data.year !== year) && !error && <p role="status">Cargando estadísticas…</p>}
     {data && data.year === year && <>
+      {data.publications.some(row => row.availability === 'unverified' || (row.availability_note && row.availability !== 'unavailable')) &&
+        <p role="status" className="mb-4 bg-warning-container p-3 text-sm">Sincronización incompleta: algunas cifras son de la última medición guardada. Revisa los avisos y las fechas del historial antes de compartir el reporte.</p>}
       {!campaignId && <PlatformStatisticsExplorer data={data} selected={selectedPlatform} onSelect={setSelectedPlatform} />}
       {campaignId && <div className="grid gap-6 xl:grid-cols-2">
         {Object.entries(labels).map(([platform, label]) => {
@@ -63,6 +93,7 @@ export default function PublicationStatistics({ campaignId }) {
             <div className="mb-4 flex items-center gap-3"><PlatformIcon platform={platform} className="!h-10 !w-10" /><h3 className="text-lg font-semibold">{label}</h3></div>
             <p className="mb-4 text-xs text-on-surface-variant">Totales acumulados · publicaciones de {data.year}</p>
             {group.pending > 0 && <p className="mb-4 text-sm text-on-surface-variant">{group.pending} envío(s) sin confirmación de publicación. No se incluyen en el total confirmado.</p>}
+            {platform === 'facebook' && (group.metrics.views.value == null || group.metrics.shares.value == null) && <p className="mb-4 text-xs text-on-surface-variant">Meta no ha devuelto todos los contadores de este contenido por API. Aunque estén visibles en Facebook, se muestran como no disponibles hasta obtener una medición; no se interpretan como cero.</p>}
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div><dt className="text-sm text-on-surface-variant">Publicaciones</dt><dd className="text-2xl font-bold tabular-nums">{number(group.publications)}</dd></div>
               {Object.entries(metrics).map(([key, text]) => <div key={key}>
@@ -76,6 +107,7 @@ export default function PublicationStatistics({ campaignId }) {
       </div>}
       {!campaignId && <CampaignLikesRanking rows={data.publications} year={year} platform={selectedPlatform} />}
       <p className="mt-4 text-xs leading-relaxed text-on-surface-variant">{data.note}</p>
+      <p className="mt-2 text-xs text-on-surface-variant">Facebook, Instagram y TikTok se sincronizan al abrir o volver a este reporte y cada cinco minutos mientras está visible, si la comprobación anterior ya venció. X se consulta manualmente porque su API es de pago. No es una actualización en tiempo real.</p>
       {notice && <p role="status" className="my-3 text-sm">{notice}</p>}
       {history.length === 0 ? <p className="mt-5 text-sm">Aún no hay publicaciones confirmadas para {selectedPlatform ? labels[selectedPlatform] : 'mostrar'}{!campaignId ? ` en ${year}` : ''}.</p> :
         <div className="mt-6 overflow-x-auto"><table className="w-full text-left text-sm">
@@ -86,10 +118,14 @@ export default function PublicationStatistics({ campaignId }) {
           <tbody>{history.map(row => <tr key={`${row.platform}-${row.publication_id}`} className="border-b border-outline-variant">
             <td className="p-2"><span className="flex items-center gap-2"><PlatformIcon platform={row.platform} />{labels[row.platform]} · {row.destination}</span>
               <Link className="underline" to={`/campaigns/${row.campaign_id}`}>{row.title}</Link><p className="text-xs">Versión {row.version}</p>
+              {row.availability === 'unavailable' && <p className="text-sm font-semibold text-error">No encontrada en la red · excluida de los totales</p>}
+              {row.availability === 'unverified' && <p className="text-sm font-semibold">Disponibilidad sin verificar · cifras históricas</p>}
+              {row.availability_note && <p className="max-w-sm text-xs">{row.availability_note}</p>}
               {row.confirmation_source === 'user_confirmed_display_api' && <p className="text-xs">Publicación existente vinculada por el propietario y verificada por API; estado del envío original: {row.delivery_status}.</p>}
               {row.publication_count > 1 && <p className="text-xs">{row.publication_count} posts públicos confirmados para este envío · contadores sumados</p>}</td>
             {['likes', 'shares'].map(k => <td className="p-2 tabular-nums" key={k}>{number(row.metrics[k])}</td>)}
             <td className="p-2"><p className="mb-1 text-xs">{row.measured_at ? new Date(row.measured_at).toLocaleString('es-PE') : 'Sin consultar'}</p>
+              {row.checked_at && <p className="mb-2 text-xs">Última comprobación: {new Date(row.checked_at).toLocaleString('es-PE')}</p>}
               {row.refresh_cost_note && <p className="mb-2 max-w-xs text-xs text-on-surface-variant">{row.refresh_cost_note}</p>}
               {row.can_refresh ? <button disabled={!!busy} onClick={() => update(row)} className="rounded-lg border border-outline-variant px-3 py-2 disabled:opacity-50">
                 {busy === `${row.platform}-${row.publication_id}` ? 'Consultando…' : 'Consultar métricas'}

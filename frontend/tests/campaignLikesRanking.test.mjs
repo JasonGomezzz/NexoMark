@@ -8,6 +8,13 @@ const post = (campaignId, likes, extra = {}) => ({
   registered_at: '2026-10-01T12:00:00Z', metrics: { likes }, ...extra,
 })
 
+test('unavailable posts retain historical counters but never contribute to ranking', () => {
+  const rows = [post(1, 100, { included_in_totals: false }), post(2, 3)]
+  const result = campaignLikesRanking(rows, 2026)
+  assert.deepEqual(result.campaigns.map(row => [row.campaignId, row.likes]), [[2, 3]])
+  assert.equal(rows[0].metrics.likes, 100)
+})
+
 test('ranking sums publications and versions by campaign, never individual leaderboard posts', () => {
   const rows = [post(1, 5), post(1, 8, { platform: 'instagram', version: 2 }),
     post(2, 10), post(3, 7), post(4, 1)]

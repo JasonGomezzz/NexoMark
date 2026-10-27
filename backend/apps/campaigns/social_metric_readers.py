@@ -15,6 +15,14 @@ class MetricReadUnavailable(ValueError):
     """Only locally authored, credential-free messages may reach the UI."""
 
 
+class PublicationNotFound(MetricReadUnavailable):
+    """Provider explicitly reports the exact resource missing; not proof of deletion."""
+
+
+class PublicationUnverifiable(MetricReadUnavailable):
+    """Missing content may also mean privacy, permissions or API incompatibility."""
+
+
 def owned_account(publication, model, identity_field):
     identity = getattr(publication, identity_field)
     account = publication.account
@@ -49,8 +57,13 @@ def x_counters(publication, count):
         headers={'Authorization': f'Bearer {token}'}, timeout=20, allow_redirects=False)
     if response.status_code == 402:
         raise MetricReadUnavailable('X rechazó la consulta por falta de créditos. Se conservan los datos anteriores.')
-    response.raise_for_status()
     body = response.json()
+    errors = body.get('errors', [body]) if isinstance(body, dict) else []
+    if response.status_code in (200, 404) and any(
+            isinstance(e, dict) and str(e.get('type', '')).endswith('/resource-not-found')
+            and str(e.get('resource_id', '')) == publication.post_id for e in errors):
+        raise PublicationNotFound('X no encuentra esta publicación. Puede haber sido eliminada o dejado de estar disponible; se conserva su historial.')
+    response.raise_for_status()
     data = body.get('data') if isinstance(body, dict) and not body.get('errors') else None
     if (not isinstance(data, dict) or data.get('id') != publication.post_id
             or data.get('author_id') != publication.x_user_id
@@ -83,6 +96,8 @@ def query_tiktok_publications(account, identifiers, *, details=False):
             or body['error'].get('code') != 'ok' or not isinstance(body.get('data'), dict)):
         raise MetricReadUnavailable('TikTok no devolvió métricas. Revisa el permiso y la compatibilidad del contenido.')
     videos = body['data'].get('videos')
+    if isinstance(videos, list) and not videos:
+        raise PublicationUnverifiable('TikTok no devuelve este contenido. Puede ser privado, eliminado o incompatible con la API; no se confirma su eliminación.')
     if (not isinstance(videos, list) or len(videos) != len(identifiers)
             or any(not isinstance(v, dict) or v.get('id') not in identifiers for v in videos)
             or len({v['id'] for v in videos}) != len(identifiers)):

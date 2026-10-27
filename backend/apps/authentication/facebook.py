@@ -219,7 +219,7 @@ class FacebookConnectView(APIView):
         if settings.FACEBOOK_LOGIN_CONFIG_ID:
             values['config_id'] = settings.FACEBOOK_LOGIN_CONFIG_ID
         else:
-            scopes = SCOPES | ({'pages_read_user_content'} if settings.FACEBOOK_METRICS_PERMISSIONS else set())
+            scopes = SCOPES | ({'pages_read_user_content', 'read_insights'} if settings.FACEBOOK_METRICS_PERMISSIONS else set())
             values['scope'] = ','.join(sorted(scopes))
         return Response(api_response(True, 'Autoriza tus Páginas en Facebook.', {
             'authorization_url': f'https://www.facebook.com/{settings.FACEBOOK_GRAPH_VERSION}/dialog/oauth?{urlencode(values)}'}))

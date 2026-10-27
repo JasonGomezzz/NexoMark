@@ -1,5 +1,11 @@
 const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
+export function publicationsToSynchronize(rows = [], now = Date.now()) {
+  const stale = timestamp => !timestamp || now - new Date(timestamp).getTime() >= 300000
+  return rows.filter(row => row.can_refresh && ['facebook', 'instagram', 'tiktok'].includes(row.platform)
+    && stale(row.checked_at) && stale(row.measured_at))
+}
+
 export function monthLabel(value) {
   if (typeof value !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return '—'
   return months[Number(value.slice(5)) - 1]
@@ -63,6 +69,7 @@ export function statisticsHistory(rows, year, platform = null) {
 export function campaignLikesRanking(rows = [], year, platform = null) {
   const campaigns = new Map()
   for (const row of statisticsHistory(rows, year, platform)) {
+    if (row.included_in_totals === false) continue
     if (!comparisonPlatforms.some(item => item.key === row.platform)) continue
     if (!Number.isSafeInteger(row.campaign_id) || row.campaign_id <= 0) continue
     const group = campaigns.get(row.campaign_id) ?? {

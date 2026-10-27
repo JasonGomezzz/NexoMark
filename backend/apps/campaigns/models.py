@@ -466,6 +466,20 @@ class PublicationMetricSnapshot(models.Model):
                                               name='unique_daily_publication_metrics')]
 
 
+class PublicationAvailability(models.Model):
+    """Last API check, separate from historical delivery and counter snapshots."""
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    platform = models.CharField(max_length=20)
+    publication_id = models.PositiveBigIntegerField()
+    state = models.CharField(max_length=20, default='unknown')
+    checked_at = models.DateTimeField(default=timezone.now)
+    note = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['platform', 'publication_id'],
+                                              name='unique_publication_availability')]
+
+
 class XMetricReadBudget(models.Model):
     """Operator-authorized read allowance; never granted by a client request.
 

@@ -1,6 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { monthLabel, monthlyChartData, platformComparisonData, platformMonthlyData, statisticsHistory } from '../src/services/publicationStatistics.js'
+import { monthLabel, monthlyChartData, platformComparisonData, platformMonthlyData, statisticsHistory, publicationsToSynchronize } from '../src/services/publicationStatistics.js'
+
+test('automatic synchronization never spends on X or borrows unauthorized accounts', () => {
+  const now = Date.parse('2026-10-26T22:00:00Z')
+  const row = { can_refresh: true, platform: 'tiktok', publication_id: 1 }
+  const recent = '2026-10-26T21:58:00Z'
+  const candidates = [row, { ...row, platform: 'twitter' }, { ...row, can_refresh: false },
+    { ...row, checked_at: recent }, { ...row, measured_at: recent }, { ...row, platform: 'facebook', publication_id: 2 }]
+  assert.deepEqual(publicationsToSynchronize(candidates, now).map(item => item.publication_id), [1, 2])
+})
 
 test('months use unambiguous Spanish labels in calendar order', () => {
   assert.deepEqual(Array.from({ length: 12 }, (_, i) => monthLabel(`2026-${String(i + 1).padStart(2, '0')}`)),

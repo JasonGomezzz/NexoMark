@@ -6,7 +6,7 @@ import requests
 from django.utils import timezone
 
 from apps.authentication.models import XAccount, TikTokAccount
-from apps.campaigns.models import XPublication, TikTokUpload, XMetricReadBudget
+from apps.campaigns.models import XPublication, TikTokUpload, XMetricReadBudget, PublicationAvailability
 from apps.campaigns.publication_statistics import read_counters
 from apps.campaigns.social_metric_readers import MetricReadUnavailable
 
@@ -54,6 +54,19 @@ def test_x_no_allowance_does_not_call_paid_endpoint(x_post):
         get.assert_not_called()
 
 
+@pytest.mark.parametrize('status, resource, missing', [(404, '123', True), (200, '123', True), (403, '123', False), (404, '999', False)])
+def test_x_requires_exact_resource_absence_not_permission_error(x_post, allowance, status, resource, missing):
+    from apps.campaigns.social_metric_readers import PublicationNotFound
+    response = Mock(status_code=status)
+    response.json.return_value = {'errors': [{'type': 'https://api.x.com/2/problems/resource-not-found', 'resource_id': resource}]}
+    if status >= 400:
+        response.raise_for_status.side_effect = requests.HTTPError()
+    with patch('apps.campaigns.social_metric_readers.x_token', return_value='private'), patch(
+            'apps.campaigns.social_metric_readers.requests.get', return_value=response):
+        with pytest.raises(PublicationNotFound if missing else requests.HTTPError):
+            read_counters('twitter', x_post)
+
+
 @pytest.mark.parametrize('response', [x_response(id='999'), x_response(author_id='999'), x_response(public_metrics={})])
 def test_x_never_accepts_other_post_owner_or_missing_counters(x_post, allowance, response):
     with patch('apps.campaigns.social_metric_readers.x_token', return_value='private'), patch(
@@ -69,6 +82,7 @@ def test_x_timeout_reservation_survives_and_limit_blocks_retry(api_client, x_pos
     with patch('apps.campaigns.social_metric_readers.x_token', return_value='private'), patch(
             'apps.campaigns.social_metric_readers.requests.get', side_effect=requests.Timeout('secret')) as get:
         for _ in range(3):
+            PublicationAvailability.objects.update(checked_at=timezone.now() - timedelta(minutes=6))
             response = api_client.post(url, {'platform': 'twitter', 'publication_id': x_post.pk}, format='json')
             assert response.status_code == 503 and 'secret' not in str(response.data)
         assert get.call_count == 2

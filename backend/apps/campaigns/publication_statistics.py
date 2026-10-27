@@ -20,9 +20,11 @@ from apps.authentication.models import InstagramAccount, FacebookPage
 from apps.authentication.permissions import IsMarketeroOrSuperAdmin
 from core.exceptions import api_response
 from .models import (Campaign, InstagramPublication, FacebookPublication,
-                     PublicationMetricSnapshot, XPublication, TikTokUpload, XMetricReadBudget)
-from .social_metric_readers import x_counters, tiktok_counters, MetricReadUnavailable
+                     PublicationMetricSnapshot, PublicationAvailability, XPublication, TikTokUpload, XMetricReadBudget)
+from .social_metric_readers import (x_counters, tiktok_counters, MetricReadUnavailable,
+                                   PublicationNotFound, PublicationUnverifiable)
 from .tiktok_post_ids import effective_public_post_ids
+from .facebook_insights import optional_insight
 
 MODELS = {'facebook': FacebookPublication, 'instagram': InstagramPublication,
           'twitter': XPublication, 'tiktok': TikTokUpload}
@@ -71,6 +73,9 @@ def read_counters(platform, publication):
                             headers={'Authorization': f'Bearer {token}'},
                             timeout=20, allow_redirects=False)
     data = response.json()
+    if (isinstance(data, dict) and isinstance(data.get('error'), dict)
+            and data['error'].get('code') == 100 and data['error'].get('error_subcode') == 33):
+        raise PublicationUnverifiable('Meta no permite acceder a esta publicación. Revisa su existencia, privacidad y permisos; no se confirma su eliminación.')
     if platform == 'facebook' and isinstance(data, dict) and isinstance(data.get('error'), dict) and data['error'].get('code') == 10:
         raise MetricReadUnavailable('Facebook requiere pages_read_user_content. Añade ese permiso en Meta y reconecta la Página; se conservan las mediciones anteriores.')
     response.raise_for_status()
@@ -86,6 +91,12 @@ def read_counters(platform, publication):
                 values[metric] = count(edge['summary'].get('total_count'))
         if isinstance(data.get('shares'), dict):
             values['shares'] = count(data['shares'].get('count'))
+        insights_url = f'https://{host}/{path}'
+        values['views'] = count(optional_insight(insights_url, token, 'post_media_view'))
+        if values['shares'] is None:
+            activity = optional_insight(insights_url, token, 'post_activity_by_action_type')
+            if isinstance(activity, dict):
+                values['shares'] = count(activity.get('share'))
     if all(v is None for v in values.values()):
         raise ValueError('Meta no devolvió contadores disponibles.')
     return values
@@ -103,6 +114,7 @@ def refresh_availability(platform, publication):
 
 
 def publication_rows(campaigns):
+    availability = {(a.platform, a.publication_id): a for a in PublicationAvailability.objects.filter(campaign__in=campaigns)}
     snapshots = {}
     for s in PublicationMetricSnapshot.objects.filter(campaign__in=campaigns).order_by('measured_at', 'id'):
         snapshots[(s.platform, s.publication_id)] = s
@@ -113,6 +125,7 @@ def publication_rows(campaigns):
         if platform == 'tiktok':
             records = records.select_related('account', 'publication_link')
         for p in records:
+            check = availability.get((platform, p.pk))
             s = snapshots.get((platform, p.pk))
             post_ids = effective_public_post_ids(p) if platform == 'tiktok' else []
             link = getattr(p, 'publication_link', None) if platform == 'tiktok' else None
@@ -136,6 +149,10 @@ def publication_rows(campaigns):
                          'registered_at': ((link.provider_created_at if link and link.provider_created_at else None) or p.published_at or p.created_at).isoformat() if platform == 'tiktok' else p.created_at.isoformat(),
                          'confirmation_source': 'user_confirmed_display_api' if link else (p.confirmation_source if platform == 'tiktok' else 'provider'),
                          'delivery_status': p.status if platform == 'tiktok' else 'published',
+                         'availability': check.state if check else 'unknown',
+                         'availability_note': check.note if check else '',
+                         'checked_at': check.checked_at.isoformat() if check else None,
+                         'included_in_totals': not check or check.state != 'unavailable',
                          'can_refresh': available, 'refresh_note': reason if not available else '',
                          'refresh_cost_note': cost_note,
                          'metrics': {k: s.metrics.get(k) if s else None for k in METRICS},
@@ -144,6 +161,7 @@ def publication_rows(campaigns):
 
 
 def summary(rows):
+    rows = [r for r in rows if r.get('included_in_totals', True)]
     return {platform: {'publications': sum(r.get('publication_count', 1) for r in group), 'metrics': {
         k: {'value': sum(r['metrics'][k] for r in group if r['metrics'][k] is not None)
                      if any(r['metrics'][k] is not None for r in group) else None,
@@ -162,7 +180,7 @@ def monthly_likes(rows, year):
         key = f'{year}-{month:02d}'
         item = {'month': key}
         for platform in PLATFORMS:
-            group = [row for row in rows if row['platform'] == platform and publication_month(row) == key]
+            group = [row for row in rows if row.get('included_in_totals', True) and row['platform'] == platform and publication_month(row) == key]
             values = [count(row['metrics'].get('likes')) for row in group]
             known = [value for value in values if value is not None]
             item[platform] = sum(known) if known else None
@@ -201,7 +219,7 @@ class PublicationStatisticsView(APIView):
             key = f'{year}-{month:02d}'
             item = {'month': key}
             for platform in PLATFORMS:
-                item[platform] = sum(r.get('publication_count', 1) for r in rows if r['platform'] == platform and
+                item[platform] = sum(r.get('publication_count', 1) for r in rows if r.get('included_in_totals', True) and r['platform'] == platform and
                                      publication_month(r) == key)
             monthly.append(item)
         return Response(api_response(True, 'Publicaciones confirmadas registradas por NexoMark.',
@@ -210,6 +228,8 @@ class PublicationStatisticsView(APIView):
              'monthly_likes_basis': 'latest_lifetime_likes_by_publication_month',
              'totals_basis': 'latest_lifetime_counters_by_publication_year',
              'note': 'Contadores acumulados en la última medición; no interacciones ocurridas por mes. '
+                     'Las publicaciones que la API identifica como no encontradas se excluyen de los totales, pero conservan su historial y últimas cifras. '
+                     'Los problemas de permisos, privacidad o compatibilidad no demuestran una eliminación. '
                      'Los totales superiores suman las publicaciones registradas en el año seleccionado. '
                      'Los meses cuentan la fecha de registro del envío confirmado, incluyendo versiones anteriores. '
                      'Vistas y compartidos de Instagram requieren integración Insights adicional. '
@@ -235,6 +255,10 @@ class RefreshPublicationStatisticsView(APIView):
         if p.status != 'published' and not (platform == 'tiktok' and getattr(p, 'publication_link', None)):
             from django.http import Http404
             raise Http404
+        check = PublicationAvailability.objects.filter(platform=platform, publication_id=p.pk).first()
+        if check and timezone.now() - check.checked_at < timedelta(minutes=5):
+            return Response(api_response(True, 'Se conserva la comprobación reciente; espera cinco minutos.',
+                                         {'availability': check.state, 'checked_at': check.checked_at.isoformat()}))
         latest = PublicationMetricSnapshot.objects.filter(platform=platform, publication_id=p.pk).order_by('-measured_at').first()
         same_content = platform != 'tiktok' or latest and latest.metrics.get('_public_post_ids') == effective_public_post_ids(p)
         if latest and same_content and timezone.now() - latest.measured_at < timedelta(minutes=5):
@@ -242,13 +266,30 @@ class RefreshPublicationStatisticsView(APIView):
                                          {'measured_at': latest.measured_at.isoformat()}))
         try:
             values = read_counters(platform, p)
+        except (PublicationNotFound, PublicationUnverifiable) as error:
+            state = 'unavailable' if isinstance(error, PublicationNotFound) else 'unverified'
+            PublicationAvailability.objects.update_or_create(platform=platform, publication_id=p.pk,
+                defaults={'campaign': campaign, 'state': state, 'note': str(error), 'checked_at': timezone.now()})
+            return Response(api_response(True, str(error), {'availability': state}))
         except MetricReadUnavailable as error:
+            self.record_failure(campaign, platform, p.pk, check, str(error))
             return Response(api_response(False, str(error)), status=503)
         except (requests.RequestException, InvalidToken, ValueError, UnicodeError, TypeError, KeyError, ObjectDoesNotExist):
+            self.record_failure(campaign, platform, p.pk, check,
+                                'No se pudo sincronizar. Se conserva la última medición; revisa la conexión y los permisos.')
             return Response(api_response(False, 'No se pudieron consultar las métricas. Revisa la cuenta y los permisos de lectura. '
                                          'Se conservan las mediciones anteriores; no se publicó contenido.'), status=503)
         now = timezone.now()
         with transaction.atomic():
             PublicationMetricSnapshot.objects.update_or_create(platform=platform, publication_id=p.pk,
                 day=timezone.localdate(), defaults={'campaign': campaign, 'metrics': values, 'measured_at': now})
+            PublicationAvailability.objects.update_or_create(platform=platform, publication_id=p.pk,
+                defaults={'campaign': campaign, 'state': 'available', 'note': '', 'checked_at': now})
         return Response(api_response(True, 'Métricas consultadas en la plataforma.', {'measured_at': now.isoformat()}))
+
+    @staticmethod
+    def record_failure(campaign, platform, identifier, previous, note):
+        # An auth error/timeout must never restore a missing post or erase counters.
+        PublicationAvailability.objects.update_or_create(platform=platform, publication_id=identifier,
+            defaults={'campaign': campaign, 'state': previous.state if previous else 'unknown',
+                      'note': note, 'checked_at': timezone.now()})

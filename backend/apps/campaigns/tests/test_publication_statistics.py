@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 from django.utils import timezone
 from apps.authentication.models import InstagramAccount
-from apps.campaigns.models import InstagramPublication, FacebookPublication, PublicationMetricSnapshot, Campaign
+from apps.campaigns.models import InstagramPublication, FacebookPublication, PublicationMetricSnapshot, PublicationAvailability, Campaign
 from apps.campaigns.publication_statistics import count, read_counters
 
 pytestmark = pytest.mark.django_db
@@ -132,6 +132,7 @@ def test_refresh_preserves_snapshot_on_failure(api_client, publication):
         assert api_client.post(url, payload, format='json').status_code == 200
         assert fetch.call_count == 1
     PublicationMetricSnapshot.objects.update(measured_at=timezone.now() - timedelta(minutes=6))
+    PublicationAvailability.objects.update(checked_at=timezone.now() - timedelta(minutes=6))
     with patch('apps.campaigns.publication_statistics.read_counters', side_effect=ValueError('secret')):
         r = api_client.post(url, payload, format='json')
         assert r.status_code == 503 and 'secret' not in str(r.data)
@@ -193,7 +194,7 @@ def test_facebook_counts_are_not_all_reactions(publication, settings):
     with patch('apps.campaigns.publication_statistics.cipher') as crypto, patch('apps.campaigns.publication_statistics.requests.get', return_value=response) as get:
         crypto.return_value.decrypt.return_value = b'token'
         assert read_counters('facebook', p) == {'likes': 4, 'comments': 2, 'shares': 1, 'views': None}
-        assert 'reactions.type(LIKE)' in get.call_args.kwargs['params']['fields']
+        assert 'reactions.type(LIKE)' in get.call_args_list[0].kwargs['params']['fields']
         response.json.return_value = {'error': {'message': 'secret'}}
         with pytest.raises(ValueError): read_counters('facebook', p)
         response.json.return_value = {}
@@ -205,3 +206,61 @@ def test_facebook_counts_are_not_all_reactions(publication, settings):
 @pytest.mark.parametrize('value', [None, True, -1, '3', 2**64])
 def test_invalid_counter_is_unavailable(value):
     assert count(value) is None
+
+
+def test_missing_post_excluded_everywhere_but_history_and_recovery_preserved(api_client, publication):
+    from apps.campaigns.social_metric_readers import PublicationNotFound
+    from apps.campaigns.serializers import CampaignSerializer
+    PublicationMetricSnapshot.objects.create(campaign=publication.campaign, platform='instagram',
+        publication_id=publication.pk, day=timezone.localdate(), metrics={'likes': 7},
+        measured_at=timezone.now() - timedelta(minutes=6))
+    url = f'/api/campaigns/{publication.campaign_id}/publication-statistics/refresh/'
+    payload = {'platform': 'instagram', 'publication_id': publication.pk}
+    with patch('apps.campaigns.publication_statistics.read_counters', side_effect=PublicationNotFound('No encontrada.')):
+        assert api_client.post(url, payload, format='json').status_code == 200
+    data = api_client.get(BASE).data['data']
+    assert data['platforms']['instagram']['publications'] == 0
+    assert data['platforms']['instagram']['metrics']['likes']['value'] is None
+    assert sum(row['instagram'] for row in data['monthly']) == 0
+    assert all(row['instagram'] is None for row in data['monthly_likes'])
+    assert data['publications'][0]['metrics']['likes'] == 7
+    assert data['publications'][0]['included_in_totals'] is False
+    assert CampaignSerializer(publication.campaign).data['publication_status']['instagram'] == 'unavailable'
+    publication.refresh_from_db()
+    assert publication.status == 'published'  # historical delivery must not be erased
+    PublicationAvailability.objects.update(checked_at=timezone.now() - timedelta(minutes=6))
+    with patch('apps.campaigns.publication_statistics.read_counters', return_value={'likes': 8}):
+        assert api_client.post(url, payload, format='json').status_code == 200
+    assert api_client.get(BASE).data['data']['platforms']['instagram']['metrics']['likes']['value'] == 8
+
+
+def test_ambiguous_absence_and_permission_failures_never_erase_totals(api_client, publication):
+    from apps.campaigns.social_metric_readers import PublicationUnverifiable
+    PublicationMetricSnapshot.objects.create(campaign=publication.campaign, platform='instagram',
+        publication_id=publication.pk, day=timezone.localdate(), metrics={'likes': 7},
+        measured_at=timezone.now() - timedelta(minutes=6))
+    url = f'/api/campaigns/{publication.campaign_id}/publication-statistics/refresh/'
+    payload = {'platform': 'instagram', 'publication_id': publication.pk}
+    for failure, expected in [(PublicationUnverifiable('Privacidad o permisos.'), 200), (ValueError('secret'), 503)]:
+        PublicationAvailability.objects.update(checked_at=timezone.now() - timedelta(minutes=6))
+        with patch('apps.campaigns.publication_statistics.read_counters', side_effect=failure):
+            assert api_client.post(url, payload, format='json').status_code == expected
+        data = api_client.get(BASE).data['data']
+        assert data['platforms']['instagram']['publications'] == 1
+        assert data['platforms']['instagram']['metrics']['likes']['value'] == 7
+        assert 'secret' not in str(data)
+
+
+def test_campaign_deletion_removes_local_report_records_without_network_calls(api_client, publication):
+    from apps.campaigns.models import CampaignStatus
+    publication.campaign.estado = CampaignStatus.GENERADO
+    publication.campaign.save()
+    PublicationMetricSnapshot.objects.create(campaign=publication.campaign, platform='instagram',
+        publication_id=publication.pk, day=timezone.localdate(), metrics={'likes': 7})
+    PublicationAvailability.objects.create(campaign=publication.campaign, platform='instagram', publication_id=publication.pk)
+    with patch('apps.campaigns.publication_statistics.requests.delete') as delete:
+        assert api_client.delete(f'/api/campaigns/{publication.campaign_id}/').status_code == 204
+        delete.assert_not_called()
+    assert not PublicationAvailability.objects.exists()
+    assert not PublicationMetricSnapshot.objects.exists()
+    assert not api_client.get(BASE).data['data']['publications']
