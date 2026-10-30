@@ -60,7 +60,7 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
   const { principales, secundarias, sinLectura, motivoSinLectura } = metricasDeRed(p?.red)
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-on-surface/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-navy-deep/60" onClick={onClose}>
       <motion.aside
         ref={panel}
         role="dialog"

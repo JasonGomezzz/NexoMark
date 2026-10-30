@@ -249,7 +249,7 @@ export default function DashboardPage() {
                   )}
 
                   {campaign.cliente_valoracion && (
-                    <div className="absolute left-2 top-2 inline-flex items-center gap-0.5 rounded-full bg-black/45 px-2 py-1 text-amber-300 backdrop-blur-md">
+                    <div className="absolute left-2 top-2 inline-flex items-center gap-0.5 rounded-full bg-black/45 px-2 py-1 text-amber-300">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}

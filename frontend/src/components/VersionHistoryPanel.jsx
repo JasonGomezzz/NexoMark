@@ -104,7 +104,7 @@ export default function VersionHistoryPanel({
       <AnimatePresence>
         {open && (
           <div
-            className="fixed inset-0 z-50 flex justify-end bg-on-surface/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex justify-end bg-navy-deep/60"
             onClick={() => setOpen(false)}
             role="dialog"
             aria-modal="true"

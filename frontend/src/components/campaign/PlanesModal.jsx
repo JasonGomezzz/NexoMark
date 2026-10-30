@@ -69,7 +69,7 @@ export default function PlanesModal({ open, onClose }) {
       aria-modal="true"
       aria-labelledby="planes-title"
       onClick={handleClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/60 p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}

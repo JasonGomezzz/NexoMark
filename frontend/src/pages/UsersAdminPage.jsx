@@ -315,7 +315,7 @@ function ConfirmModal({ title, message, confirmLabel, onConfirm, onCancel, busy,
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/60 p-4"
     >
       <div className="glass-liquid w-full max-w-md rounded-3xl p-8">
         <h3 id="confirm-title" className="mb-2 text-lg font-semibold text-on-surface">{title}</h3>
