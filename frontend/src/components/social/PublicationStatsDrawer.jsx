@@ -78,7 +78,7 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
             <div className="flex min-w-0 items-center gap-3">
               <RedIcon red={p.red} className="h-9 w-9" />
               <div className="min-w-0">
-                <h2 id="detalle-publicacion-titulo" className="truncate text-lg font-semibold text-on-surface">
+                <h2 id="detalle-publicacion-titulo" className="truncate font-display text-xl font-extrabold text-on-surface">
                   {p.campaign_titulo}
                 </h2>
                 <p className="truncate text-sm text-on-surface-variant">
@@ -87,7 +87,7 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
               </div>
             </div>
           ) : (
-            <h2 id="detalle-publicacion-titulo" className="text-lg font-semibold text-on-surface">
+            <h2 id="detalle-publicacion-titulo" className="font-display text-xl font-extrabold text-on-surface">
               Estadísticas de la publicación
             </h2>
           )}
@@ -117,11 +117,11 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
 
               <section aria-labelledby="metricas-titulo">
                 <div className="flex items-baseline justify-between gap-4">
-                  <h3 id="metricas-titulo" className="font-semibold text-on-surface">
+                  <h3 id="metricas-titulo" className="font-display text-lg font-extrabold text-on-surface">
                     Métricas
                   </h3>
                   {metrica && (
-                    <span className="text-xs text-on-surface-variant">Leídas {haceCuanto(metrica.obtenida_at)}</span>
+                    <span className="text-[13px] text-on-surface-variant">Leídas {haceCuanto(metrica.obtenida_at)}</span>
                   )}
                 </div>
                 {datos.aviso && !sinLectura && (
@@ -162,7 +162,7 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
               {datos.historial.length > 1 && <Historial historial={datos.historial} red={p.red} />}
 
               <section aria-labelledby="publicado-titulo">
-                <h3 id="publicado-titulo" className="font-semibold text-on-surface">
+                <h3 id="publicado-titulo" className="font-display text-lg font-extrabold text-on-surface">
                   {p.estado === 'publicado' ? 'Lo que se publicó' : 'Lo que aprobó el cliente'}
                 </h3>
                 {p.imagen_url || p.copy_aprobado ? (
@@ -243,7 +243,7 @@ function Cadena({ publicacion: p, metrica, lecturas }) {
             <span
               aria-hidden="true"
               className={`absolute top-8 left-[13px] h-[calc(100%-12px)] w-0.5 ${
-                paso.hecho ? 'bg-success' : 'bg-outline-variant'
+                paso.hecho ? 'bg-turquoise' : 'bg-outline-variant'
               }`}
             />
           )}
@@ -253,7 +253,7 @@ function Cadena({ publicacion: p, metrica, lecturas }) {
               paso.error
                 ? 'bg-error text-on-error'
                 : paso.hecho
-                  ? 'bg-success text-on-success'
+                  ? 'bg-turquoise text-navy-deep'
                   : 'bg-surface-container-high text-outline'
             }`}
           >
@@ -267,7 +267,7 @@ function Cadena({ publicacion: p, metrica, lecturas }) {
           </span>
           <div className="min-w-0 pt-0.5">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-semibold text-on-surface">{paso.titulo}</p>
+              <p className="font-display text-[15px] font-extrabold text-on-surface">{paso.titulo}</p>
               {paso.badge && <PublicationBadge estado={p.estado} red={p.red} />}
             </div>
             {paso.detalle && (
@@ -297,7 +297,7 @@ function Historial({ historial, red }) {
   const [principal, comentarios] = metricasDeRed(red).principales
   return (
     <section aria-labelledby="historial-titulo">
-      <h3 id="historial-titulo" className="font-semibold text-on-surface">
+      <h3 id="historial-titulo" className="font-display text-lg font-extrabold text-on-surface">
         Historial de lecturas
       </h3>
       <div className="mt-3 overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-lowest">

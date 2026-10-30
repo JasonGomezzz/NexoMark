@@ -8,7 +8,7 @@ import { REDES_META, estadoPublicacion, etiquetaRed, puedeReintentar } from '../
 import { socialApi } from '../../services/socialApi'
 
 const TONOS = {
-  ok: 'bg-success/10 text-success',
+  ok: 'bg-success-container text-success',
   error: 'bg-error-container text-on-error-container',
   neutral: 'bg-surface-container-high text-on-surface-variant',
 }
@@ -35,7 +35,20 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
   }, [campaignId, estadoCampana, recarga])
 
   const publicaciones = todas.filter((p) => REDES_META.includes(p.red))
-  if (!publicaciones.length) return null
+  if (!publicaciones.length) {
+    // Enviada o aprobada sin destinos: se dice, para que nadie espere una publicación que no ocurrirá.
+    if (!['pendiente_aprobacion', 'aprobado'].includes(estadoCampana)) return null
+    return (
+      <section aria-labelledby="publicacion-titulo" className="regla pt-5">
+        <h2 id="publicacion-titulo" className="text-2xl font-extrabold text-on-surface">
+          Publicación
+        </h2>
+        <p className="mt-2 text-[15px] text-on-surface-variant">
+          Sin cuentas de destino: esta campaña no se publica sola. Se eligen al enviarla al cliente.
+        </p>
+      </section>
+    )
+  }
 
   async function publicar(publicacion) {
     setPublicando(publicacion.id)
@@ -52,29 +65,31 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
   }
 
   return (
-    <div className="mt-4 rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
-      <p className="mb-3 text-sm font-semibold text-on-surface">Publicación en redes</p>
-      <ul className="space-y-3">
+    <section aria-labelledby="publicacion-titulo" className="regla pt-5">
+      <h2 id="publicacion-titulo" className="mb-4 text-2xl font-extrabold text-on-surface">
+        Publicación
+      </h2>
+      <ul className="divide-y divide-hairline border-y border-hairline">
         {publicaciones.map((p) => {
           const estado = estadoPublicacion(p.estado)
           return (
-            <li key={p.id} className="rounded-lg border border-outline-variant px-4 py-3">
+            <li key={p.id} className="py-3">
               <div className="flex flex-wrap items-center gap-3">
-                <RedIcon red={p.red} className="h-5 w-5 text-primary" />
+                <RedIcon red={p.red} className="h-6 w-6 text-primary" />
                 <span className="text-sm font-semibold text-on-surface">{p.cuenta_nombre}</span>
-                <span className="text-xs text-on-surface-variant">{etiquetaRed(p.red)}</span>
-                <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONOS[estado.tono]}`}>
+                <span className="text-[13px] text-on-surface-variant">{etiquetaRed(p.red)}</span>
+                <span className={`ml-auto rounded-full px-3 py-1 text-[13px] font-semibold ${TONOS[estado.tono]}`}>
                   {estado.texto}
                 </span>
               </div>
-              {p.error && <p className="mt-2 text-xs text-error">{p.error}</p>}
+              {p.error && <p role="alert" className="mt-2 text-[13px] text-error">{p.error}</p>}
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
                 {p.permalink && (
                   <a
                     href={p.permalink}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                    className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
                   >
                     <ExternalLink className="h-4 w-4" />
                     Ver publicación
@@ -83,7 +98,7 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
                 {p.estado === 'publicado' && (
                   <Link
                     to={`/stats?publicacion=${p.id}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                    className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
                   >
                     <ChartColumnIncreasing className="h-4 w-4" />
                     Ver estadísticas
@@ -104,6 +119,6 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
           )
         })}
       </ul>
-    </div>
+    </section>
   )
 }
