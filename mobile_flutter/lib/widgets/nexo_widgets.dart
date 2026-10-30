@@ -3,10 +3,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/theme/motion.dart';
 import '../core/theme/tokens.dart';
 import '../data/models.dart';
+import 'linea.dart';
 import 'motion_widgets.dart';
 
 final _miles = NumberFormat.decimalPattern('es_PE');
@@ -343,6 +345,8 @@ class NavyPanel extends StatelessWidget {
   }
 }
 
+/// Una cifra con su rótulo. Sin tarjeta: las cifras se separan con hilos.
+/// Un dato que no existe se escribe "sin dato", nunca 0.
 class MetricCard extends StatelessWidget {
   const MetricCard({super.key, required this.label, required this.value, this.icon, this.accent});
 
@@ -353,54 +357,66 @@ class MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final numberStyle = context.text.headlineSmall?.copyWith(fontWeight: FontWeight.w800);
-    return NexoCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 20, color: accent ?? context.colors.primary),
-            const SizedBox(height: 10),
+    return Semantics(
+      label: '$label: ${valorODato(value)}',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            value == null
+                ? Text('sin dato', style: context.text.titleLarge?.copyWith(color: context.colors.onSurfaceVariant))
+                : CountUp(value: value!, style: context.text.displayMedium?.copyWith(color: accent), format: formatoNumero),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                if (icon != null) ...[Icon(icon, size: 14, color: accent ?? context.colors.onSurfaceVariant), const SizedBox(width: 5)],
+                Flexible(child: Text(label, style: context.text.bodySmall)),
+              ],
+            ),
           ],
-          value == null
-              ? Text('sin dato', style: context.text.titleMedium?.copyWith(color: context.colors.onSurfaceVariant))
-              : CountUp(value: value!, style: numberStyle, format: formatoNumero),
-          const SizedBox(height: 2),
-          Text(label, style: context.text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-        ],
+        ),
       ),
     );
   }
 }
 
+/// Título de sección. Abre con la regla de 6 px (la línea marca el inicio).
 class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.title, {super.key, this.trailing, this.subtitle});
+  const SectionTitle(this.title, {super.key, this.trailing, this.subtitle, this.regla = true});
 
   final String title;
   final String? subtitle;
   final Widget? trailing;
+  final bool regla;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: context.text.titleLarge),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(subtitle!, style: context.text.bodySmall),
-                ],
-              ],
-            ),
+          if (regla) ...[const Regla(), const SizedBox(height: 12)],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(header: true, child: Text(title, style: context.text.headlineSmall)),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(subtitle!, style: context.text.bodySmall),
+                    ],
+                  ],
+                ),
+              ),
+              ?trailing,
+            ],
           ),
-          ?trailing,
         ],
       ),
     );
@@ -422,14 +438,9 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(color: context.colors.primaryFixed, shape: BoxShape.circle),
-            child: Icon(icon, color: context.colors.primary, size: 30),
-          ),
+          EstacionHueca(icono: icon),
           const SizedBox(height: 16),
-          Text(title, style: context.text.titleMedium, textAlign: TextAlign.center),
+          Text(title, style: context.text.titleLarge, textAlign: TextAlign.center),
           const SizedBox(height: 6),
           Text(message, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant), textAlign: TextAlign.center),
           if (action != null) ...[const SizedBox(height: 20), action!],
@@ -456,7 +467,7 @@ class ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: context.colors.onErrorContainer),
+          Icon(LucideIcons.circleAlert, size: 20, color: context.colors.onErrorContainer),
           const SizedBox(width: 10),
           Expanded(
             child: Text(message, style: context.text.bodyMedium?.copyWith(color: context.colors.onErrorContainer)),
@@ -474,7 +485,7 @@ class ErrorBanner extends StatelessWidget {
 }
 
 class InfoBanner extends StatelessWidget {
-  const InfoBanner({super.key, required this.message, this.icon = Icons.info_outline, this.tone = InfoTone.info});
+  const InfoBanner({super.key, required this.message, this.icon = LucideIcons.info, this.tone = InfoTone.info});
 
   final String message;
   final IconData icon;
@@ -482,6 +493,8 @@ class InfoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Un aviso sin texto no se dibuja (antes quedaba solo el ícono).
+    if (message.trim().isEmpty) return const SizedBox.shrink();
     final (bg, fg) = switch (tone) {
       InfoTone.info => (context.colors.primaryFixed, context.colors.onPrimaryFixed),
       InfoTone.warning => (context.nexo.warningContainer, context.nexo.warning),
@@ -494,7 +507,7 @@ class InfoBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: fg),
+          Padding(padding: const EdgeInsets.only(top: 1), child: Icon(icon, size: 18, color: fg)),
           const SizedBox(width: 10),
           Expanded(child: Text(message, style: context.text.bodyMedium?.copyWith(color: fg))),
         ],
@@ -621,9 +634,10 @@ int pasoDeEstado(EstadoCampana e, {bool publicada = false}) => switch (e) {
       EstadoCampana.aprobado => publicada ? 4 : 3,
     };
 
-/// Dictar → Generar → Aprobar → Publicar → Medir. Los pasos hechos se llenan
-/// de marino y la pieza turquesa (paso actual) se desliza al nuevo paso:
-/// muestra en qué punto del recorrido está la campaña.
+/// Dictar → Generar → Aprobar → Publicar → Medir: el recorrido de una
+/// campaña con el lenguaje de la línea. Paradas hechas llenas, la actual
+/// turquesa con anillo, las que faltan huecas. El anillo se desliza al
+/// cambiar de paso (240 ms).
 class FlowStepper extends StatelessWidget {
   const FlowStepper({super.key, required this.current, this.onNavy = false});
 
@@ -632,103 +646,107 @@ class FlowStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final line = onNavy ? Nexo.via : context.colors.outlineVariant;
-    final done = onNavy ? Nexo.turquoiseSoft : context.colors.primary;
-    final muted = onNavy ? Nexo.onNavyMuted : context.colors.onSurfaceVariant;
-    final ink = onNavy ? Nexo.onNavy : context.colors.onSurface;
-    return LayoutBuilder(builder: (context, constraints) {
-      final n = pasosFlujo.length;
-      final slot = constraints.maxWidth / n;
-      const node = 26.0;
-      return SizedBox(
-        height: 58,
-        child: Stack(
-          children: [
-            // Riel y avance.
-            Positioned(
-              left: slot / 2,
-              right: slot / 2,
-              top: node / 2 - 1.5,
-              child: Container(height: 3, color: line),
-            ),
-            Positioned(
-              left: slot / 2,
-              top: node / 2 - 1.5,
-              child: AnimatedContainer(
-                duration: Motion.of(context, const Duration(milliseconds: 420)),
-                curve: Motion.easeInOut,
-                height: 3,
-                width: slot * current.clamp(0, n - 1),
-                color: done,
-              ),
-            ),
-            // Pieza turquesa del paso actual.
-            AnimatedPositioned(
-              duration: Motion.of(context, const Duration(milliseconds: 420)),
-              curve: Motion.easeInOut,
-              left: slot * current.clamp(0, n - 1) + slot / 2 - node / 2 - 4,
-              top: -4,
-              child: Container(
-                width: node + 8,
-                height: node + 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Nexo.turquoise.withValues(alpha: 0.22),
-                ),
-              ),
-            ),
-            for (var i = 0; i < n; i++)
+    final via = onNavy ? Nexo.via : context.colors.outlineVariant;
+    final hecho = onNavy ? Nexo.turquoiseSoft : context.colors.primary;
+    final fondo = onNavy ? Nexo.banda : context.colors.surface;
+    final tenue = onNavy ? Nexo.onNavyMuted : context.colors.onSurfaceVariant;
+    final tinta = onNavy ? Nexo.onNavy : context.colors.onSurface;
+    final mover = Motion.of(context, Motion.move);
+    return Semantics(
+      label: 'Paso ${current + 1} de ${pasosFlujo.length}: ${pasosFlujo[current.clamp(0, pasosFlujo.length - 1)]}',
+      excludeSemantics: true,
+      child: LayoutBuilder(builder: (context, constraints) {
+        final n = pasosFlujo.length;
+        final slot = constraints.maxWidth / n;
+        const centro = 18.0;
+        final paso = current.clamp(0, n - 1);
+        return SizedBox(
+          height: 60,
+          child: Stack(
+            children: [
               Positioned(
-                left: slot * i,
-                width: slot,
-                top: 0,
-                child: Column(
-                  children: [
-                    AnimatedContainer(
-                      duration: Motion.of(context, Motion.base),
-                      curve: Motion.easeOut,
-                      width: node,
-                      height: node,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: i < current
-                            ? done
-                            : i == current
-                                ? Nexo.turquoise
-                                : (onNavy ? Nexo.banda2 : context.colors.surfaceContainerLowest),
-                        border: Border.all(color: i <= current ? Colors.transparent : line, width: 2),
-                      ),
-                      child: i < current
-                          ? Icon(Icons.check_rounded, size: 16, color: onNavy ? Nexo.navyDeep : context.colors.onPrimary)
-                          : i == current
-                              ? Center(
-                                  child: Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(color: Nexo.navyDeep, shape: BoxShape.circle),
-                                  ),
-                                )
-                              : null,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      pasosFlujo[i],
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: i == current ? FontWeight.w700 : FontWeight.w500,
-                        color: i <= current ? ink : muted,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.visible,
-                      softWrap: false,
-                    ),
-                  ],
+                left: slot / 2,
+                right: slot / 2,
+                top: centro - 2,
+                child: Container(height: 4, decoration: BoxDecoration(color: via, borderRadius: BorderRadius.circular(2))),
+              ),
+              Positioned(
+                left: slot / 2,
+                top: centro - 2,
+                child: AnimatedContainer(
+                  duration: mover,
+                  curve: Motion.easeInOut,
+                  height: 4,
+                  width: slot * paso,
+                  decoration: BoxDecoration(color: hecho, borderRadius: BorderRadius.circular(2)),
                 ),
               ),
-          ],
-        ),
-      );
-    });
+              AnimatedPositioned(
+                duration: mover,
+                curve: Motion.easeInOut,
+                left: slot * paso + slot / 2 - 18,
+                top: 0,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: fondo,
+                    border: Border.all(color: Nexo.turquoiseSoft, width: 2),
+                  ),
+                ),
+              ),
+              for (var i = 0; i < n; i++)
+                Positioned(
+                  left: slot * i,
+                  width: slot,
+                  top: 0,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: centro * 2,
+                        child: Center(
+                          child: Container(
+                            width: i == paso ? 24 : 18,
+                            height: i == paso ? 24 : 18,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: i < paso ? hecho : (i == paso ? Nexo.turquoise : fondo),
+                              border: i > paso ? Border.all(color: via, width: 4) : null,
+                            ),
+                            child: i < paso
+                                ? Icon(LucideIcons.check, size: 12, color: onNavy ? Nexo.navyDeep : context.colors.onPrimary)
+                                : i == paso
+                                    ? Center(
+                                        child: Container(
+                                          width: 7,
+                                          height: 7,
+                                          decoration: const BoxDecoration(color: Nexo.navyDeep, shape: BoxShape.circle),
+                                        ),
+                                      )
+                                    : null,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        pasosFlujo[i],
+                        maxLines: 1,
+                        overflow: TextOverflow.visible,
+                        softWrap: false,
+                        style: context.text.labelMedium?.copyWith(
+                          fontWeight: i == paso ? FontWeight.w800 : FontWeight.w600,
+                          color: i <= paso ? tinta : tenue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      }),
+    );
   }
 }
 

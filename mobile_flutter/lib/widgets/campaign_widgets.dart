@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/theme/motion.dart';
 import '../core/theme/tokens.dart';
@@ -96,7 +97,7 @@ class _SinImagen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Icon(Icons.image_outlined, color: context.colors.onSurfaceVariant, size: 28));
+    return Center(child: Icon(LucideIcons.image, color: context.colors.onSurfaceVariant, size: 26));
   }
 }
 
@@ -109,14 +110,14 @@ class _Generando extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         const Skeleton(height: double.infinity, radius: 0),
-        Center(child: Icon(Icons.auto_awesome, color: context.colors.primary)),
+        Center(child: Icon(LucideIcons.sparkles, color: context.colors.primary)),
       ],
     );
   }
 }
 
-/// Tarjeta de campaña para listas. La imagen viaja (Hero) al detalle:
-/// conserva el lugar de donde vino.
+/// Fila de campaña para las listas de cada estación. Sin tarjeta: las filas
+/// se separan con hilos. La imagen viaja (Hero) al detalle.
 class CampaignCard extends StatelessWidget {
   const CampaignCard({super.key, required this.campaign, required this.onTap, this.subtitle});
 
@@ -126,62 +127,67 @@ class CampaignCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NexoCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          SizedBox.square(dimension: 76, child: CampaignImage(campaign: campaign, radius: 10)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(campaign.titulo, style: context.text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle ?? (campaign.clienteNombre.isEmpty ? 'Sin cliente' : campaign.clienteNombre),
-                  style: context.text.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Row(
+    final meta = subtitle ?? (campaign.clienteNombre.isEmpty ? 'Sin cliente' : campaign.clienteNombre);
+    return Semantics(
+      button: true,
+      label: '${campaign.titulo}. ${campaign.estado.etiqueta}. $meta',
+      excludeSemantics: true,
+      child: Pressable(
+        onTap: onTap,
+        scale: 0.98,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              SizedBox.square(dimension: 64, child: CampaignImage(campaign: campaign, radius: Nexo.radiusField)),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(child: StatePill(campaign.estado, dense: true)),
-                    const SizedBox(width: 8),
-                    if (campaign.plataforma.isNotEmpty) NetworkIcon(campaign.plataforma, size: 18),
+                    Text(campaign.titulo, style: context.text.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Text(meta, style: context.text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Flexible(child: StatePill(campaign.estado, dense: true)),
+                        const SizedBox(width: 8),
+                        if (campaign.plataforma.isNotEmpty) NetworkIcon(campaign.plataforma, size: 18),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              Icon(LucideIcons.chevronRight, size: 20, color: context.colors.onSurfaceVariant),
+            ],
           ),
-          Icon(Icons.chevron_right_rounded, color: context.colors.onSurfaceVariant),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// Esqueleto con la forma de una tarjeta de campaña.
+/// Esqueleto con la forma de una fila de campaña.
 class CampaignCardSkeleton extends StatelessWidget {
   const CampaignCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const NexoCard(
-      padding: EdgeInsets.all(10),
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Skeleton(width: 76, height: 76, radius: 10),
-          SizedBox(width: 12),
+          Skeleton(width: 64, height: 64, radius: Nexo.radiusField),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Skeleton(width: 160, height: 14),
+                Skeleton(width: 180, height: 14),
                 SizedBox(height: 8),
-                Skeleton(width: 100, height: 12),
+                Skeleton(width: 110, height: 12),
                 SizedBox(height: 12),
                 Skeleton(width: 90, height: 22, radius: 99),
               ],

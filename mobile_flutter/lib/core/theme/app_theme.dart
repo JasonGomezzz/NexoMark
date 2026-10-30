@@ -51,8 +51,7 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
     bodyMedium: texto(15, FontWeight.w400, 1.5),
     bodySmall: texto(13, FontWeight.w500, 1.4, color: scheme.onSurfaceVariant),
     labelLarge: texto(15, FontWeight.w600, 1.2),
-    // Estación de la línea.
-    labelMedium: display(15, FontWeight.w600, 0, 1),
+    labelMedium: texto(13, FontWeight.w600, 1.2),
     labelSmall: texto(13, FontWeight.w600, 1.2),
   );
 
