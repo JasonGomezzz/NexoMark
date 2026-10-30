@@ -3,12 +3,14 @@ import { Download, Maximize2, X } from 'lucide-react'
 
 /**
  * Imagen compacta con lightbox a pantalla completa.
- * Vista normal: contenida a max-h-[400px] (la imagen IA de ~1MP ya no obliga
- * a hacer zoom-out) con caption y descarga. Clic/Enter → modal glass oscuro
- * con la imagen a 90vh/90vw, Esc / clic-fuera / X cierran.
+ * Vista normal: contenida a max-h-[400px] con caption y descarga.
+ * `variante="post"`: a todo el ancho y sin fila de ayuda, para mostrar la pieza
+ * como saldrá publicada. Clic/Enter → velo marino con la imagen a 90vh/90vw;
+ * Esc / clic-fuera / X cierran. Sin desenfoque (no se usa vidrio).
  * El texto/alt viene de datos propios (no HTML crudo) — escapado JSX normal.
  */
-export default function ImageLightbox({ src, alt, downloadName }) {
+export default function ImageLightbox({ src, alt, downloadName, variante = 'normal' }) {
+  const post = variante === 'post'
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -23,29 +25,29 @@ export default function ImageLightbox({ src, alt, downloadName }) {
   return (
     <>
       {/* Vista compacta */}
-      <div className="space-y-2">
+      <div className={post ? '' : 'space-y-2'}>
         <button
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Ver imagen a pantalla completa"
-          className="group relative block w-full cursor-zoom-in overflow-hidden rounded-lg bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className={`group relative block w-full cursor-zoom-in overflow-hidden bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${post ? '' : 'rounded-[10px]'}`}
         >
           <img
             src={src}
             alt={alt}
-            className="mx-auto max-h-[400px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+            className={post ? 'block h-auto w-full' : 'mx-auto max-h-[400px] w-auto object-contain'}
           />
-          <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-on-surface/70 px-3 py-1.5 text-xs font-medium text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
-            <Maximize2 className="h-3.5 w-3.5" />
+          <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-navy-deep/80 px-3 py-1.5 text-[13px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
             Pantalla completa
           </span>
         </button>
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-on-surface-variant">Clic en la imagen para ampliarla</p>
+        <div className={post ? 'sr-only' : 'flex items-center justify-between'}>
+          <p className="text-[13px] text-on-surface-variant">Clic en la imagen para ampliarla</p>
           <a
             href={src}
             download={downloadName}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+            className="-my-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
           >
             <Download className="h-4 w-4" />
             Descargar PNG
@@ -60,7 +62,7 @@ export default function ImageLightbox({ src, alt, downloadName }) {
           aria-modal="true"
           aria-label={alt || 'Imagen a pantalla completa'}
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/80 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/90 p-4"
         >
           <img
             src={src}

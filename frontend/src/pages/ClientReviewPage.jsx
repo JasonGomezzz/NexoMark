@@ -1,23 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { motion } from 'motion/react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
-import { ArrowLeft, CircleCheck, CircleX, ImageOff, AlertCircle, Loader2, Star } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Check, CircleX, ImageOff, Loader2, Send, Star } from 'lucide-react'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import { getCampaignById, approveCampaign, rejectCampaign } from '../services/clientCampaigns'
 import { Button } from '@/components/ui/button'
 import StatusBadge from '@/components/StatusBadge'
 import RejectModal from '@/components/campaign/RejectModal'
+import NexoN from '@/components/NexoN'
 import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import RedIcon from '@/components/social/RedIcon'
 import XVariantReviewCard from '@/components/social/XVariantReviewCard'
 import { estadoPublicacion, etiquetaRed } from '../services/social'
+import { cn } from '@/lib/utils'
 
 /**
- * Review de campaña del rol CLIENTE (HU14/HU15). Consume Spring Boot :8080
+ * Revisión del CLIENTE (estación Aprobar de la línea). Consume Spring Boot :8080
  * (camelCase: textoGenerado, imagenB64, clienteNombre, feedbackRechazo, version).
- * El cliente revisa el copy + imagen y APRUEBA o RECHAZA (feedback obligatorio).
- * El PATCH incluye `version` (optimistic locking @Version de JPA — Spring lo exige).
+ * El cliente ve la pieza como saldrá publicada (cuenta, imagen y copy), la
+ * califica y APRUEBA o RECHAZA (feedback obligatorio). El PATCH incluye
+ * `version` (optimistic locking @Version de JPA — Spring lo exige) y la
+ * valoración (Spring la pide en ambos casos).
+ * Al aprobar, las dos piezas de la N encajan: es el segundo momento firma.
  */
 export default function ClientReviewPage() {
   const { id } = useParams()
@@ -31,6 +37,7 @@ export default function ClientReviewPage() {
   const [showReject, setShowReject] = useState(false)
   const [rating, setRating] = useState(0)
   const [externallyUpdated, setExternallyUpdated] = useState(false)
+  const [aprobada, setAprobada] = useState(false)
 
   // Ref (no state) para que handleStatusChanged no cambie de identidad en
   // cada toggle de `busy` y así no fuerce una reconexión del WebSocket.
@@ -40,17 +47,16 @@ export default function ClientReviewPage() {
   }, [busy])
 
   // Si otro usuario/pestaña resuelve esta misma campaña mientras la tenemos
-  // abierta, reflejamos el nuevo estado (deshabilita Aprobar/Rechazar al
-  // salir de pendiente_aprobacion) y avisamos — evita un PATCH con `version`
-  // desactualizada. Si el cambio lo disparamos nosotros mismos (busyRef),
-  // no mostramos el aviso: ya estamos navegando fuera con nuestro propio toast.
+  // abierta, reflejamos el nuevo estado y avisamos — evita un PATCH con
+  // `version` desactualizada. Si el cambio lo disparamos nosotros (busyRef),
+  // no mostramos el aviso.
   const handleStatusChanged = useCallback(
     (updated) => {
       if (String(updated.id) !== String(id)) return
       setCampaign((current) => (current ? { ...current, ...updated } : current))
       if (!busyRef.current) setExternallyUpdated(true)
     },
-    [id]
+    [id],
   )
 
   const handleConnected = useCallback(() => setRevision((value) => value + 1), [setRevision])
@@ -76,54 +82,58 @@ export default function ClientReviewPage() {
 
   async function handleApprove() {
     if (!rating) {
-      toast.error('Selecciona una valoración de 1 a 5 estrellas.')
+      toast.error('Califica la pieza de 1 a 5 antes de decidir.')
       return
     }
     setBusy(true)
     try {
       await approveCampaign(id, campaign.version, rating)
-      toast.success('Campaña aprobada')
-      setTimeout(() => navigate('/dashboard'), 1000)
+      setAprobada(true)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'No se pudo aprobar la campaña.')
+      toast.error(err.response?.data?.message || 'No se pudo aprobar la campaña. Intenta de nuevo.')
       setBusy(false)
     }
   }
 
   async function handleReject(feedback) {
     if (!rating) {
-      toast.error('Selecciona una valoración de 1 a 5 estrellas.')
+      toast.error('Califica la pieza de 1 a 5 antes de decidir.')
       return
     }
     setBusy(true)
     try {
       await rejectCampaign(id, feedback, campaign.version, rating)
       setShowReject(false)
-      toast.success('Campaña rechazada. El marketero recibirá tu feedback.')
+      toast.success('Rechazaste la campaña. El marketero recibe tu comentario.')
       setTimeout(() => navigate('/dashboard'), 1200)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'No se pudo rechazar la campaña.')
+      toast.error(err.response?.data?.message || 'No se pudo rechazar la campaña. Intenta de nuevo.')
       setBusy(false)
     }
   }
 
   if (loading) {
     return (
-      <div className="flex animate-pulse gap-6">
-        <div className="h-96 flex-1 rounded-xl bg-surface-container-high" />
-        <div className="hidden h-96 w-80 rounded-xl bg-surface-container-high lg:block" />
+      <div className="grid animate-pulse gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="aspect-[4/5] max-w-xl rounded-[14px] bg-surface-container-high" />
+        <div className="hidden h-80 rounded-[14px] bg-surface-container-high lg:block" />
       </div>
     )
   }
 
   if (error || !campaign) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
-        <AlertCircle className="h-4 w-4" />
-        No se pudo cargar la campaña. Verifica tu conexión o vuelve al inicio.
+      <div role="alert" className="flex items-center gap-2 rounded-[14px] border border-error/25 bg-error-container px-4 py-3 text-sm text-on-error-container">
+        <AlertCircle className="h-4 w-4" aria-hidden="true" />
+        No se pudo cargar la campaña. Revisa tu conexión o vuelve al inicio.
       </div>
     )
   }
+
+  const destinos = campaign.destinos ?? []
+  const principal = destinos[0]
+
+  if (aprobada) return <Aprobada campaign={campaign} destinos={destinos} onInicio={() => navigate('/dashboard')} />
 
   const puedeRevisar = campaign.estado === 'pendiente_aprobacion'
 
@@ -131,238 +141,304 @@ export default function ClientReviewPage() {
     <>
       <AppToaster />
 
-      {/* Encabezado */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="min-w-0">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="mb-2 inline-flex items-center gap-1.5 text-sm text-on-surface-variant transition-colors hover:text-primary"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al inicio
-          </button>
-          <h1 className="truncate text-2xl font-bold tracking-tight text-on-surface md:text-3xl">
+      <div className="mb-8">
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="-ml-3 mb-2 inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Inicio
+        </button>
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+          <h1 className="line-clamp-3 max-w-3xl text-[28px] font-extrabold leading-[1.08] tracking-[-0.02em] text-on-surface sm:text-[36px]">
             {campaign.titulo}
           </h1>
+          <StatusBadge estado={campaign.estado} className="px-4 py-1.5 text-sm" />
         </div>
-        <StatusBadge estado={campaign.estado} className="px-4 py-1.5 text-sm" />
+        <p className="mt-2 text-[15px] text-on-surface-variant">
+          De {campaign.marketeroNombre || 'tu agencia'}
+          {campaign.fechaCreacion ? ` · creada el ${new Date(campaign.fechaCreacion).toLocaleDateString('es-PE')}` : ''}
+        </p>
       </div>
 
-      {/* Aviso si otro usuario/pestaña actualizó esta campaña en vivo */}
       {externallyUpdated && (
-        <div className="mb-6 flex items-center gap-2 rounded-xl border border-warning/30 bg-warning-container px-4 py-3 text-sm font-medium text-warning">
-          <AlertCircle className="h-4 w-4" />
-          Esta campaña fue actualizada por otro usuario mientras la tenías abierta.
-        </div>
+        <p role="status" className="mb-6 flex items-center gap-2 rounded-[10px] bg-warning-container px-4 py-3 text-sm font-medium text-on-tertiary-container">
+          <AlertCircle className="h-4 w-4 text-tertiary" aria-hidden="true" />
+          Esta campaña cambió mientras la tenías abierta. Ya ves la versión nueva.
+        </p>
       )}
 
-      {/* Aviso si ya fue revisada */}
       {!puedeRevisar && (
-        <div
-          className={`mb-6 rounded-xl border px-4 py-3 text-sm font-medium ${
-            campaign.estado === 'aprobado'
-              ? 'border-success/20 bg-success-container text-success'
-              : campaign.estado === 'rechazado' || campaign.estado === 'fracaso'
-                ? 'border-error/20 bg-error-container text-on-error-container'
-                : 'border-outline-variant bg-surface-container-low text-on-surface-variant'
-          }`}
+        <p
+          className={cn(
+            'mb-6 rounded-[10px] px-4 py-3 text-sm font-medium',
+            campaign.estado === 'aprobado' && 'bg-success-container text-success',
+            ['rechazado', 'fracaso'].includes(campaign.estado) && 'bg-error-container text-on-error-container',
+            !['aprobado', 'rechazado', 'fracaso'].includes(campaign.estado) && 'bg-surface-container-low text-on-surface-variant',
+          )}
         >
           {campaign.estado === 'aprobado'
             ? 'Ya aprobaste esta campaña.'
             : campaign.estado === 'rechazado'
-              ? 'Ya rechazaste esta campaña. El marketero está trabajando en una nueva versión.'
+              ? 'Ya la rechazaste. El marketero está preparando una nueva versión.'
               : campaign.estado === 'fracaso'
-                ? 'Esta campaña fue rechazada dos veces y quedó cerrada como fracaso.'
-              : 'Esta campaña aún no está lista para revisión.'}
-        </div>
+                ? 'Esta campaña se rechazó dos veces y quedó cerrada.'
+                : 'Esta campaña todavía no está lista para revisar.'}
+        </p>
       )}
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        {/* ── Contenido: copy + imagen ── */}
-        <div className="min-w-0 flex-1 space-y-4">
-          <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-            <p className="mb-3 text-[13px] font-semibold text-on-surface-variant">
-              Copy propuesto
-            </p>
-            <p className="whitespace-pre-wrap text-base leading-relaxed text-on-surface">
-              {campaign.textoGenerado || 'Sin copy generado.'}
-            </p>
-          </div>
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-14">
+        {/* ── La pieza tal como saldrá publicada ── */}
+        <section aria-labelledby="pieza-titulo" className="min-w-0">
+          <h2 id="pieza-titulo" className="mb-1 text-2xl font-extrabold text-on-surface">
+            {puedeRevisar ? 'Así se publicará' : 'La pieza'}
+          </h2>
+          <p className="mb-5 text-[15px] text-on-surface-variant">
+            {puedeRevisar ? 'Lo que apruebes es exactamente lo que sale en tu cuenta.' : 'La versión que revisaste.'}
+          </p>
 
-          <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-            <p className="mb-3 text-[13px] font-semibold text-on-surface-variant">
-              Imagen del anuncio
-            </p>
+          <article className="max-w-xl overflow-hidden rounded-[14px] border border-outline-variant bg-surface-container-lowest">
+            <header className="flex items-center gap-3 px-4 py-3">
+              {principal ? (
+                <RedIcon red={principal.red} className="h-7 w-7" />
+              ) : (
+                <span aria-hidden="true" className="h-7 w-7 rounded-full bg-surface-container-high" />
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-on-surface">{principal?.cuentaNombre || 'Sin cuenta de destino'}</p>
+                <p className="text-[13px] text-on-surface-variant">{principal ? etiquetaRed(principal.red) : 'No se publicará automáticamente'}</p>
+              </div>
+            </header>
             {campaign.imagenB64 ? (
               <ImageLightbox
                 src={`data:image/png;base64,${campaign.imagenB64}`}
                 alt={`Imagen propuesta para ${campaign.titulo}`}
                 downloadName={`campaign_${id}_imagen.png`}
+                variante="post"
               />
             ) : (
-              <div className="flex flex-col items-center gap-2 py-8 text-center text-on-surface-variant">
-                <ImageOff className="h-8 w-8 text-outline" />
-                <p className="text-sm">Imagen no disponible</p>
+              <div className="flex aspect-square flex-col items-center justify-center gap-2 bg-surface-container-low text-on-surface-variant">
+                <ImageOff className="h-8 w-8 text-outline" aria-hidden="true" />
+                <p className="text-sm">Esta campaña no tiene imagen</p>
               </div>
             )}
-          </div>
+            <p className="whitespace-pre-wrap px-4 py-4 text-[15px] leading-relaxed text-on-surface">
+              {campaign.textoGenerado || 'Sin copy generado.'}
+            </p>
+          </article>
 
           {/* X opcional: versión corta de la campaña aprobada, que el cliente aprueba aparte */}
           {campaign.estado === 'aprobado' && (
-            <XVariantReviewCard campaignId={id} imagenB64={campaign.imagenB64} titulo={campaign.titulo} />
+            <div className="mt-10">
+              <XVariantReviewCard campaignId={id} imagenB64={campaign.imagenB64} titulo={campaign.titulo} />
+            </div>
           )}
 
-          {/* Feedback previo si la rechazó antes */}
           {['rechazado', 'fracaso'].includes(campaign.estado) && campaign.feedbackRechazo && (
-            <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-              <p className="mb-2 text-[13px] font-semibold text-error">
-                Tu feedback
-              </p>
-              <p className="text-sm leading-relaxed text-on-surface">{campaign.feedbackRechazo}</p>
+            <div className="mt-8 max-w-xl border-t border-hairline pt-5">
+              <p className="mb-2 text-sm font-semibold text-on-surface-variant">Tu comentario</p>
+              <p className="text-[15px] leading-relaxed text-on-surface">«{campaign.feedbackRechazo}»</p>
             </div>
           )}
+        </section>
 
-          {campaign.clienteValoracion && (
-            <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-              <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
-                Tu valoración
-              </p>
-              <StarRating value={campaign.clienteValoracion} readOnly />
-            </div>
-          )}
-        </div>
-
-        {/* ── Panel lateral: metadatos + acciones ── */}
-        <div className="w-full shrink-0 space-y-4 lg:sticky lg:top-6 lg:w-80">
-          <div className="space-y-3 rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
-            <MetaRow
-              label="Marketero"
-              value={campaign.marketeroNombre || (campaign.marketeroId ? `#${campaign.marketeroId}` : '—')}
-            />
-            <MetaRow label="Industria" value={campaign.industria} capitalize />
-            <MetaRow label="Tono" value={campaign.tono} capitalize />
-            <MetaRow label="Plataforma" value={campaign.plataforma} capitalize />
-            {campaign.fechaCreacion && (
-              <MetaRow
-                label="Creada"
-                value={new Date(campaign.fechaCreacion).toLocaleDateString('es-PE')}
-              />
-            )}
-          </div>
-
-          {campaign.destinos?.length > 0 && (
-            <div className="space-y-2 rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
-              <p className="text-sm font-semibold text-on-surface">
-                {puedeRevisar ? 'Al aprobar se publicará en' : 'Publicación'}
-              </p>
-              <ul className="space-y-2">
-                {campaign.destinos.map((d) => (
-                  <li key={`${d.red}-${d.cuentaNombre}`} className="flex items-center gap-2 text-sm">
-                    <RedIcon red={d.red} className="h-5 w-5" />
-                    <span className="font-medium text-on-surface">{d.cuentaNombre}</span>
-                    <span className="text-xs text-on-surface-variant">{etiquetaRed(d.red)}</span>
-                    {!puedeRevisar && (
-                      d.permalink ? (
-                        <a
-                          href={d.permalink}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="ml-auto text-xs font-semibold text-primary hover:underline"
-                        >
-                          Ver
+        {/* ── La decisión ── */}
+        <aside aria-label="Tu decisión" className="min-w-0 space-y-10">
+          <section className="regla pt-5">
+            <p className="mb-2 text-sm font-semibold text-on-surface-variant">{puedeRevisar ? 'Estación Aprobar' : 'Publicación'}</p>
+            <h2 className="text-2xl font-extrabold leading-tight text-on-surface">
+              {puedeRevisar ? (destinos.length ? 'Al aprobar, se publica en' : 'Al aprobar') : 'Dónde se publicó'}
+            </h2>
+            {destinos.length > 0 ? (
+              <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
+                {destinos.map((d) => (
+                  <li key={`${d.red}-${d.cuentaNombre}`} className="flex min-h-12 items-center gap-3 py-2 text-sm">
+                    <RedIcon red={d.red} className="h-6 w-6" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold text-on-surface">{d.cuentaNombre}</span>
+                      <span className="block text-[13px] text-on-surface-variant">{etiquetaRed(d.red)}</span>
+                    </span>
+                    {!puedeRevisar &&
+                      (d.permalink ? (
+                        <a href={d.permalink} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
+                          Ver publicación
                         </a>
                       ) : (
-                        <span className="ml-auto text-xs text-on-surface-variant">
-                          {estadoPublicacion(d.estado).texto}
-                        </span>
-                      )
-                    )}
+                        <span className="text-[13px] text-on-surface-variant">{estadoPublicacion(d.estado, d.red).texto}</span>
+                      ))}
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
+            ) : (
+              <p className="mt-3 text-[15px] text-on-surface-variant">
+                No hay cuentas de destino: la campaña queda aprobada y tu agencia la publica después.
+              </p>
+            )}
+          </section>
 
           {puedeRevisar && (
-            <div className="glass-soft space-y-3 rounded-xl p-5 shadow-sm">
-              <p className="text-sm font-semibold text-on-surface">¿Qué decides?</p>
-              <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
-                <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
-                  Valoración
+            <section aria-labelledby="decide-titulo" className="border-t border-hairline pt-5">
+              <h2 id="decide-titulo" className="font-display text-lg font-extrabold text-on-surface">
+                Califica la pieza
+              </h2>
+              <p className="mb-3 text-[13px] text-on-surface-variant">Tu calificación llega a la agencia, apruebes o no.</p>
+              <StarRating value={rating} onChange={setRating} />
+              <div className="mt-6 grid gap-3">
+                <Button size="lg" disabled={busy || !rating} onClick={handleApprove}>
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <Check className="h-5 w-5" aria-hidden="true" />}
+                  {busy ? 'Aprobando…' : destinos.length ? 'Aprobar y publicar' : 'Aprobar'}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-error/40 text-error hover:border-error hover:bg-error-container hover:text-on-error-container"
+                  disabled={busy || !rating}
+                  onClick={() => setShowReject(true)}
+                >
+                  <CircleX className="h-5 w-5" aria-hidden="true" />
+                  Pedir cambios
+                </Button>
+                <p className="text-[13px] text-on-surface-variant">
+                  {rating ? 'Si pides cambios, cuéntale al marketero qué mejorar.' : 'Elige de 1 a 5 para habilitar tu decisión.'}
                 </p>
-                <StarRating value={rating} onChange={setRating} />
               </div>
-              <Button
-                size="lg"
-                className="w-full bg-success hover:bg-success/90"
-                disabled={busy || !rating}
-                onClick={handleApprove}
-              >
-                {busy ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <CircleCheck className="h-5 w-5" />
-                )}
-                {busy ? 'Procesando…' : 'Aprobar campaña'}
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full border-error/30 text-error hover:bg-error-container/50"
-                disabled={busy || !rating}
-                onClick={() => setShowReject(true)}
-              >
-                <CircleX className="h-5 w-5" />
-                Rechazar
-              </Button>
-              <p className="text-xs text-on-surface-variant">
-                Si rechazas, deberás indicar el motivo para que el marketero pueda mejorarla.
-              </p>
-            </div>
+            </section>
           )}
-        </div>
+
+          {!puedeRevisar && campaign.clienteValoracion && (
+            <section className="border-t border-hairline pt-5">
+              <p className="mb-2 text-sm font-semibold text-on-surface-variant">Tu calificación</p>
+              <StarRating value={campaign.clienteValoracion} readOnly />
+            </section>
+          )}
+        </aside>
       </div>
 
-      <RejectModal
-        open={showReject}
-        busy={busy}
-        onCancel={() => setShowReject(false)}
-        onConfirm={handleReject}
-      />
+      <RejectModal open={showReject} busy={busy} onCancel={() => setShowReject(false)} onConfirm={handleReject} />
     </>
   )
 }
 
-function StarRating({ value, onChange, readOnly = false }) {
+/**
+ * Momento firma: la aprobación. Las dos piezas de la N encajan (quien crea y
+ * quien aprueba) y la línea se llena hasta Publicar. Con "reducir movimiento"
+ * aparece directamente encajada.
+ */
+function Aprobada({ campaign, destinos, onInicio }) {
+  const cuenta = destinos[0]
   return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => {
-        const active = star <= value
-        return (
-          <button
-            key={star}
-            type="button"
-            disabled={readOnly}
-            onClick={() => onChange?.(star)}
-            className={`rounded-md p-1 transition ${readOnly ? 'cursor-default' : 'hover:scale-110'}`}
-            aria-label={`${star} estrella${star === 1 ? '' : 's'}`}
-          >
-            <Star className={`h-6 w-6 ${active ? 'fill-amber-400 text-amber-500' : 'text-outline'}`} />
-          </button>
-        )
-      })}
-      {value ? <span className="ml-2 text-sm font-semibold text-on-surface">{value}/5</span> : null}
-    </div>
+    <section role="status" aria-live="polite" className="mx-auto max-w-2xl py-8 sm:py-14">
+      <div className="flex items-center gap-5">
+        <span className="grid h-24 w-24 shrink-0 place-items-center rounded-[22px] bg-banda">
+          <NexoN encajar className="h-14 w-14" />
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-primary">Aprobada</p>
+          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">
+            Lo aprobado es lo publicado
+          </h1>
+        </div>
+      </div>
+      <motion.p
+        initial={{ opacity: 0, transform: 'translateY(6px)' }}
+        animate={{ opacity: 1, transform: 'translateY(0px)' }}
+        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1], delay: 0.35 }}
+        className="mt-6 text-[17px] leading-relaxed text-on-surface-variant"
+      >
+        Aprobaste «{campaign.titulo}».{' '}
+        {cuenta
+          ? `Ahora se publica en ${cuenta.cuentaNombre} (${etiquetaRed(cuenta.red)})${destinos.length > 1 ? ` y ${destinos.length - 1} cuenta${destinos.length > 2 ? 's' : ''} más` : ''}, tal cual la viste.`
+          : 'Tu agencia la publicará; no tiene cuentas de destino.'}
+      </motion.p>
+
+      <ol className="relative mt-10 grid grid-cols-3" aria-label="Recorrido">
+        <span aria-hidden="true" className="absolute left-[16.6%] right-[16.6%] top-5 h-1.5 -translate-y-1/2 rounded-full bg-outline-variant" />
+        <motion.span
+          aria-hidden="true"
+          className="absolute left-[16.6%] top-5 h-1.5 -translate-y-1/2 rounded-full bg-turquoise"
+          initial={{ width: '0%' }}
+          animate={{ width: '33.4%' }}
+          transition={{ duration: 0.42, ease: [0.23, 1, 0.32, 1], delay: 0.2 }}
+        />
+        {[
+          { label: 'Aprobar', hecha: true },
+          { label: 'Publicar', actual: true },
+          { label: 'Medir' },
+        ].map(({ label, hecha, actual }) => (
+          <li key={label} className="relative flex flex-col items-center gap-2">
+            <span
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-full',
+                hecha && 'bg-turquoise text-navy-deep',
+                actual && 'bg-turquoise text-navy-deep shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_var(--color-turquoise-soft)]',
+                !hecha && !actual && 'border-4 border-outline-variant bg-background',
+              )}
+            >
+              {hecha && <Check className="h-4 w-4" strokeWidth={2.75} aria-hidden="true" />}
+              {actual && <Send className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden="true" />}
+            </span>
+            <span className={cn('font-display text-[15px]', actual ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>{label}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-10 flex flex-wrap gap-3">
+        <Button size="lg" onClick={onInicio}>
+          Volver al inicio
+        </Button>
+      </div>
+    </section>
   )
 }
 
-function MetaRow({ label, value, capitalize }) {
+/** Calificación de 1 a 5 como grupo de opciones (teclado: flechas; 44 px por estrella). */
+function StarRating({ value, onChange, readOnly = false }) {
+  if (readOnly) {
+    return (
+      <p className="flex items-center gap-1" aria-label={`${value} de 5`}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star key={star} aria-hidden="true" className={`h-6 w-6 ${star <= value ? 'fill-tertiary text-tertiary' : 'text-outline'}`} />
+        ))}
+        <span className="ml-2 text-sm font-semibold text-on-surface">{value}/5</span>
+      </p>
+    )
+  }
+  const mover = (event, star) => {
+    if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      onChange(Math.min(5, star + 1))
+      event.currentTarget.nextElementSibling?.focus()
+    }
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+      event.preventDefault()
+      onChange(Math.max(1, star - 1))
+      event.currentTarget.previousElementSibling?.focus()
+    }
+  }
   return (
-    <div className="flex items-start justify-between gap-2 text-sm">
-      <span className="shrink-0 text-on-surface-variant">{label}</span>
-      <span className={`text-right text-on-surface ${capitalize ? 'capitalize' : ''}`}>
-        {value || '—'}
-      </span>
+    <div className="flex items-center gap-1">
+      <div role="radiogroup" aria-label="Calificación de la pieza" className="flex">
+        {[1, 2, 3, 4, 5].map((star) => {
+          const activa = star <= value
+          return (
+            <button
+              key={star}
+              type="button"
+              role="radio"
+              aria-checked={value === star}
+              aria-label={`${star} de 5`}
+              tabIndex={value ? (value === star ? 0 : -1) : star === 1 ? 0 : -1}
+              onClick={() => onChange(star)}
+              onKeyDown={(e) => mover(e, star)}
+              className="grid h-11 w-11 place-items-center rounded-full transition-colors hover:bg-surface-container-low"
+            >
+              <Star aria-hidden="true" className={`h-7 w-7 ${activa ? 'fill-tertiary text-tertiary' : 'text-outline'}`} />
+            </button>
+          )
+        })}
+      </div>
+      {value ? <span className="ml-2 text-sm font-semibold tabular-nums text-on-surface">{value}/5</span> : null}
     </div>
   )
 }

@@ -25,9 +25,9 @@ export default function RejectModal({
   onConfirm,
   onCancel,
   busy,
-  titulo = '¿Por qué rechazas esta campaña?',
-  descripcion = 'Tu feedback ayuda al marketero a regenerar el contenido.',
-  nota = 'El marketero recibirá un email con tu feedback.',
+  titulo = '¿Qué debería cambiar?',
+  descripcion = 'Tu comentario llega al marketero para que prepare una nueva versión.',
+  nota = 'El marketero recibe tu comentario por correo.',
   motivos = MOTIVOS,
 }) {
   const [feedback, setFeedback] = useState('')
@@ -59,28 +59,28 @@ export default function RejectModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-navy-deep/60 sm:items-center sm:p-4"
       onClick={busy ? undefined : onCancel}
       role="dialog"
       aria-modal="true"
       aria-labelledby="reject-title"
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-        className="glass-liquid w-full max-w-lg rounded-3xl p-8"
+        initial={{ opacity: 0, transform: 'translateY(16px)' }}
+        animate={{ opacity: 1, transform: 'translateY(0px)' }}
+        transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-[22px] border border-outline-variant bg-surface-container-lowest p-6 shadow-xl sm:rounded-[22px] sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-1 flex items-start justify-between gap-4">
-          <h3 id="reject-title" className="text-xl font-semibold text-on-surface">
+          <h3 id="reject-title" className="font-display text-2xl font-extrabold text-on-surface">
             {titulo}
           </h3>
           <button
             onClick={onCancel}
             disabled={busy}
             aria-label="Cerrar"
-            className="rounded-lg p-1 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="-mr-2 -mt-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <X className="h-5 w-5" />
           </button>
@@ -95,7 +95,7 @@ export default function RejectModal({
               type="button"
               onClick={() => addMotivo(m)}
               disabled={busy}
-              className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1.5 text-xs font-medium text-on-surface-variant transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+              className="inline-flex min-h-11 items-center rounded-full border border-outline-variant px-4 text-[13px] font-medium text-on-surface transition-colors hover:border-primary hover:bg-primary-fixed hover:text-on-primary-fixed"
             >
               {m}
             </button>
@@ -111,9 +111,9 @@ export default function RejectModal({
             disabled={busy}
             rows={4}
             placeholder="Explica qué debería cambiar…"
-            className="w-full resize-y rounded-xl border border-outline-variant bg-white px-4 py-3 text-base outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary"
+            className="w-full resize-y rounded-[14px] border border-outline bg-surface-container-lowest px-4 py-3 text-base text-on-surface outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-primary/30"
           />
-          <div className="mt-1 flex items-center justify-between px-1 text-xs">
+          <div className="mt-1 flex items-center justify-between px-1 text-[13px]">
             <span
               className={
                 feedback.length > 0 && feedback.trim().length < MIN_CHARS
@@ -122,7 +122,7 @@ export default function RejectModal({
               }
             >
               {feedback.trim().length < MIN_CHARS
-                ? `Mínimo ${MIN_CHARS} caracteres`
+                ? `Escribe al menos ${MIN_CHARS} caracteres`
                 : nota}
             </span>
             <span className="tabular-nums text-on-surface-variant">
@@ -131,17 +131,17 @@ export default function RejectModal({
           </div>
         </div>
 
-        <div className="mt-4 flex gap-3">
+        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
           <Button variant="outline" className="flex-1" onClick={onCancel} disabled={busy}>
             Cancelar
           </Button>
           <Button
-            className="flex-1 bg-error hover:bg-error/90"
+            className="flex-1 bg-error text-on-error hover:bg-error/90"
             disabled={!valid || busy}
             onClick={() => onConfirm(feedback.trim())}
           >
             {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-            {busy ? 'Enviando…' : 'Confirmar rechazo'}
+            {busy ? 'Enviando…' : 'Enviar comentario'}
           </Button>
         </div>
       </motion.div>
