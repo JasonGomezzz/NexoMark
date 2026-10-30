@@ -325,7 +325,7 @@ export default function AccountSettingsPage() {
               />
             </div>
 
-            <p className="mt-3 text-xs text-on-surface-variant">
+            <p className="mt-3 text-[13px] text-on-surface-variant">
               1 crédito = 1 generación o regeneración exitosa de IA.{' '}
               {tokens === 0 ? (
                 <span className="font-semibold text-error">

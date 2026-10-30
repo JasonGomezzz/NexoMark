@@ -12,7 +12,7 @@ export default function PublicationBadge({ estado, red }) {
   const { texto, tono } = estadoPublicacion(estado, red)
   return (
     <span
-      className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${TONOS[tono]}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-[13px] font-semibold ${TONOS[tono]}`}
     >
       {texto}
     </span>

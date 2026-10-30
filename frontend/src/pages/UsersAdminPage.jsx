@@ -28,7 +28,7 @@ const ROL_LABELS = {
 function RolBadge({ rol }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+      className={`rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${
         ROL_BADGES[rol] ?? 'bg-surface-container-high text-on-surface-variant'
       }`}
     >
@@ -39,12 +39,12 @@ function RolBadge({ rol }) {
 
 function EstadoChip({ activo }) {
   return activo ? (
-    <span className="inline-flex items-center gap-1 rounded-full bg-success-container px-2.5 py-0.5 text-xs font-semibold text-success">
+    <span className="inline-flex items-center gap-1 rounded-full bg-success-container px-2.5 py-0.5 text-[13px] font-semibold text-success">
       <span className="h-1.5 w-1.5 rounded-full bg-success" />
       Activo
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 rounded-full bg-error-container px-2.5 py-0.5 text-xs font-semibold text-error">
+    <span className="inline-flex items-center gap-1 rounded-full bg-error-container px-2.5 py-0.5 text-[13px] font-semibold text-error">
       <span className="h-1.5 w-1.5 rounded-full bg-error" />
       Suspendido
     </span>
@@ -199,7 +199,7 @@ export default function UsersAdminPage() {
                       >
                         <td className="px-4 py-4 font-medium text-on-surface">
                           {u.nombre}
-                          {isSelf && <span className="ml-2 text-xs text-on-surface-variant">(tú)</span>}
+                          {isSelf && <span className="ml-2 text-[13px] text-on-surface-variant">(tú)</span>}
                         </td>
                         <td className="px-4 py-4 text-on-surface-variant">{u.email}</td>
                         <td className="px-4 py-4">
@@ -217,7 +217,7 @@ export default function UsersAdminPage() {
                               onClick={() => handleToggleActive(u)}
                               disabled={isSelf}
                               title={isSelf ? 'No puedes modificar tu propia cuenta' : ''}
-                              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
                                 isSelf
                                   ? 'cursor-not-allowed border-outline-variant/50 bg-surface-container-high text-outline'
                                   : u.is_active
@@ -232,7 +232,7 @@ export default function UsersAdminPage() {
                               onClick={() => handleResetQuota(u)}
                               disabled={isSelf}
                               title={isSelf ? 'No puedes modificar tu propia cuenta' : ''}
-                              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
                                 isSelf
                                   ? 'cursor-not-allowed border-outline-variant/50 bg-surface-container-high text-outline'
                                   : 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'

@@ -150,7 +150,7 @@ export default function XVariantPanel({ campaign }) {
           Versión para X
         </h2>
         {estado && (
-          <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONOS_X[estado.tono]}`}>
+          <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${TONOS_X[estado.tono]}`}>
             {estado.texto}
           </span>
         )}
@@ -174,13 +174,13 @@ export default function XVariantPanel({ campaign }) {
           )}
           {variante?.estado === 'rechazada' && variante.feedback_cliente && (
             <div className="mb-3 rounded-lg border border-outline-variant px-4 py-3">
-              <p className="mb-1 text-xs font-semibold text-error">Comentario del cliente</p>
+              <p className="mb-1 text-[13px] font-semibold text-error">Comentario del cliente</p>
               <p className="text-sm text-on-surface">{variante.feedback_cliente}</p>
             </div>
           )}
-          {estado?.ayuda && !bloqueada && <p className="mb-2 text-xs text-on-surface-variant">{estado.ayuda}</p>}
+          {estado?.ayuda && !bloqueada && <p className="mb-2 text-[13px] text-on-surface-variant">{estado.ayuda}</p>}
           {bloqueada && (
-            <p className="mb-2 text-xs text-on-surface-variant">
+            <p className="mb-2 text-[13px] text-on-surface-variant">
               Ya se publicó (o está en revisión): este texto queda como registro de lo publicado.
             </p>
           )}
@@ -208,14 +208,14 @@ export default function XVariantPanel({ campaign }) {
             <p
               id={`${id}-aviso`}
               role={validacion.url ? 'alert' : undefined}
-              className="min-h-5 text-xs text-error"
+              className="min-h-5 text-[13px] text-error"
             >
               {texto && validacion.motivo}
             </p>
             <p
               id={`${id}-contador`}
               aria-live="polite"
-              className={`ml-auto text-xs tabular-nums ${
+              className={`ml-auto text-[13px] tabular-nums ${
                 validacion.longitud > MAXIMO_X ? 'font-semibold text-error' : 'text-on-surface-variant'
               }`}
             >
@@ -254,7 +254,7 @@ export default function XVariantPanel({ campaign }) {
             <fieldset className="space-y-3">
               <legend className="mb-3 text-sm font-semibold text-on-surface">Publicar en X</legend>
               {cuentas.length === 0 ? (
-                <p className="rounded-lg bg-surface-container-low px-3 py-2 text-xs text-on-surface-variant">
+                <p className="rounded-lg bg-surface-container-low px-3 py-2 text-[13px] text-on-surface-variant">
                   Ni el cliente ni tú tienen una cuenta de X conectada. Se conecta en Configuración → Redes
                   conectadas.
                 </p>
@@ -279,7 +279,7 @@ export default function XVariantPanel({ campaign }) {
                         />
                         <RedIcon red="x" className="h-4 w-4" />
                         <span className="flex-1 font-medium text-on-surface">{c.cuenta_nombre}</span>
-                        <span className="text-xs text-on-surface-variant">
+                        <span className="text-[13px] text-on-surface-variant">
                           {yaPublicada ? 'ya publicada' : c.propietario_rol === 'cliente' ? 'del cliente' : 'de la agencia'}
                         </span>
                       </label>
@@ -289,7 +289,7 @@ export default function XVariantPanel({ campaign }) {
               )}
 
               {incierta && (
-                <div role="alert" className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-xs text-tertiary">
+                <div role="alert" className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-[13px] text-tertiary">
                   <p className="flex items-start gap-2 font-semibold">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                     El último intento en {incierta.cuenta_nombre} quedó sin confirmar: el post pudo haberse publicado.
@@ -317,7 +317,7 @@ export default function XVariantPanel({ campaign }) {
                   {textoConfirmacionCosto(config)}
                 </label>
               ) : (
-                <p role="alert" className="rounded-lg bg-error-container px-3 py-2 text-xs text-on-error-container">
+                <p role="alert" className="rounded-lg bg-error-container px-3 py-2 text-[13px] text-on-error-container">
                   Se alcanzó el tope mensual de gasto en X (US${config.tope_mensual_usd}). Podrás publicar el próximo
                   mes.
                 </p>
@@ -338,11 +338,11 @@ export default function XVariantPanel({ campaign }) {
                   <div className="flex flex-wrap items-center gap-3">
                     <RedIcon red="x" className="h-4 w-4" />
                     <span className="text-sm font-semibold text-on-surface">{p.cuenta_nombre}</span>
-                    <span className="ml-auto text-xs font-semibold text-on-surface-variant">
+                    <span className="ml-auto text-[13px] font-semibold text-on-surface-variant">
                       {estadoPublicacion(p.estado).texto}
                     </span>
                   </div>
-                  {p.error && <p className="mt-2 text-xs text-error">{p.error}</p>}
+                  {p.error && <p className="mt-2 text-[13px] text-error">{p.error}</p>}
                   {p.permalink && (
                     <a
                       href={p.permalink}

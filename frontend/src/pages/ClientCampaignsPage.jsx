@@ -205,11 +205,11 @@ export default function ClientCampaignsPage() {
                 <p className="truncate text-sm text-on-surface-variant">
                   {campaign.clienteNombre || 'Cliente'} · {campaign.plataforma || '—'} · {campaign.industria || '—'}
                 </p>
-                <p className="mt-1 text-xs font-medium text-primary">
+                <p className="mt-1 text-[13px] font-medium text-primary">
                   Enviada {relativeTimeFrom(campaignSentAt(campaign))}
                 </p>
                 {campaign.clienteValoracion && (
-                  <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-amber-600">
+                  <p className="mt-1 inline-flex items-center gap-1 text-[13px] font-semibold text-amber-600">
                     <Star className="h-3.5 w-3.5 fill-current" />
                     {campaign.clienteValoracion}/5
                   </p>

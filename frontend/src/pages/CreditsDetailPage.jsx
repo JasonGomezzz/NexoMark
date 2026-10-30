@@ -175,7 +175,7 @@ export default function CreditsDetailPage() {
                   {pctUsado}%
                 </text>
               </svg>
-              <p className="mt-1 text-xs font-medium text-outline">Usado</p>
+              <p className="mt-1 text-[13px] font-medium text-outline">Usado</p>
             </div>
           </div>
         </div>
@@ -273,7 +273,7 @@ function MetricCard({ icon: Icon, label, value, suffix }) {
   return (
     <div className="flex flex-1 items-center justify-between rounded-2xl border border-outline-variant bg-white p-6 shadow-sm">
       <div>
-        <p className="text-xs font-medium text-outline">{label}</p>
+        <p className="text-[13px] font-medium text-outline">{label}</p>
         <p className="mt-1 text-3xl font-bold tabular-nums text-on-surface">
           {value ?? '—'}
           {suffix && <span className="ml-1 text-base font-normal text-outline">{suffix}</span>}

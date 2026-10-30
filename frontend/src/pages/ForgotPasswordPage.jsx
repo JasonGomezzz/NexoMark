@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
             className={`${INPUT_CLASS} ${error ? 'border-error' : 'border-outline-variant'}`}
           />
           {error && (
-            <p id="email-error" role="alert" className="px-1 text-xs text-error">
+            <p id="email-error" role="alert" className="px-1 text-[13px] text-error">
               {error}
             </p>
           )}

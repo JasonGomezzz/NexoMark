@@ -107,7 +107,7 @@ export default function SocialConnectionsCard() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-on-surface">{c.cuenta_nombre}</p>
-                <p className="text-xs text-on-surface-variant">{etiquetaRed(c.red)}</p>
+                <p className="text-[13px] text-on-surface-variant">{etiquetaRed(c.red)}</p>
               </div>
               <Button
                 variant="ghost"

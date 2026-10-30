@@ -198,7 +198,7 @@ export default function PromptGuidePage() {
                         <Icon className="h-5 w-5" />
                       </span>
                       <h3 className="mb-1 text-sm font-bold text-on-surface">{t.titulo}</h3>
-                      <p className="mb-4 flex-1 text-xs italic leading-relaxed text-on-surface-variant">
+                      <p className="mb-4 flex-1 text-[13px] italic leading-relaxed text-on-surface-variant">
                         «{t.texto}»
                       </p>
                       <div className="flex flex-col gap-2">
@@ -317,7 +317,7 @@ export default function PromptGuidePage() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
               {!builderValido && (
-                <p className="mt-2 text-xs text-on-surface-variant">
+                <p className="mt-2 text-[13px] text-on-surface-variant">
                   Completa la audiencia o los beneficios para habilitar el botón.
                 </p>
               )}
@@ -334,12 +334,12 @@ export default function PromptGuidePage() {
               <ol className="space-y-5">
                 {TIPS.map((tip, i) => (
                   <li key={tip.titulo} className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-tertiary-container text-xs font-bold text-tertiary">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-tertiary-container text-[13px] font-bold text-tertiary">
                       {i + 1}
                     </span>
                     <div>
                       <h3 className="text-sm font-bold text-on-surface">{tip.titulo}</h3>
-                      <p className="mt-0.5 text-xs leading-relaxed text-on-surface-variant">
+                      <p className="mt-0.5 text-[13px] leading-relaxed text-on-surface-variant">
                         {tip.desc}
                       </p>
                     </div>

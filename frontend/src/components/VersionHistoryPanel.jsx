@@ -88,9 +88,9 @@ export default function VersionHistoryPanel({
         {loading ? (
           <div className="h-8 animate-pulse rounded bg-surface-container-high" />
         ) : error ? (
-          <p className="text-xs text-error">No se pudo cargar el historial.</p>
+          <p className="text-[13px] text-error">No se pudo cargar el historial.</p>
         ) : versions.length === 0 ? (
-          <p className="text-xs text-on-surface-variant">
+          <p className="text-[13px] text-on-surface-variant">
             Aún no hay versiones. Se guardan desde la primera generación.
           </p>
         ) : (
@@ -125,7 +125,7 @@ export default function VersionHistoryPanel({
               <div className="flex items-start justify-between border-b border-outline-variant/60 px-6 py-5">
                 <div>
                   <h3 className="text-lg font-semibold text-on-surface">Historial de versiones</h3>
-                  <p className="text-xs text-on-surface-variant">
+                  <p className="text-[13px] text-on-surface-variant">
                     Se guardan las últimas 5 versiones generadas desde la primera creación.
                   </p>
                 </div>
@@ -166,17 +166,17 @@ export default function VersionHistoryPanel({
                               </span>
                             )}
                           </div>
-                          <p className="mb-2 text-xs text-on-surface-variant">
+                          <p className="mb-2 text-[13px] text-on-surface-variant">
                             {relativeDate(v.created_at)}
                           </p>
-                          <p className="line-clamp-2 text-xs leading-relaxed text-on-surface-variant">
+                          <p className="line-clamp-2 text-[13px] leading-relaxed text-on-surface-variant">
                             {v.texto_preview}
                           </p>
                           {i > 0 && (
                             <div className="mt-2 flex flex-wrap gap-3">
                               <button
                                 onClick={() => setCompareId(v.id)}
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary hover:underline"
                               >
                                 <GitCompareArrows className="h-3.5 w-3.5" />
                                 Comparar con la actual
@@ -185,7 +185,7 @@ export default function VersionHistoryPanel({
                                 <button
                                   onClick={() => handleRestore(v)}
                                   disabled={restoringId !== null}
-                                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant transition-colors hover:text-primary hover:underline disabled:opacity-50"
+                                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-on-surface-variant transition-colors hover:text-primary hover:underline disabled:opacity-50"
                                 >
                                   <RotateCcw
                                     className={`h-3.5 w-3.5 ${restoringId === v.id ? 'animate-spin' : ''}`}
@@ -256,7 +256,7 @@ function CompareView({ left, right, onClose, onRestore, restoring }) {
               </span>
             </p>
             <VersionThumb version={v} size="h-36 w-full" className="mb-3" />
-            <div className="rounded-xl border border-outline-variant bg-white p-4 text-xs leading-relaxed text-on-surface">
+            <div className="rounded-xl border border-outline-variant bg-white p-4 text-[13px] leading-relaxed text-on-surface">
               <p className="mb-1 text-[13px] font-bold text-on-surface-variant">
                 Copy del anuncio
               </p>

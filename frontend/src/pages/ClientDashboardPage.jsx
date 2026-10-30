@@ -257,7 +257,7 @@ export default function ClientDashboardPage() {
                     <p className="truncate text-sm text-on-surface-variant">
                       {c.clienteNombre || 'Cliente'} · {c.plataforma || '—'}
                     </p>
-                    <p className="mt-1 text-xs font-medium text-primary">
+                    <p className="mt-1 text-[13px] font-medium text-primary">
                       Enviada {relativeTimeFrom(campaignSentAt(c))}
                     </p>
                   </div>
@@ -369,7 +369,7 @@ function CampaignDetailsModal({ campaign, onClose }) {
 function DetailMeta({ label, value }) {
   return (
     <div>
-      <p className="text-xs text-on-surface-variant">{label}</p>
+      <p className="text-[13px] text-on-surface-variant">{label}</p>
       <p className="capitalize text-on-surface">{value || '—'}</p>
     </div>
   )

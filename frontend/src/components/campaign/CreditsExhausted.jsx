@@ -55,7 +55,7 @@ export default function CreditsExhausted({ onClose }) {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-on-surface-variant">{plan.creditos} créditos</p>
+              <p className="text-[13px] text-on-surface-variant">{plan.creditos} créditos</p>
             </div>
             <div className="text-right">
               <p className="text-lg font-bold tabular-nums text-on-surface">

@@ -307,7 +307,7 @@ function StatCard({ icon: Icon, tint, label, value, sub }) {
       </div>
       <p className="text-sm text-on-surface-variant">{label}</p>
       <h3 className="mt-1 text-3xl font-bold tabular-nums text-on-surface">{value ?? '—'}</h3>
-      {sub && <p className="mt-1 text-xs text-on-surface-variant">{sub}</p>}
+      {sub && <p className="mt-1 text-[13px] text-on-surface-variant">{sub}</p>}
     </div>
   )
 }

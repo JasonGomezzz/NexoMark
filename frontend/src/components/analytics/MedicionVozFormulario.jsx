@@ -149,7 +149,7 @@ export default function MedicionVozFormulario() {
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-on-surface-variant">
+          <p className="mt-2 text-[13px] text-on-surface-variant">
             Voz: {formatoNumero(voz?.captura_con_dato)} con tiempo de captura medido · Formulario:{' '}
             {formatoNumero(form?.captura_con_dato)}. Los briefs anteriores al 24/10 no tienen ese tiempo.
           </p>

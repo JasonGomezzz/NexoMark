@@ -95,7 +95,7 @@ export default function CreditRequestButton({ className = '' }) {
           {pendiente ? 'Solicitud pendiente' : 'Pedir créditos al administrador'}
         </Button>
       )}
-      <p role="status" className="text-xs text-on-surface-variant">
+      <p role="status" className="text-[13px] text-on-surface-variant">
         {aviso || resumenSolicitud(ultima)}
       </p>
     </div>

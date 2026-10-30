@@ -77,7 +77,7 @@ export default function XVariantReviewCard({ campaignId, imagenB64, titulo }) {
         <h2 id={`variante-x-${variante.id}`} className="text-base font-semibold text-on-surface">
           {TITULOS[variante.estado] ?? 'Versión para X'}
         </h2>
-        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONOS_X[estado.tono]}`}>
+        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${TONOS_X[estado.tono]}`}>
           {estado.texto}
         </span>
       </div>
@@ -92,7 +92,7 @@ export default function XVariantReviewCard({ campaignId, imagenB64, titulo }) {
       <p className="whitespace-pre-wrap rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-base leading-relaxed text-on-surface">
         {variante.texto}
       </p>
-      <p className="mt-1 text-right text-xs tabular-nums text-on-surface-variant">
+      <p className="mt-1 text-right text-[13px] tabular-nums text-on-surface-variant">
         {variante.longitud}/{MAXIMO_X} caracteres de X
       </p>
 
@@ -103,15 +103,15 @@ export default function XVariantReviewCard({ campaignId, imagenB64, titulo }) {
             alt={`Imagen que acompañará el post en X${titulo ? ` de ${titulo}` : ''}`}
             className="max-h-56 rounded-lg border border-outline-variant object-contain"
           />
-          <figcaption className="mt-1 text-xs text-on-surface-variant">Se publicará con esta imagen.</figcaption>
+          <figcaption className="mt-1 text-[13px] text-on-surface-variant">Se publicará con esta imagen.</figcaption>
         </figure>
       )}
 
       {variante.estado === 'rechazada' && variante.feedback_cliente && (
         <div className="mt-4 rounded-lg border border-outline-variant px-4 py-3">
-          <p className="mb-1 text-xs font-semibold text-error">Tu comentario</p>
+          <p className="mb-1 text-[13px] font-semibold text-error">Tu comentario</p>
           <p className="text-sm text-on-surface">{variante.feedback_cliente}</p>
-          <p className="mt-2 text-xs text-on-surface-variant">El marketero preparará otra versión.</p>
+          <p className="mt-2 text-[13px] text-on-surface-variant">El marketero preparará otra versión.</p>
         </div>
       )}
 
@@ -133,13 +133,13 @@ export default function XVariantReviewCard({ campaignId, imagenB64, titulo }) {
                   href={p.permalink}
                   target="_blank"
                   rel="noreferrer"
-                  className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  className="ml-auto inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   Ver en X
                 </a>
               ) : (
-                <span className="ml-auto text-xs text-on-surface-variant">{estadoPublicacion(p.estado).texto}</span>
+                <span className="ml-auto text-[13px] text-on-surface-variant">{estadoPublicacion(p.estado).texto}</span>
               )}
             </li>
           ))}

@@ -95,7 +95,7 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
             Solicitudes de créditos
           </h2>
           {pendientes > 0 && (
-            <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold tabular-nums text-on-primary">
+            <span className="rounded-full bg-primary px-2 py-0.5 text-[13px] font-bold tabular-nums text-on-primary">
               {pendientes}
             </span>
           )}
@@ -120,7 +120,7 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
         </div>
       </div>
 
-      <p className="px-6 pt-3 text-xs text-on-surface-variant">
+      <p className="px-6 pt-3 text-[13px] text-on-surface-variant">
         Aprobar suma los créditos al saldo actual; rechazar no lo modifica. Queda registrado quién decidió y cuándo.
       </p>
 
@@ -150,13 +150,13 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
                   {s.solicitante_nombre}{' '}
                   <span className="font-normal text-on-surface-variant">· {s.solicitante_email}</span>
                 </p>
-                <p className="text-xs text-on-surface-variant">
+                <p className="text-[13px] text-on-surface-variant">
                   {fecha(s.fecha_creacion)} · saldo actual{' '}
                   <span className="tabular-nums">{s.saldo_actual}</span>
                 </p>
                 {s.motivo && <p className="break-words text-sm text-on-surface">“{s.motivo}”</p>}
                 {s.estado !== 'pendiente' && (
-                  <p className="text-xs text-on-surface-variant">
+                  <p className="text-[13px] text-on-surface-variant">
                     <span className={`mr-2 rounded-full px-2 py-0.5 font-semibold ${ESTADO_CHIP[s.estado] ?? ''}`}>
                       {etiquetaEstado(s.estado)}
                     </span>
@@ -169,7 +169,7 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
 
               {s.estado === 'pendiente' && (
                 <div className="flex flex-wrap items-end gap-2">
-                  <label className="text-xs font-medium text-on-surface-variant">
+                  <label className="text-[13px] font-medium text-on-surface-variant">
                     Créditos
                     <input
                       type="number"
@@ -182,7 +182,7 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
                       className="mt-1 block w-24 rounded-lg border border-outline-variant px-2 py-1.5 text-sm tabular-nums outline-none focus:ring-2 focus:ring-primary"
                     />
                   </label>
-                  <label className="text-xs font-medium text-on-surface-variant">
+                  <label className="text-[13px] font-medium text-on-surface-variant">
                     Nota (opcional)
                     <input
                       type="text"
