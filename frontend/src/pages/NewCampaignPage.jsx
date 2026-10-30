@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { ArrowLeft, Sparkles, Lightbulb } from 'lucide-react'
-import ImageLightbox from '@/components/ui/ImageLightbox'
+import { ArrowLeft, Check, Lightbulb, Loader2, Wand2, TriangleAlert } from 'lucide-react'
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
-import StatusBadge from '@/components/StatusBadge'
 import GeneratingState from '@/components/campaign/GeneratingState'
 import ErrorState from '@/components/campaign/ErrorState'
 import CreditsExhausted from '@/components/campaign/CreditsExhausted'
 import VoiceBriefCard from '@/components/campaign/VoiceBriefCard'
+import useBriefDictado from '../hooks/useBriefDictado'
 import { camposParaFormulario } from '../services/voiceIntent'
+import { cn } from '@/lib/utils'
 
 const INDUSTRIAS = [
   { value: 'tecnologia', label: 'Tecnología' },
@@ -52,25 +52,45 @@ const OPCIONES_FORMULARIO = {
   plataforma: PLATAFORMAS.map((o) => o.value),
 }
 
-const ETIQUETAS = {
-  titulo: 'título',
-  cliente_nombre: 'nombre del cliente',
-  cliente_email: 'email del cliente',
-  industria: 'industria',
-  tono: 'tono',
-  plataforma: 'plataforma',
-  prompt: 'instrucciones',
-}
+// Los 7 campos, en el orden del formulario y de la "próxima estación".
+const CAMPOS = [
+  { campo: 'titulo', label: 'Título' },
+  { campo: 'cliente_nombre', label: 'Cliente' },
+  { campo: 'cliente_email', label: 'Correo del cliente' },
+  { campo: 'industria', label: 'Industria' },
+  { campo: 'tono', label: 'Tono' },
+  { campo: 'plataforma', label: 'Plataforma' },
+  { campo: 'prompt', label: 'Instrucciones para la IA' },
+]
 
-function FieldError({ message }) {
+function FieldError({ id, message }) {
   if (!message) return null
-  return <p className="mt-1 text-xs text-error">{message}</p>
+  return (
+    <p id={id} role="alert" className="mt-1 text-[13px] font-medium text-error">
+      {message}
+    </p>
+  )
 }
 
 function inputCls(hasError) {
-  return `w-full rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-transparent focus:ring-2 focus:ring-primary ${
-    hasError ? 'border-error' : 'border-outline-variant'
-  }`
+  return cn(
+    'h-11 w-full rounded-[10px] border bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:ring-2 focus:ring-primary/30 disabled:opacity-60',
+    hasError ? 'border-error' : 'border-outline',
+  )
+}
+
+/** Marca de cada campo tras interpretar: lo propuso la IA o falta completarlo. */
+function MarcaCampo({ estado }) {
+  if (estado === 'ia')
+    return (
+      <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary">
+        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+        propuesto por la IA
+      </span>
+    )
+  if (estado === 'falta')
+    return <span className="rounded-full bg-warning-container px-2 py-0.5 text-[13px] font-semibold text-tertiary">falta</span>
+  return null
 }
 
 export default function NewCampaignPage() {
@@ -84,7 +104,9 @@ export default function NewCampaignPage() {
   // formulario confirma esa intención en vez de crear la campaña directamente.
   const [intent, setIntent] = useState(null)
   const [resumenIntent, setResumenIntent] = useState(null)
-  const [briefKey, setBriefKey] = useState(0)
+  // Columna derecha: la próxima estación (campos por completar) o el formulario.
+  // Si llega un prompt desde la Guía, se abre el formulario directamente.
+  const [vista, setVista] = useState(location.state?.prompt ? 'formulario' : 'proxima')
 
   // Prellenado desde la Guía de prompts (state del router; no persiste al recargar)
   const {
@@ -141,22 +163,28 @@ export default function NewCampaignPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result?.campaign?.id, result?.campaign?.estado])
 
-  function handleInterpreted(nuevoIntent) {
-    const { valores, completados, pendientes } = camposParaFormulario(
-      nuevoIntent.campos_finales,
-      OPCIONES_FORMULARIO,
-    )
-    Object.entries(valores).forEach(([campo, valor]) =>
-      setValue(campo, valor, { shouldValidate: true, shouldDirty: true }),
-    )
-    setIntent(nuevoIntent)
-    setResumenIntent({
-      completados,
-      pendientes: pendientes.map((campo) => ETIQUETAS[campo]),
-      advertencias: nuevoIntent.advertencias ?? [],
-    })
-    setServerError('')
-  }
+  // Generada: la campaña sigue su viaje en su propia pantalla, donde se revisa
+  // y se envía al cliente (no hay un "resultado" que obligue a volver a la lista).
+  useEffect(() => {
+    const c = result?.campaign
+    if (!c?.id || result.warning || c.estado === 'pendiente_ia') return
+    navigate(`/campaigns/${c.id}`, { state: { recienGenerada: true } })
+  }, [result, navigate])
+
+  const handleInterpreted = useCallback(
+    (nuevoIntent) => {
+      const { valores, completados } = camposParaFormulario(nuevoIntent.campos_finales, OPCIONES_FORMULARIO)
+      Object.entries(valores).forEach(([campo, valor]) =>
+        setValue(campo, valor, { shouldValidate: true, shouldDirty: true }),
+      )
+      setIntent(nuevoIntent)
+      setResumenIntent({ completados, advertencias: nuevoIntent.advertencias ?? [] })
+      setServerError('')
+      setVista('formulario')
+    },
+    [setValue],
+  )
+  const brief = useBriefDictado({ onInterpreted: handleInterpreted })
 
   async function onSubmit(formData) {
     setSubmitting(true)
@@ -176,7 +204,7 @@ export default function NewCampaignPage() {
             ? `La generación IA falló: ${campaign.ia_error_message}`
             : null,
       })
-      // El crédito ya se descontó — que el sidebar lo refleje al instante
+      // El crédito ya se descontó — que la banda lo refleje al instante
       window.dispatchEvent(new Event('credits-updated'))
     } catch (err) {
       const httpStatus = err.response?.status
@@ -185,7 +213,7 @@ export default function NewCampaignPage() {
       if (httpStatus === 400) {
         const errMap = body?.data?.errors ?? {}
         const first = Object.values(errMap)[0]?.[0]
-        setServerError(first || 'Error de validación. Revisa los campos.')
+        setServerError(first || 'Revisa los campos marcados.')
       } else if (httpStatus === 402) {
         // Sin créditos → estado dedicado (HU24)
         setNoCredits(true)
@@ -197,7 +225,7 @@ export default function NewCampaignPage() {
         // Campaña guardada como borrador pero IA falló
         setResult({ campaign: body?.data?.campaign, warning: body?.message })
       } else {
-        setServerError('Error inesperado. Intenta de nuevo.')
+        setServerError('El servidor no respondió. Intenta de nuevo en unos segundos.')
       }
     } finally {
       setSubmitting(false)
@@ -210,318 +238,253 @@ export default function NewCampaignPage() {
     setNoCredits(false)
     setIntent(null)
     setResumenIntent(null)
-    setBriefKey((k) => k + 1)
+    brief.reiniciar()
+    setVista('proxima')
     reset()
   }
 
-  return (
-    <div>
-      {/* Encabezado */}
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <button
-            type="button"
-            onClick={() => navigate('/campaigns')}
-            className="mb-2 inline-flex items-center gap-1.5 text-sm text-on-surface-variant transition-colors hover:text-primary"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver a campañas
-          </button>
-          <h1 className="text-3xl font-bold tracking-tight text-on-surface">Nueva campaña</h1>
-        </div>
+  if (noCredits) {
+    return (
+      <div className="mx-auto max-w-xl">
+        <CreditsExhausted onClose={handleReset} />
       </div>
+    )
+  }
+  if (submitting || result?.campaign?.estado === 'pendiente_ia') {
+    return <GeneratingState onCancel={handleReset} />
+  }
+  if (result?.warning) {
+    return (
+      <div className="mx-auto max-w-xl">
+        <ErrorState message={result.warning} onRetry={handleSubmit(onSubmit)} onEditBrief={handleReset} />
+      </div>
+    )
+  }
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        {/* ── Panel de configuración ── */}
-        <div className="min-w-0 flex-1">
-          <VoiceBriefCard
-            key={briefKey}
-            onInterpreted={handleInterpreted}
-            resumen={resumenIntent}
-            disabled={submitting}
-          />
+  const estadoCampo = (campo) => {
+    if (!resumenIntent) return null
+    return resumenIntent.completados.includes(campo) ? 'ia' : 'falta'
+  }
 
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            noValidate
-            className="space-y-5 rounded-xl border border-outline-variant bg-white p-6 shadow-sm"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high text-sm font-bold text-on-surface-variant">
-                1
-              </span>
-              <h2 className="text-xl font-semibold text-on-surface">Configuración</h2>
-            </div>
+  const ocupado = submitting || brief.interpretando
+  const listo = brief.texto.trim().length > 0 && !brief.voz.listening
+  const proxima = () => (
+    <div className="regla pt-5">
+      <p className="flex items-center gap-2.5 font-display text-sm font-bold text-on-surface-variant">
+        <span aria-hidden="true" className="h-5 w-5 rounded-full border-4 border-regla bg-background" />
+        Próxima estación: Generar
+      </p>
+      <h2 className="mt-3 text-2xl font-extrabold leading-tight text-on-surface">La IA completa 7 campos</h2>
+      <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant">
+        Cuando termines, propone cada campo con lo que dijiste. Lo que no reconozca queda vacío y te avisa.
+      </p>
+      <ol className="relative mt-5 grid pl-7" aria-label="Campos que completará la IA">
+        <span aria-hidden="true" className="absolute bottom-3 left-[7px] top-3 w-0.5 bg-outline-variant" />
+        {CAMPOS.map(({ campo, label }) => (
+          <li key={campo} className="relative flex items-baseline justify-between gap-3 py-2 text-[15px]">
+            <span aria-hidden="true" className="absolute -left-[25px] top-[13px] h-3 w-3 rounded-full border-2 border-outline-variant bg-background" />
+            <span className="text-on-surface">{label}</span>
+            <span className="text-[13px] text-outline">por completar</span>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-6 grid gap-3">
+        <Button type="button" size="lg" onClick={brief.interpretar} disabled={!listo || ocupado}>
+          {brief.interpretando ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <Wand2 className="h-5 w-5" aria-hidden="true" />}
+          {brief.interpretando ? 'Completando campos…' : 'Completar campos'}
+        </Button>
+        <p className="text-[13px] text-on-surface-variant">Completar los campos no usa créditos. Generar la campaña usa 1.</p>
+        <button
+          type="button"
+          onClick={() => setVista('formulario')}
+          disabled={ocupado}
+          className="-my-1 inline-flex min-h-11 items-center justify-start text-sm font-semibold text-primary underline-offset-2 hover:underline disabled:opacity-50"
+        >
+          Prefiero llenar el formulario a mano
+        </button>
+      </div>
+    </div>
+  )
 
-            {/* Título */}
-            <div>
-              <label className="mb-1 block text-sm font-medium text-on-surface-variant">
-                Título de la campaña
-              </label>
-              <input
-                type="text"
-                placeholder="Ej: Lanzamiento Black Friday 2026"
-                className={inputCls(errors.titulo)}
-                disabled={submitting}
-                {...register('titulo', {
-                  required: 'El título es obligatorio.',
-                  minLength: { value: 5, message: 'Mínimo 5 caracteres.' },
-                  maxLength: { value: 200, message: 'Máximo 200 caracteres.' },
-                })}
-              />
-              <FieldError message={errors.titulo?.message} />
-            </div>
+  const formulario = () => (
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="regla pt-5">
+      <p className="flex items-center gap-2.5 font-display text-sm font-bold text-on-surface-variant">
+        <span aria-hidden="true" className="h-5 w-5 rounded-full border-4 border-regla bg-background" />
+        Próxima estación: Generar
+      </p>
+      <h2 className="mt-3 text-2xl font-extrabold leading-tight text-on-surface">
+        {resumenIntent ? `La IA completó ${resumenIntent.completados.length} de 7 campos` : 'Completa los campos'}
+      </h2>
+      <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant">
+        {resumenIntent ? 'Revísalos y corrige lo que haga falta antes de generar.' : 'Generar la campaña usa 1 crédito.'}
+      </p>
 
-            {/* Cliente — nombre + email */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-on-surface-variant">
-                  Nombre del cliente
+      {resumenIntent?.advertencias?.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {resumenIntent.advertencias.map((aviso) => (
+            <li key={aviso} className="flex items-start gap-2 rounded-[10px] bg-warning-container px-3 py-2.5 text-sm text-on-tertiary-container">
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-tertiary" aria-hidden="true" />
+              {aviso}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-5 space-y-4">
+        {CAMPOS.map(({ campo, label }) => {
+          const err = errors[campo]?.message
+          const errId = `${campo}-error`
+          const comun = {
+            id: campo,
+            disabled: submitting,
+            'aria-invalid': err ? 'true' : undefined,
+            'aria-describedby': err ? errId : undefined,
+          }
+          return (
+            <div key={campo}>
+              <div className="mb-1 flex items-baseline justify-between gap-3">
+                <label htmlFor={campo} className="text-sm font-medium text-on-surface">
+                  {campo === 'cliente_nombre' ? 'Nombre del cliente' : label}
                 </label>
+                <MarcaCampo estado={estadoCampo(campo)} />
+              </div>
+              {campo === 'titulo' && (
                 <input
                   type="text"
-                  placeholder="Ej: Empresa S.A.C."
-                  className={inputCls(errors.cliente_nombre)}
-                  disabled={submitting}
-                  {...register('cliente_nombre', {
-                    required: 'El nombre del cliente es obligatorio.',
-                    maxLength: { value: 150, message: 'Máximo 150 caracteres.' },
+                  placeholder="Ej.: 2×1 en capuchinos los martes"
+                  className={inputCls(err)}
+                  {...comun}
+                  {...register('titulo', {
+                    required: 'Escribe un título.',
+                    minLength: { value: 5, message: 'Usa al menos 5 caracteres.' },
+                    maxLength: { value: 200, message: 'Usa 200 caracteres o menos.' },
                   })}
                 />
-                <FieldError message={errors.cliente_nombre?.message} />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-on-surface-variant">
-                  Email del cliente
-                </label>
+              )}
+              {campo === 'cliente_nombre' && (
+                <input
+                  type="text"
+                  placeholder="Ej.: Café Aurora"
+                  className={inputCls(err)}
+                  {...comun}
+                  {...register('cliente_nombre', {
+                    required: 'Escribe el nombre del cliente.',
+                    maxLength: { value: 150, message: 'Usa 150 caracteres o menos.' },
+                  })}
+                />
+              )}
+              {campo === 'cliente_email' && (
                 <input
                   type="email"
                   placeholder="cliente@empresa.com"
-                  className={inputCls(errors.cliente_email)}
-                  disabled={submitting}
+                  className={inputCls(err)}
+                  {...comun}
                   {...register('cliente_email', {
-                    required: 'El email del cliente es obligatorio.',
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: 'Formato de email inválido.',
-                    },
+                    required: 'Escribe el correo del cliente: ahí recibe la campaña para aprobarla.',
+                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Ese correo no parece válido.' },
                   })}
                 />
-                <FieldError message={errors.cliente_email?.message} />
-              </div>
-            </div>
-
-            {/* Industria + Tono */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-on-surface-variant">
-                  Industria
-                </label>
-                <select
-                  className={inputCls(errors.industria)}
-                  disabled={submitting}
-                  {...register('industria', { required: 'Selecciona una industria.' })}
-                >
-                  <option value="">Seleccionar…</option>
-                  {INDUSTRIAS.map(({ value, label }) => (
+              )}
+              {campo === 'industria' && (
+                <select className={inputCls(err)} {...comun} {...register('industria', { required: 'Elige una industria.' })}>
+                  <option value="">Elige una industria</option>
+                  {INDUSTRIAS.map(({ value, label: l }) => (
                     <option key={value} value={value}>
-                      {label}
+                      {l}
                     </option>
                   ))}
                 </select>
-                <FieldError message={errors.industria?.message} />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-on-surface-variant">
-                  Tono del mensaje
-                </label>
-                <select
-                  className={inputCls(errors.tono)}
-                  disabled={submitting}
-                  {...register('tono', { required: 'Selecciona un tono.' })}
-                >
-                  <option value="">Seleccionar…</option>
-                  {TONOS.map(({ value, label }) => (
+              )}
+              {campo === 'tono' && (
+                <select className={inputCls(err)} {...comun} {...register('tono', { required: 'Elige un tono.' })}>
+                  <option value="">Elige un tono</option>
+                  {TONOS.map(({ value, label: l }) => (
                     <option key={value} value={value}>
-                      {label}
+                      {l}
                     </option>
                   ))}
                 </select>
-                <FieldError message={errors.tono?.message} />
-              </div>
+              )}
+              {campo === 'plataforma' && (
+                <select className={inputCls(err)} {...comun} {...register('plataforma', { required: 'Elige una plataforma.' })}>
+                  <option value="">Elige una plataforma</option>
+                  {PLATAFORMAS.map(({ value, label: l }) => (
+                    <option key={value} value={value}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {campo === 'prompt' && (
+                <textarea
+                  rows={5}
+                  placeholder="Objetivo, público, lo que hay que destacar y lo que no debe aparecer."
+                  className={cn(inputCls(err), 'h-auto resize-y py-2.5 leading-relaxed')}
+                  {...comun}
+                  {...register('prompt', {
+                    required: 'Escribe las instrucciones para la IA.',
+                    minLength: { value: 10, message: 'Usa al menos 10 caracteres.' },
+                    maxLength: { value: 2000, message: 'Usa 2000 caracteres o menos.' },
+                  })}
+                />
+              )}
+              <FieldError id={errId} message={err} />
             </div>
-
-            {/* Plataforma */}
-            <div>
-              <label className="mb-1 block text-sm font-medium text-on-surface-variant">
-                Plataforma
-              </label>
-              <select
-                className={inputCls(errors.plataforma)}
-                disabled={submitting}
-                {...register('plataforma', { required: 'Selecciona una plataforma.' })}
-              >
-                <option value="">Seleccionar…</option>
-                {PLATAFORMAS.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <FieldError message={errors.plataforma?.message} />
-            </div>
-
-            {/* Prompt */}
-            <div>
-              <label className="mb-1 block text-sm font-medium text-on-surface-variant">
-                Instrucciones para la IA
-              </label>
-              <textarea
-                rows={5}
-                placeholder="Describe el objetivo de la campaña, el público objetivo, puntos clave a destacar y cualquier restricción creativa…"
-                className={`${inputCls(errors.prompt)} resize-y`}
-                disabled={submitting}
-                {...register('prompt', {
-                  required: 'Las instrucciones son obligatorias.',
-                  minLength: { value: 10, message: 'Mínimo 10 caracteres.' },
-                  maxLength: { value: 2000, message: 'Máximo 2000 caracteres.' },
-                })}
-              />
-              <FieldError message={errors.prompt?.message} />
-            </div>
-
-            {serverError && (
-              <p className="rounded-lg border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
-                {serverError}
-              </p>
-            )}
-
-            <Button type="submit" size="lg" disabled={submitting} className="w-full">
-              <Sparkles className="h-5 w-5" />
-              {submitting ? 'Generando con IA…' : 'Generar campaña con IA'}
-            </Button>
-          </form>
-
-          {/* Consejo estratégico — de la screen Stitch ai_generation_loading_state */}
-          <aside className="glass-soft mt-5 rounded-xl p-6">
-            <p className="mb-2 flex items-center gap-2 text-[13px] font-boldst text-primary">
-              <Sparkles className="h-4 w-4" />
-              Consejo estratégico
-            </p>
-            <h3 className="mb-3 text-base font-bold text-on-surface">
-              De brief de cliente a prompt maestro
-            </h3>
-            <p className="mb-4 text-sm text-on-surface-variant">
-              Para que la campaña de tu cliente destaque, recuerda:
-            </p>
-            <ol className="space-y-3 text-sm leading-relaxed text-on-surface-variant">
-              <li>
-                <strong className="text-on-surface">1. Identidad de marca:</strong> incluye el
-                tipo de negocio (ej. «boutique de lujo» o «startup tecnológica»).
-              </li>
-              <li>
-                <strong className="text-on-surface">2. Objetivo del cliente:</strong> ¿buscan
-                ventas directas o posicionar su marca?
-              </li>
-              <li>
-                <strong className="text-on-surface">3. Estilo visual:</strong> define si
-                prefieren algo minimalista o cargado de energía.
-              </li>
-            </ol>
-            <Link
-              to="/prompt-guide"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-            >
-              <Lightbulb className="h-4 w-4" />
-              Ver guía completa de prompts
-            </Link>
-          </aside>
-        </div>
-
-        {/* ── Panel de resultado / estado ── */}
-        <div className="w-full shrink-0 lg:sticky lg:top-6 lg:w-[440px]">
-          {noCredits ? (
-            <CreditsExhausted onClose={handleReset} />
-          ) : submitting || result?.campaign?.estado === 'pendiente_ia' ? (
-            <GeneratingState onCancel={handleReset} />
-          ) : result?.warning ? (
-            <ErrorState
-              message={result.warning}
-              onRetry={handleSubmit(onSubmit)}
-              onEditBrief={handleReset}
-            />
-          ) : result ? (
-            <ResultPanel
-              result={result}
-              onReset={handleReset}
-              onNavigate={() => navigate('/campaigns')}
-            />
-          ) : (
-            <EmptyResultPanel />
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function EmptyResultPanel() {
-  return (
-    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-8 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Sparkles className="h-7 w-7" />
-      </div>
-      <p className="text-sm font-medium text-on-surface">El resultado de la IA aparecerá aquí</p>
-      <p className="mt-1 text-xs text-on-surface-variant">
-        Completa el formulario y genera tu campaña.
-      </p>
-    </div>
-  )
-}
-
-function ResultPanel({ result, onReset, onNavigate }) {
-  const { campaign } = result
-
-  return (
-    <div className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-outline-variant px-5 py-4">
-        <span className="text-sm font-semibold text-on-surface">Resultado IA</span>
-        {campaign?.estado && <StatusBadge estado={campaign.estado} />}
+          )
+        })}
       </div>
 
-      <div className="space-y-4 p-5">
-        <div>
-          <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
-            Copy publicitario
-          </p>
-          <div className="whitespace-pre-wrap rounded-lg bg-surface-container-low p-4 text-sm leading-relaxed text-on-surface">
-            {campaign?.texto_generado || '—'}
-          </div>
-        </div>
+      {serverError && (
+        <p role="alert" className="mt-5 rounded-[10px] border border-error/25 bg-error-container px-4 py-3 text-sm text-on-error-container">
+          {serverError}
+        </p>
+      )}
 
-        {campaign?.imagen_b64 && (
-          <div>
-            <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
-              Imagen generada
-            </p>
-            <ImageLightbox
-              src={`data:image/png;base64,${campaign.imagen_b64}`}
-              alt="Imagen generada por IA"
-              downloadName={`campaign_${campaign.id}_imagen.png`}
-            />
-          </div>
+      <div className="mt-6 grid gap-2">
+        <Button type="submit" size="lg" disabled={submitting} className="w-full">
+          <Wand2 className="h-5 w-5" aria-hidden="true" />
+          Generar campaña
+        </Button>
+        <p className="text-center text-[13px] text-on-surface-variant">Usa 1 crédito. Si la IA falla, se devuelve.</p>
+        {!intent && (
+          <button
+            type="button"
+            onClick={() => setVista('proxima')}
+            className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline-offset-2 hover:underline"
+          >
+            Volver a dictar
+          </button>
         )}
+      </div>
+    </form>
+  )
 
-        <div className="flex gap-2 pt-1">
-          <Button className="flex-1" onClick={onNavigate}>
-            Ver en lista
-          </Button>
-          <Button variant="outline" className="flex-1" onClick={onReset}>
-            Crear otra
-          </Button>
-        </div>
+  return (
+    <div>
+      <div className="mb-8">
+        <button
+          type="button"
+          onClick={() => navigate('/campaigns')}
+          className="-ml-3 mb-2 inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Todas las campañas
+        </button>
+        <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Dicta la campaña</h1>
+        <p className="mt-2 max-w-2xl text-[15px] text-on-surface-variant">
+          Habla como si se la contaras a tu diseñador. La IA propone los campos y tú los corriges antes de generar.{' '}
+          <Link to="/prompt-guide" className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-2 hover:underline">
+            <Lightbulb className="h-4 w-4" aria-hidden="true" />
+            Ver la guía
+          </Link>
+        </p>
+      </div>
+
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-14">
+        <VoiceBriefCard brief={brief} disabled={submitting} />
+        <aside aria-label="Siguiente estación" className="min-w-0">
+          {vista === 'formulario' ? formulario() : proxima()}
+        </aside>
       </div>
     </div>
   )

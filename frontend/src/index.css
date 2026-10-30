@@ -431,6 +431,27 @@ html[data-theme='dark'] select option {
   box-shadow: 0 0 0 3px var(--color-banda), 0 0 0 5px var(--color-turquoise-soft);
 }
 
+/* Escuchando: dos anillos alrededor del micrófono que respiran mientras está
+   abierto. La Web Speech API no entrega el nivel de voz, así que no fingen un
+   medidor: solo dicen "te escucho". Quietos con "reducir movimiento". */
+.escucha-anillo {
+  animation: escucha 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.escucha-anillo-2 {
+  animation-delay: 0.25s;
+}
+@keyframes escucha {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
 /* Filete grueso que abre una sección (la "regla" de la línea). */
 .regla {
   border-top: 6px solid var(--color-regla);
