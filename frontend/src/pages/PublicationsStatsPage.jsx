@@ -244,7 +244,7 @@ export default function PublicationsStatsPage() {
             {publicaciones.length === 0 ? (
               <SinPublicaciones rol={rol} anio={resumen.anual.anio} />
             ) : visibles.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-outline-variant bg-white/50 px-6 py-10 text-center text-sm text-on-surface-variant">
+              <p className="rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-6 py-10 text-center text-sm text-on-surface-variant">
                 Ninguna publicación coincide con estos filtros.
               </p>
             ) : (
@@ -301,7 +301,7 @@ function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, conX
     <div>
       <div className="overflow-x-auto rounded-xl border border-outline-variant bg-white shadow-sm">
         <table className="w-full min-w-[760px] text-sm">
-          <thead className="bg-surface-container-low text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-on-surface-variant">
+          <thead className="bg-surface-container-low text-left text-[13px] font-semibold whitespace-nowrap text-on-surface-variant">
             <tr>
               <th className="px-4 py-3">Publicación</th>
               {conCliente && <th className="px-4 py-3">Cliente</th>}
@@ -406,7 +406,7 @@ const VACIO = {
 function SinPublicaciones({ rol, anio }) {
   const esteAnio = Number(anio) === new Date().getFullYear()
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-white/50 p-12 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-outline">
         <ChartColumnIncreasing className="h-7 w-7" />
       </div>

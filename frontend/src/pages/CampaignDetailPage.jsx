@@ -307,7 +307,7 @@ export default function CampaignDetailPage() {
           </div>
 
           <div className="rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
               Prompt original
             </p>
             <p className="whitespace-pre-wrap text-xs leading-relaxed text-on-surface-variant">
@@ -354,7 +354,7 @@ export default function CampaignDetailPage() {
           {/* Feedback de rechazo, si existe (HU15) */}
           {campaign.estado === 'rechazado' && campaign.feedback_rechazo && (
             <div className="mb-4 rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-error">
+              <p className="mb-2 text-[13px] font-semibold text-error">
                 Feedback del cliente
               </p>
               <p className="text-sm leading-relaxed text-on-surface">{campaign.feedback_rechazo}</p>
@@ -363,7 +363,7 @@ export default function CampaignDetailPage() {
 
           {campaign.cliente_valoracion && (
             <div className="mb-4 rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
                 Valoración del cliente
               </p>
               <div className="flex items-center gap-1 text-amber-500">

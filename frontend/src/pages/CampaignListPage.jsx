@@ -108,7 +108,7 @@ export default function CampaignListPage() {
         </div>
       ) : !error && campaigns.length === 0 ? (
         /* Empty state */
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-white/50 p-12 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-outline">
             <Megaphone className="h-7 w-7" />
           </div>
@@ -138,7 +138,7 @@ export default function CampaignListPage() {
                     {['Título', 'Cliente', 'Industria', 'Plataforma', 'Estado', 'Fecha', ''].map((h) => (
                       <th
                         key={h}
-                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
+                        className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant"
                       >
                         {h}
                       </th>

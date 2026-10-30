@@ -21,7 +21,7 @@ export default function CreditsExhausted({ onClose }) {
     <div className="glass-soft glass-float rounded-xl p-6 shadow-sm">
       <AppToaster />
       <PlanesModal open={showPlanes} onClose={() => setShowPlanes(false)} />
-      <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-error-container px-3 py-1 text-xs font-bold uppercase tracking-wide text-error">
+      <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-error-container px-3 py-1 text-[13px] font-bold text-error">
         <AlertTriangle className="h-3.5 w-3.5" />
         Créditos agotados
       </span>
@@ -46,11 +46,11 @@ export default function CreditsExhausted({ onClose }) {
           >
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold uppercase tracking-wide text-on-surface">
+                <span className="text-sm font-bold text-on-surface">
                   {plan.nombre}
                 </span>
                 {plan.popular && (
-                  <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-on-primary">
+                  <span className="rounded-full bg-primary px-2 py-0.5 text-[13px] font-bold text-on-primary">
                     Más popular
                   </span>
                 )}

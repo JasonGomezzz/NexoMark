@@ -85,7 +85,7 @@ export default function PlanesModal({ open, onClose }) {
 
         {!checkoutPlan ? (
           <>
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-error-container px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-error">
+            <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-error-container px-4 py-1.5 text-[13px] font-boldst text-error">
               <AlertTriangle className="h-3.5 w-3.5" />
               Créditos agotados
             </span>
@@ -110,15 +110,15 @@ export default function PlanesModal({ open, onClose }) {
                   className={`relative flex flex-col items-center rounded-2xl p-8 ${
                     plan.popular
                       ? 'border-2 border-primary bg-white shadow-xl'
-                      : 'border border-outline-variant/60 bg-white/80 shadow-sm'
+                      : 'border border-outline-variant/60 bg-surface-container-low shadow-sm'
                   }`}
                 >
                   {plan.popular && (
-                    <span className="absolute -top-4 rounded-full bg-primary px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-on-primary shadow-lg">
+                    <span className="absolute -top-4 rounded-full bg-primary px-4 py-1.5 text-[13px] font-bold text-on-primary shadow-lg">
                       Más popular
                     </span>
                   )}
-                  <p className="mb-4 text-sm font-bold uppercase tracking-[0.2em] text-on-surface">
+                  <p className="mb-4 text-sm font-bold text-on-surface">
                     {plan.nombre}
                   </p>
                   <p className="mb-1 text-4xl font-extrabold tabular-nums text-on-surface">
@@ -154,7 +154,7 @@ export default function PlanesModal({ open, onClose }) {
               </button>
             </div>
 
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-on-surface-variant/70">
+            <p className="text-[13px] font-medium text-on-surface-variant/70">
               Seguridad garantizada mediante pasarelas de pago locales
             </p>
           </>
@@ -179,7 +179,7 @@ export default function PlanesModal({ open, onClose }) {
               ← Volver a los planes
             </button>
 
-            <div className="mb-6 flex items-center justify-between rounded-xl border border-outline-variant bg-white/80 px-5 py-4">
+            <div className="mb-6 flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container-low px-5 py-4">
               <div>
                 <p className="text-sm font-semibold text-on-surface">Plan {checkoutPlan.nombre}</p>
                 <p className="text-sm text-on-surface-variant">{checkoutPlan.creditos} Créditos de IA</p>
@@ -286,7 +286,7 @@ export default function PlanesModal({ open, onClose }) {
               )}
             </Button>
 
-            <p className="mt-4 text-center text-[11px] font-medium uppercase tracking-[0.18em] text-on-surface-variant/70">
+            <p className="mt-4 text-center text-[13px] font-medium text-on-surface-variant/70">
               Pasarela de pago simulada — no se procesa ningún cargo real
             </p>
           </div>

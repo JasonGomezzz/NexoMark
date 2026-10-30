@@ -80,7 +80,7 @@ export default function VersionHistoryPanel({
       {/* Trigger en la columna de metadatos del detalle */}
       <div className="rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+          <p className="text-[13px] font-semibold text-on-surface-variant">
             Historial de versiones
           </p>
           <History className="h-4 w-4 text-outline" />
@@ -161,7 +161,7 @@ export default function VersionHistoryPanel({
                               Versión {v.version_number}
                             </span>
                             {i === 0 && (
-                              <span className="rounded-full bg-primary-fixed px-2 py-0.5 text-[10px] font-bold uppercase text-on-primary-fixed">
+                              <span className="rounded-full bg-primary-fixed px-2 py-0.5 text-[13px] font-bold text-on-primary-fixed">
                                 Actual
                               </span>
                             )}
@@ -257,7 +257,7 @@ function CompareView({ left, right, onClose, onRestore, restoring }) {
             </p>
             <VersionThumb version={v} size="h-36 w-full" className="mb-3" />
             <div className="rounded-xl border border-outline-variant bg-white p-4 text-xs leading-relaxed text-on-surface">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">
+              <p className="mb-1 text-[13px] font-bold text-on-surface-variant">
                 Copy del anuncio
               </p>
               <p className="whitespace-pre-wrap">

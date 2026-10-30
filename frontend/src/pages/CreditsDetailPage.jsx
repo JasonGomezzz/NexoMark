@@ -128,7 +128,7 @@ export default function CreditsDetailPage() {
           <div className="relative z-10 flex flex-col items-center gap-8 md:flex-row md:justify-between">
             <div className="flex-1 space-y-4 text-center md:text-left">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-outline">
+                <p className="text-[13px] font-semiboldr text-outline">
                   Saldo disponible
                 </p>
                 <h2 className="mt-2 text-5xl font-extrabold tracking-tight text-primary">
@@ -215,7 +215,7 @@ export default function CreditsDetailPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-outline-variant text-xs uppercase tracking-wide text-on-surface-variant">
+                <tr className="border-b border-outline-variant text-[13px] text-on-surface-variant">
                   <th className="px-6 py-3 font-semibold">Nombre de campaña</th>
                   <th className="px-6 py-3 font-semibold">Fecha</th>
                   <th className="px-6 py-3 font-semibold">Créditos</th>

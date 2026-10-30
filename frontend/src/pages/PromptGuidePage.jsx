@@ -301,7 +301,7 @@ export default function PromptGuidePage() {
 
               {/* Vista previa del brief */}
               <div className="mt-5 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3">
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">
+                <p className="mb-1 text-[13px] font-bold text-on-surface-variant">
                   Vista previa del brief
                 </p>
                 <p className="text-sm leading-relaxed text-on-surface">{promptListo}</p>

@@ -173,12 +173,12 @@ export default function UsersAdminPage() {
               <table className="w-full text-sm">
                 <thead className="bg-surface-container-low">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Nombre</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Rol</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Estado</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Créditos</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Acciones</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Nombre</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Email</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Rol</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Estado</th>
+                    <th className="px-4 py-3 text-right text-[13px] font-semibold text-on-surface-variant">Créditos</th>
+                    <th className="px-4 py-3 text-right text-[13px] font-semibold text-on-surface-variant">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>

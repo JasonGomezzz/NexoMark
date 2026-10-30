@@ -406,7 +406,7 @@ export default function NewCampaignPage() {
 
           {/* Consejo estratégico — de la screen Stitch ai_generation_loading_state */}
           <aside className="glass-soft mt-5 rounded-xl p-6">
-            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
+            <p className="mb-2 flex items-center gap-2 text-[13px] font-boldst text-primary">
               <Sparkles className="h-4 w-4" />
               Consejo estratégico
             </p>
@@ -469,7 +469,7 @@ export default function NewCampaignPage() {
 
 function EmptyResultPanel() {
   return (
-    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-xl border border-dashed border-outline-variant bg-white/50 p-8 text-center">
+    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-8 text-center">
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
         <Sparkles className="h-7 w-7" />
       </div>
@@ -493,7 +493,7 @@ function ResultPanel({ result, onReset, onNavigate }) {
 
       <div className="space-y-4 p-5">
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+          <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
             Copy publicitario
           </p>
           <div className="whitespace-pre-wrap rounded-lg bg-surface-container-low p-4 text-sm leading-relaxed text-on-surface">
@@ -503,7 +503,7 @@ function ResultPanel({ result, onReset, onNavigate }) {
 
         {campaign?.imagen_b64 && (
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
               Imagen generada
             </p>
             <ImageLightbox

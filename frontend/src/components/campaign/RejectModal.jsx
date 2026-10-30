@@ -95,7 +95,7 @@ export default function RejectModal({
               type="button"
               onClick={() => addMotivo(m)}
               disabled={busy}
-              className="rounded-full border border-outline-variant bg-white/70 px-3 py-1.5 text-xs font-medium text-on-surface-variant transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+              className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1.5 text-xs font-medium text-on-surface-variant transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
             >
               {m}
             </button>

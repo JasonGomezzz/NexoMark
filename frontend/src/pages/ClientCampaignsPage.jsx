@@ -173,11 +173,11 @@ export default function ClientCampaignsPage() {
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-24 animate-pulse rounded-xl border border-outline-variant bg-white/70" />
+            <div key={item} className="h-24 animate-pulse rounded-xl border border-outline-variant bg-surface-container-low" />
           ))}
         </div>
       ) : campaigns.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-white/50 p-12 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
           <Inbox className="h-10 w-10 text-outline" />
           <h2 className="text-lg font-semibold text-on-surface">No hay campañas para mostrar</h2>
           <p className="max-w-sm text-sm text-on-surface-variant">

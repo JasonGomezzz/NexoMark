@@ -181,7 +181,7 @@ export default function ClientReviewPage() {
         {/* ── Contenido: copy + imagen ── */}
         <div className="min-w-0 flex-1 space-y-4">
           <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            <p className="mb-3 text-[13px] font-semibold text-on-surface-variant">
               Copy propuesto
             </p>
             <p className="whitespace-pre-wrap text-base leading-relaxed text-on-surface">
@@ -190,7 +190,7 @@ export default function ClientReviewPage() {
           </div>
 
           <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            <p className="mb-3 text-[13px] font-semibold text-on-surface-variant">
               Imagen del anuncio
             </p>
             {campaign.imagenB64 ? (
@@ -215,7 +215,7 @@ export default function ClientReviewPage() {
           {/* Feedback previo si la rechazó antes */}
           {['rechazado', 'fracaso'].includes(campaign.estado) && campaign.feedbackRechazo && (
             <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-error">
+              <p className="mb-2 text-[13px] font-semibold text-error">
                 Tu feedback
               </p>
               <p className="text-sm leading-relaxed text-on-surface">{campaign.feedbackRechazo}</p>
@@ -224,7 +224,7 @@ export default function ClientReviewPage() {
 
           {campaign.clienteValoracion && (
             <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
                 Tu valoración
               </p>
               <StarRating value={campaign.clienteValoracion} readOnly />
@@ -286,8 +286,8 @@ export default function ClientReviewPage() {
           {puedeRevisar && (
             <div className="glass-soft space-y-3 rounded-xl p-5 shadow-sm">
               <p className="text-sm font-semibold text-on-surface">¿Qué decides?</p>
-              <div className="rounded-lg border border-outline-variant bg-white/70 p-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
+                <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
                   Valoración
                 </p>
                 <StarRating value={rating} onChange={setRating} />

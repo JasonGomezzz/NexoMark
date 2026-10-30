@@ -145,7 +145,7 @@ export default function ClientDashboardPage() {
               className="flex h-40 flex-col justify-between rounded-xl border border-primary/20 bg-primary-container p-6 text-on-primary-container shadow-lg transition-transform hover:-translate-y-1"
             >
               <div className="flex items-start justify-between">
-                <span className="text-xs font-bold uppercase tracking-widest opacity-80">{label}</span>
+                <span className="text-[13px] font-boldst opacity-80">{label}</span>
                 <span className="rounded-lg bg-white/20 p-2">
                   <Icon className="h-5 w-5" />
                 </span>
@@ -167,7 +167,7 @@ export default function ClientDashboardPage() {
               className="flex h-40 flex-col justify-between rounded-xl border border-outline-variant bg-white p-6 shadow-sm transition-shadow hover:shadow-lg"
             >
               <div className="flex items-start justify-between">
-                <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                <span className="text-[13px] font-boldst text-on-surface-variant">
                   {label}
                 </span>
                 <span className={`rounded-lg p-2 ${tint}`}>
@@ -221,7 +221,7 @@ export default function ClientDashboardPage() {
             ))}
           </div>
         ) : !error && pending.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-white/50 p-12 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-outline">
               <Inbox className="h-7 w-7" />
             </div>
@@ -321,7 +321,7 @@ function CampaignDetailsModal({ campaign, onClose }) {
         <div className="grid max-h-[calc(90vh-73px)] gap-5 overflow-y-auto p-5 md:grid-cols-[minmax(0,1fr)_280px]">
           <div className="space-y-4">
             <section className="rounded-lg border border-outline-variant p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
                 Copy propuesto
               </p>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-on-surface">
@@ -330,7 +330,7 @@ function CampaignDetailsModal({ campaign, onClose }) {
             </section>
 
             <section className="rounded-lg border border-outline-variant p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
                 Detalles
               </p>
               <div className="grid gap-2 text-sm sm:grid-cols-2">
@@ -344,7 +344,7 @@ function CampaignDetailsModal({ campaign, onClose }) {
           </div>
 
           <section className="rounded-lg border border-outline-variant p-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
               Imagen
             </p>
             {campaign.imagenB64 ? (

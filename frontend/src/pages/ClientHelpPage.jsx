@@ -59,7 +59,7 @@ export default function ClientHelpPage() {
 
 function StatusHelp({ title, text }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-white/50 p-4">
+    <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
       <p className="font-semibold text-on-surface">{title}</p>
       <p className="mt-1 text-sm text-on-surface-variant">{text}</p>
     </div>

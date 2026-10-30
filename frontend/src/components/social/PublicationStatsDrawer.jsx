@@ -302,7 +302,7 @@ function Historial({ historial, red }) {
       </h3>
       <div className="mt-3 overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-lowest">
         <table className="w-full text-sm">
-          <thead className="bg-surface-container-low text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+          <thead className="bg-surface-container-low text-left text-[13px] font-semibold text-on-surface-variant">
             <tr>
               <th className="px-4 py-2.5">Lectura</th>
               <th className="px-4 py-2.5 text-right">{principal[1]}</th>
