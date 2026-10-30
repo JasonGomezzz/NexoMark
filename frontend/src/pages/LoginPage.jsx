@@ -62,7 +62,7 @@ export default function LoginPage() {
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex h-10 items-center gap-2 rounded-lg px-2 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+            className="inline-flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Volver al inicio
@@ -75,7 +75,7 @@ export default function LoginPage() {
             <Link to="/" aria-label="NexoMark IA, ir al inicio" className="inline-block text-2xl">
               <BrandLogo />
             </Link>
-            <h1 className="mt-10 text-[2rem] font-bold leading-tight tracking-[-0.02em] text-on-surface">
+            <h1 className="mt-10 text-[2.375rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface">
               Inicia sesión
             </h1>
             <p className="mt-2 text-base text-on-surface-variant">
@@ -103,7 +103,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 error={errors.password?.message}
                 aside={
-                  <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                  <Link to="/forgot-password" className="-my-3 inline-flex min-h-11 items-center text-sm font-medium text-primary hover:underline">
                     ¿Olvidaste tu contraseña?
                   </Link>
                 }
@@ -113,7 +113,7 @@ export default function LoginPage() {
                 })}
               />
 
-              <div className="flex items-start gap-3">
+              <label htmlFor="remember" className="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg py-1">
                 <input
                   id="remember"
                   type="checkbox"
@@ -121,15 +121,13 @@ export default function LoginPage() {
                   className="mt-0.5 h-5 w-5 shrink-0 rounded border-outline"
                   {...register('remember')}
                 />
-                <div>
-                  <label htmlFor="remember" className="text-sm font-medium text-on-surface">
-                    Mantener sesión iniciada
-                  </label>
-                  <p id="remember-hint" className="text-[13px] text-on-surface-variant">
+                <span>
+                  <span className="block text-sm font-medium text-on-surface">Mantener sesión iniciada</span>
+                  <span id="remember-hint" className="block text-[13px] text-on-surface-variant">
                     Sin marcar, la sesión se cierra al cerrar esta pestaña.
-                  </p>
-                </div>
-              </div>
+                  </span>
+                </span>
+              </label>
 
               <Button type="submit" size="lg" disabled={loading} className="w-full">
                 {loading ? 'Ingresando…' : 'Iniciar sesión'}
@@ -142,7 +140,7 @@ export default function LoginPage() {
 
             <p className="mt-8 text-[15px] text-on-surface-variant">
               ¿No tienes una cuenta?{' '}
-              <Link to="/register" className="font-semibold text-primary hover:underline">
+              <Link to="/register" className="-my-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
                 Regístrate
               </Link>
             </p>

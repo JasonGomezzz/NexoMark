@@ -85,7 +85,7 @@ export default function RegisterPage() {
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex h-10 items-center gap-2 rounded-lg px-2 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+            className="inline-flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Volver al inicio
@@ -98,7 +98,7 @@ export default function RegisterPage() {
             <Link to="/" aria-label="NexoMark IA, ir al inicio" className="inline-block text-2xl">
               <BrandLogo />
             </Link>
-            <h1 className="mt-10 text-[2rem] font-bold leading-tight tracking-[-0.02em] text-on-surface">
+            <h1 className="mt-10 text-[2.375rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface">
               Crea tu cuenta
             </h1>
             <p className="mt-2 text-base text-on-surface-variant">
@@ -200,7 +200,7 @@ export default function RegisterPage() {
 
             <p className="mt-8 text-[15px] text-on-surface-variant">
               ¿Ya tienes una cuenta?{' '}
-              <Link to="/login" className="font-semibold text-primary hover:underline">
+              <Link to="/login" className="-my-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
                 Inicia sesión
               </Link>
             </p>

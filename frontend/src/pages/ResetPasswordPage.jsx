@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
       </form>
       <p className="mt-6 text-center text-sm text-on-surface-variant">
         ¿El enlace no funciona?{' '}
-        <Link to="/forgot-password" className="font-semibold text-primary hover:underline">
+        <Link to="/forgot-password" className="-my-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
           Pide otro
         </Link>
       </p>

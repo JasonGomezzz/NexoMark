@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
               setEnviado(false)
               setError('')
             }}
-            className="text-sm font-medium text-primary hover:underline"
+            className="-my-3 inline-flex min-h-11 items-center text-sm font-medium text-primary hover:underline"
           >
             Usar otro correo
           </button>
@@ -122,7 +122,7 @@ export default function ForgotPasswordPage() {
       </form>
       <p className="mt-6 text-center text-sm text-on-surface-variant">
         ¿La recordaste?{' '}
-        <Link to="/login" className="font-semibold text-primary hover:underline">
+        <Link to="/login" className="-my-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
           Inicia sesión
         </Link>
       </p>

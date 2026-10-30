@@ -31,7 +31,7 @@ const AuthField = forwardRef(function AuthField(
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={describedBy}
           className={cn(
-            'h-12 w-full rounded-lg border bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-[border-color,box-shadow] duration-150',
+            'h-12 w-full rounded-[10px] border bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-[border-color,box-shadow] duration-150',
             'focus:border-primary focus:ring-2 focus:ring-primary/30',
             isPassword && 'pr-12',
             error ? 'border-error' : 'border-outline',
@@ -42,7 +42,7 @@ const AuthField = forwardRef(function AuthField(
           <button
             type="button"
             onClick={() => setVisible((value) => !value)}
-            className="absolute right-1.5 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+            className="absolute right-0.5 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
             aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
             {visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
