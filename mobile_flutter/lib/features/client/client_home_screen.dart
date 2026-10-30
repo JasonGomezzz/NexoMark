@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/providers.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/campaign_widgets.dart';
-import '../../widgets/motion_widgets.dart';
+import '../../widgets/linea.dart';
 import '../../widgets/nexo_widgets.dart';
-import '../account/avatar_provider.dart';
-import '../../core/theme/tokens.dart';
+import '../shell/acciones.dart';
 
 final pendingProvider = FutureProvider.autoDispose<List<Campaign>>((ref) => ref.watch(clientRepositoryProvider).pending());
 final decididasProvider = FutureProvider.autoDispose<List<Campaign>>((ref) async {
   final todas = await ref.watch(clientRepositoryProvider).mine();
-  // Spring /mine trae todas las del cliente; las pendientes ya están arriba.
+  // Spring /mine trae todas las del cliente; las pendientes van en Aprobar.
   return todas.where((c) => c.estado != EstadoCampana.pendienteAprobacion).toList();
 });
 
@@ -23,8 +24,13 @@ String extracto(String? texto, [int max = 110]) {
   return t.length <= max ? t : '${t.substring(0, max).trimRight()}…';
 }
 
+/// El cliente ve su tramo de la línea: Aprobar → Publicar → Medir.
+enum TramoCliente { aprobar, publicar }
+
 class ClientHomeScreen extends ConsumerStatefulWidget {
-  const ClientHomeScreen({super.key});
+  const ClientHomeScreen({super.key, this.tramo = TramoCliente.aprobar});
+
+  final TramoCliente tramo;
 
   @override
   ConsumerState<ClientHomeScreen> createState() => _ClientHomeScreenState();
@@ -53,7 +59,7 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> with Widget
     ref.invalidate(pendingProvider);
     ref.invalidate(decididasProvider);
     try {
-      await ref.read(pendingProvider.future);
+      await ref.read((widget.tramo == TramoCliente.aprobar ? pendingProvider : decididasProvider).future);
     } catch (_) {
       // Se muestra en la lista.
     }
@@ -61,105 +67,85 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> with Widget
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(currentUserProvider);
-    final pendientes = ref.watch(pendingProvider);
-    final decididas = ref.watch(decididasProvider);
+    final aprobar = widget.tramo == TramoCliente.aprobar;
+    final lista = ref.watch(aprobar ? pendingProvider : decididasProvider);
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _refrescar,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            children: [
-              Entrance(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Hola, ${user?.primerNombre ?? ''}', style: context.text.headlineMedium),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Revisa lo que tu agencia preparó antes de que se publique.',
-                            style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Pressable(onTap: () => context.go('/c/cuenta'), child: const MyAvatar(size: 46)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
-              SectionTitle(
-                'Campañas para revisar',
-                trailing: pendientes.value == null || pendientes.value!.isEmpty
-                    ? null
-                    : _Contador(pendientes.value!.length),
-              ),
-              ...pendientes.when(
-                data: (lista) => lista.isEmpty
-                    ? [
-                        const EmptyState(
-                          icon: Icons.inbox_rounded,
-                          title: 'Nada por revisar',
-                          message: 'Cuando tu agencia te envíe una campaña, aparecerá aquí.',
+      body: RefreshIndicator(
+        onRefresh: _refrescar,
+        edgeOffset: MediaQuery.paddingOf(context).top + kToolbarHeight,
+        child: CustomScrollView(
+          slivers: [
+            LineaHeader(
+              titulo: aprobar ? 'Aprobar' : 'Publicar',
+              subtitulo: aprobar
+                  ? 'Revisa lo que tu agencia preparó. Nada se publica sin tu aprobación.'
+                  : 'Lo que ya decidiste y dónde se publicó.',
+              acciones: accionesEstacion(context, ref),
+            ),
+            ...lista.when(
+              data: (items) => items.isEmpty
+                  ? [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Padding(
+                          padding: const EdgeInsets.all(Nexo.gutter),
+                          child: aprobar
+                              ? const EmptyState(
+                                  icon: LucideIcons.inbox,
+                                  title: 'Nada por revisar',
+                                  message: 'Cuando tu agencia te envíe una campaña, aparecerá aquí.',
+                                )
+                              : const EmptyState(
+                                  icon: LucideIcons.send,
+                                  title: 'Todavía no decides ninguna',
+                                  message: 'Las campañas que apruebes o devuelvas quedarán aquí.',
+                                ),
                         ),
-                      ]
-                    : [
-                        for (final (i, c) in lista.indexed)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: Entrance(
-                              index: 1 + i,
-                              child: CampaignCard(
-                                campaign: c,
-                                subtitle: '${c.marketeroNombre ?? 'Tu agencia'} · ${fechaCorta(c.enviadoClienteAt ?? c.fechaCreacion)}\n${extracto(c.textoGenerado, 70)}',
-                                onTap: () => context.go('/c/inicio/revision/${c.id}'),
-                              ),
-                            ),
-                          ),
-                      ],
-                loading: () => [
-                  for (var i = 0; i < 2; i++)
-                    const Padding(padding: EdgeInsets.only(bottom: 10), child: CampaignCardSkeleton()),
-                ],
-                error: (e, _) => [ErrorBanner(message: toApiException(e).message, onRetry: _refrescar)],
-              ),
-              const SizedBox(height: 20),
-              if ((decididas.value ?? const []).isNotEmpty) ...[
-                const SectionTitle('Ya decididas'),
-                for (final c in decididas.value!.take(10))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: CampaignCard(
-                      campaign: c,
-                      subtitle: c.destinos.isEmpty
-                          ? (c.marketeroNombre ?? 'Tu agencia')
-                          : 'En ${c.destinos.map((d) => d.cuentaNombre).join(', ')}',
-                      onTap: () => context.go('/c/inicio/revision/${c.id}'),
-                    ),
+                      ),
+                    ]
+                  : [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: Nexo.gutter),
+                        sliver: SliverList.separated(
+                          itemCount: items.length,
+                          separatorBuilder: (_, _) => const Divider(),
+                          itemBuilder: (context, i) {
+                            final c = items[i];
+                            return CampaignCard(
+                              key: ValueKey(c.id),
+                              campaign: c,
+                              subtitle: aprobar
+                                  ? '${c.marketeroNombre ?? 'Tu agencia'} · ${fechaCorta(c.enviadoClienteAt ?? c.fechaCreacion)}'
+                                  : c.destinos.isEmpty
+                                      ? 'Sin publicación automática'
+                                      : 'En ${c.destinos.map((d) => d.cuentaNombre).join(', ')}',
+                              onTap: () => context.push('/c/revision/${c.id}'),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+              loading: () => [
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: Nexo.gutter),
+                  sliver: SliverList.separated(
+                    itemCount: 3,
+                    separatorBuilder: (_, _) => const Divider(),
+                    itemBuilder: (_, _) => const CampaignCardSkeleton(),
                   ),
+                ),
               ],
-            ],
-          ),
+              error: (e, _) => [
+                SliverPadding(
+                  padding: const EdgeInsets.all(Nexo.gutter),
+                  sliver: SliverToBoxAdapter(child: ErrorBanner(message: toApiException(e).message, onRetry: _refrescar)),
+                ),
+              ],
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class _Contador extends StatelessWidget {
-  const _Contador(this.n);
-  final int n;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: context.nexo.warningContainer, borderRadius: BorderRadius.circular(999)),
-      child: Text('$n', style: context.text.labelMedium?.copyWith(color: context.nexo.warning)),
     );
   }
 }

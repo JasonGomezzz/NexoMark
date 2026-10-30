@@ -1,57 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../data/models.dart';
+import '../../widgets/linea.dart';
+import '../client/client_home_screen.dart';
+import '../marketero/projects_screen.dart';
+import '../marketero/providers.dart';
 
-/// Barra inferior por rol. Las pestañas conservan su estado (IndexedStack):
-/// cambiar de pestaña es instantáneo, como debe ser algo que se toca decenas
-/// de veces al día; solo el indicador de la barra se desliza.
-class HomeShell extends StatelessWidget {
+/// La navegación es el recorrido. El marketero ve las cinco estaciones
+/// (Dictar → Generar → Aprobar → Publicar → Medir); el cliente, su tramo
+/// (Aprobar → Publicar → Medir). Cada estación lleva su conteo real.
+/// Las pestañas conservan su estado (IndexedStack): cambiar es instantáneo.
+class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.shell, required this.rol});
 
   final StatefulNavigationShell shell;
   final Rol rol;
 
-  static const _marketero = [
-    (Icons.home_outlined, Icons.home_rounded, 'Inicio'),
-    (Icons.mic_none_rounded, Icons.mic_rounded, 'Dictar'),
-    (Icons.folder_outlined, Icons.folder_rounded, 'Proyectos'),
-    (Icons.insights_outlined, Icons.insights_rounded, 'Métricas'),
-    (Icons.person_outline_rounded, Icons.person_rounded, 'Cuenta'),
-  ];
-
-  static const _cliente = [
-    (Icons.inbox_outlined, Icons.inbox_rounded, 'Inicio'),
-    (Icons.insights_outlined, Icons.insights_rounded, 'Métricas'),
-    (Icons.person_outline_rounded, Icons.person_rounded, 'Cuenta'),
-  ];
+  List<Estacion> _estaciones(WidgetRef ref) {
+    if (rol == Rol.cliente) {
+      final pendientes = ref.watch(pendingProvider).value?.length;
+      return [
+        Estacion('Aprobar', LucideIcons.checkCheck, conteo: pendientes, descripcionConteo: pendientes == null ? null : '$pendientes por revisar'),
+        const Estacion('Publicar', LucideIcons.send),
+        const Estacion('Medir', LucideIcons.chartColumn),
+      ];
+    }
+    final stats = ref.watch(campaignStatsProvider).value;
+    int? conteo(TramoCampanas t) => stats == null ? null : conteoTramo(stats, t);
+    final generar = conteo(TramoCampanas.generar);
+    final aprobar = conteo(TramoCampanas.aprobar);
+    final publicar = conteo(TramoCampanas.publicar);
+    return [
+      const Estacion('Dictar', LucideIcons.mic),
+      Estacion('Generar', LucideIcons.wandSparkles, conteo: generar, descripcionConteo: generar == null ? null : '$generar campañas'),
+      Estacion('Aprobar', LucideIcons.checkCheck, conteo: aprobar, descripcionConteo: aprobar == null ? null : '$aprobar esperan al cliente'),
+      Estacion('Publicar', LucideIcons.send, conteo: publicar, descripcionConteo: publicar == null ? null : '$publicar aprobadas'),
+      const Estacion('Medir', LucideIcons.chartColumn),
+    ];
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final items = rol == Rol.cliente ? _cliente : _marketero;
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: shell,
-      // Las etiquetas de la barra crecen con la letra del sistema hasta 1.15×: más grandes se parten
-      // en dos líneas a 360–412 dp. El contenido de las pantallas sí escala completo.
-      bottomNavigationBar: MediaQuery.withClampedTextScaling(
-        maxScaleFactor: 1.15,
-        child: NavigationBar(
-          selectedIndex: shell.currentIndex,
-          onDestinationSelected: (i) {
-            HapticFeedback.selectionClick();
-            // Tocar la pestaña activa vuelve a su raíz.
-            shell.goBranch(i, initialLocation: i == shell.currentIndex);
-          },
-          destinations: [
-            for (final (icon, selected, label) in items)
-              NavigationDestination(
-                icon: Icon(icon),
-                selectedIcon: Icon(selected),
-                label: label,
-              ),
-          ],
-        ),
+      bottomNavigationBar: LineaBar(
+        estaciones: _estaciones(ref),
+        actual: shell.currentIndex,
+        // Tocar la estación activa vuelve a su raíz.
+        onSelect: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
       ),
     );
   }
