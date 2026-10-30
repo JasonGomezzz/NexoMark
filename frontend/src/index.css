@@ -1,10 +1,13 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   NexoMark IA — sistema visual "Nexo"
-   Azul marino #14283F + turquesa #17B8AD, tomados del icono aprobado (brand/).
-   Claro y oscuro completos con html[data-theme]. Tipografía Inter.
-   Fuente de verdad visual: frontend/DESIGN.md
+   NexoMark IA — sistema visual "Línea" (dirección B, elegida el 30/10/2026)
+   Cada campaña es un viaje por cinco estaciones: Dictar → Generar → Aprobar →
+   Publicar → Medir. El marino es el andén (la banda), el turquesa el tren.
+   Marino #14283F + turquesa #17B8AD del icono aprobado. Overpass (display) +
+   Inter (texto). Claro y oscuro con html[data-theme].
+   Fuente de verdad visual: frontend/DESIGN.md. Contrato compartido con
+   Flutter: docs/diseno/direcciones.md («Dirección elegida»).
    Tailwind v4 config CSS-first (@theme) — NO hay tailwind.config.js.
    ========================================================================== */
 
@@ -13,6 +16,7 @@
 @theme {
   /* --- Tipografía --- */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Overpass", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* --- Marca (fijos en ambos temas) --- */
   --color-navy: #14283f;
@@ -25,6 +29,19 @@
   --color-on-navy-muted: #b9cbd8;
   --color-on-navy-error: #ffb4ab;
   --color-paper: #ffffff;
+
+  /* --- La línea (navegación y trazos) --- */
+  --color-banda: #14283f;
+  --color-banda-2: #1d3550;
+  --color-via: #2c4862;
+  --color-regla: #14283f;
+  --color-hairline: #d6e5e7;
+
+  /* --- Series por red (orden fijo; validadas con dataviz en claro) --- */
+  --color-chart-instagram: #b4307e;
+  --color-chart-x: #6f7a16;
+  --color-chart-facebook: #2463c8;
+  --color-chart-tiktok: #c2501a;
 
   /* --- Color: superficies --- */
   --color-background: #f5fafa;
@@ -92,8 +109,10 @@
   --radius-2xl: 1.125rem;
   --radius-3xl: 1.375rem;
 
-  /* --- Sombras: solo en lo que flota (menús, modales, drawer) --- */
-  --shadow-sm: 0 1px 2px 0 rgb(20 40 63 / 0.06);
+  /* --- Sombras: solo en lo que flota (menús, toasts, modales, cajón).
+         Nada en reposo lleva sombra: shadow-sm y shadow-md valen "nada". --- */
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
   --shadow-lg: 0 10px 24px -6px rgb(20 40 63 / 0.14), 0 2px 6px -2px rgb(20 40 63 / 0.08);
   --shadow-xl: 0 22px 44px -12px rgb(20 40 63 / 0.22), 0 4px 10px -4px rgb(20 40 63 / 0.1);
   --shadow-2xl: 0 28px 60px -16px rgb(20 40 63 / 0.3);
@@ -109,7 +128,7 @@ html[data-theme='dark'] {
   --color-surface: #14283f;
   --color-surface-dim: #0b1929;
   --color-surface-bright: #26445c;
-  --color-surface-container-lowest: #14283f;
+  --color-surface-container-lowest: #102236;
   --color-surface-container-low: #193249;
   --color-surface-container: #203b52;
   --color-surface-container-high: #29485f;
@@ -148,7 +167,14 @@ html[data-theme='dark'] {
   --color-success-container: #173d1b;
   --color-warning: #ffbd7c;
   --color-warning-container: #563100;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --color-regla: #3d5a6e;
+  --color-hairline: #1f3a52;
+  --color-chart-instagram: #d45a9c;
+  --color-chart-x: #8e9a2e;
+  --color-chart-facebook: #5b8fe0;
+  --color-chart-tiktok: #de7340;
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
   --shadow-lg: 0 12px 28px -8px rgb(0 0 0 / 0.5);
   --shadow-xl: 0 24px 48px -12px rgb(0 0 0 / 0.55);
   --shadow-2xl: 0 30px 64px -16px rgb(0 0 0 / 0.6);
@@ -185,6 +211,8 @@ body {
 
 :where(h1, h2, h3) {
   text-wrap: balance;
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
 }
 
 :where(a) {
@@ -237,7 +265,7 @@ html[data-theme='dark'] select {
 }
 
 html[data-theme='dark'] select option {
-  background-color: #14283f;
+  background-color: #102236;
   color: #f3fafb;
 }
 
@@ -288,6 +316,132 @@ html[data-theme='dark'] select option {
 
 .step-gradient {
   background: var(--color-primary);
+}
+
+/* ---------- La línea: navegación por estaciones ----------
+   Una vía de 6 px (--color-via) une cinco estaciones sobre la banda marina.
+   La actual es el círculo turquesa con anillo; las demás, anillos de 4 px. */
+
+.linea {
+  --punto: 28px;
+  --punto-actual: 40px;
+  --via: 6px;
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.linea::before {
+  content: '';
+  position: absolute;
+  top: calc(10px + var(--punto) / 2);
+  left: calc(50% / var(--n, 5));
+  right: calc(50% / var(--n, 5));
+  height: var(--via);
+  margin-top: calc(var(--via) / -2);
+  border-radius: 999px;
+  background: var(--color-via);
+}
+.estacion {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 4px 4px;
+  border-radius: 12px;
+  color: var(--color-on-navy-muted);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.estacion-punto {
+  display: grid;
+  place-items: center;
+  width: var(--punto);
+  height: var(--punto);
+  border-radius: 999px;
+  background: var(--color-banda);
+  border: 4px solid var(--color-outline-variant);
+  transition: border-color 160ms ease;
+}
+.estacion-nombre {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font: 600 15px/1 var(--font-display);
+  white-space: nowrap;
+}
+.estacion-cuenta {
+  padding: 3px 7px 2px;
+  border-radius: 999px;
+  background: var(--color-banda-2);
+  color: var(--color-on-navy);
+  font: 600 13px/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.estacion[aria-current] {
+  color: var(--color-on-navy);
+}
+.estacion[aria-current] .estacion-punto {
+  width: var(--punto-actual);
+  height: var(--punto-actual);
+  margin-top: calc((var(--punto) - var(--punto-actual)) / 2);
+  margin-bottom: calc((var(--punto) - var(--punto-actual)) / 2);
+  border: 0;
+  background: var(--color-turquoise);
+  color: var(--color-navy-deep);
+  /* Anillo de la estación actual: separación marina + aro turquesa claro. */
+  box-shadow: 0 0 0 5px var(--color-banda), 0 0 0 7px var(--color-turquoise-soft);
+}
+.estacion[aria-current] .estacion-nombre {
+  font-weight: 800;
+}
+.estacion:focus-visible {
+  outline: 2px solid var(--color-turquoise);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .estacion:not([aria-current]):hover {
+    color: var(--color-on-navy);
+  }
+  .estacion:not([aria-current]):hover .estacion-punto {
+    border-color: var(--color-turquoise-soft);
+  }
+}
+.linea-mini {
+  --punto: 18px;
+  --punto-actual: 26px;
+  --via: 4px;
+}
+.linea-mini .estacion {
+  gap: 6px;
+  padding-top: 10px;
+}
+.linea-mini .estacion-punto {
+  border-width: 3px;
+}
+.linea-mini .estacion-nombre {
+  font-size: 13px;
+}
+.linea-mini .estacion[aria-current] .estacion-punto {
+  box-shadow: 0 0 0 3px var(--color-banda), 0 0 0 5px var(--color-turquoise-soft);
+}
+
+/* Filete grueso que abre una sección (la "regla" de la línea). */
+.regla {
+  border-top: 6px solid var(--color-regla);
+}
+
+/* Cifras en la tipografía de la línea. */
+.cifra {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
 /* Etiqueta de dato de ejemplo (decisión de Jason: no borrar, rotular). */
