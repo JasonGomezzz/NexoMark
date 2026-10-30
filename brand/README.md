@@ -36,12 +36,13 @@ La tipografía recomendada es **Inter**, con peso 800 para el nombre y pesos
 - `nexomark-icon-approved-1024.png`: maestro aprobado de 1024 × 1024.
 - `../frontend/public/nexomark-icon.png`: copia idéntica para BrandLogo y favicon.
 - `../mobile_flutter/assets/brand/nexomark-icon.png`: copia idéntica para el acceso Flutter.
-- Los archivos `nexomark-mark.svg`, `nexomark-logo.svg` y sus vistas previas
-  conservan el diseño anterior como material histórico; no son el icono actual.
+- Se retiraron `nexomark-mark.svg`, `nexomark-logo.svg` y
+  `nexomark-logo-preview.png`, correspondientes al diseño anterior.
+  Sus versiones previas siguen disponibles en el historial de Git.
 - Los archivos de concepto son propuestas, no sustitutos del maestro aprobado.
 
-La actualización del icono en Figma queda pendiente mientras su plan Starter
-bloquee las llamadas de edición. No confundir preparar el asset con aplicarlo.
+El estado del icono en Figma debe comprobarse en el archivo de diseño; estos
+recursos del repositorio no actualizan automáticamente ese prototipo.
 
 No deformar el logo, cambiar sus proporciones ni separar la cápsula `IA` del
 nombre. El isotipo puede utilizarse solo cuando el nombre ya sea visible en el
