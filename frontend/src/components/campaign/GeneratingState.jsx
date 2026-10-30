@@ -1,101 +1,74 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'motion/react'
-import { Check, Loader2, Lock } from 'lucide-react'
+import { Check, Wand2 } from 'lucide-react'
 
 /**
- * Estado "Generando con IA" (portado de Stitch: ai_generation_loading_state).
- * Pipeline vertical de 3 pasos que reflejan el flujo real de n8n:
- * análisis → copy → imagen. n8n tarda 8–15s.
- * El backend descuenta 1 crédito ANTES de disparar (estado = pendiente_ia).
+ * Generando (dirección "Línea"): el tren sale de Dictar hacia Aprobar y avanza
+ * sobre la vía mientras n8n crea el copy y la imagen (suele tardar entre 8 y
+ * 30 s). No finge pasos por tiempo: muestra lo que sí se sabe (está generando
+ * y cuánto lleva). El crédito ya se descontó y se devuelve si la IA falla.
+ * `onCancel` solo deja esta pantalla: la generación sigue en el servidor y la
+ * campaña aparece en la estación Generar.
  */
-const STEPS = [
-  { titulo: 'Análisis de contexto', sub: 'Estructura y tono definidos' },
-  { titulo: 'Generación de copy creativo', sub: 'Redactando variantes persuasivas…' },
-  { titulo: 'Síntesis de imagen editorial', sub: 'Próximo paso' },
-]
-
 export default function GeneratingState({ onCancel }) {
-  const [seconds, setSeconds] = useState(0)
-  // Paso activo simulado por tiempo (0: análisis, 1: copy, 2: imagen)
-  const activeStep = seconds < 3 ? 1 : seconds < 9 ? 1 : 2
+  const [segundos, setSegundos] = useState(0)
 
   useEffect(() => {
-    const t = setInterval(() => setSeconds((s) => s + 1), 1000)
+    const t = setInterval(() => setSegundos((s) => s + 1), 1000)
     return () => clearInterval(t)
   }, [])
 
   return (
-    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-xl border border-outline-variant bg-white p-8 text-center shadow-sm">
-      <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-fixed px-3 py-1 text-xs font-semibold text-primary">
-        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-        Pendiente IA
-      </span>
-
-      <h2 className="mb-3 text-3xl font-bold tracking-tight text-on-surface text-balance">
-        Esculpiendo tu campaña
-      </h2>
-      <p className="mb-8 max-w-sm text-base text-on-surface-variant">
-        Nuestros modelos están procesando tu solicitud para crear contenido único y
-        optimizado.
+    <section role="status" aria-live="polite" className="mx-auto max-w-3xl py-6 sm:py-12">
+      <p className="text-sm font-semibold text-on-surface-variant">Estación Generar</p>
+      <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">
+        Generando la campaña
+      </h1>
+      <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-on-surface-variant">
+        La IA está escribiendo el copy y creando la imagen. Suele tardar entre 8 y 30 segundos. Cuando termine, verás la
+        pieza lista para enviar al cliente.
       </p>
 
-      {/* Pipeline vertical */}
-      <div className="mb-8 w-full max-w-sm space-y-5 text-left">
-        {STEPS.map((step, i) => {
-          const done = i < activeStep
-          const active = i === activeStep
-          return (
-            <div key={step.titulo} className="flex items-start gap-3">
-              <div
-                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                  done
-                    ? 'bg-success-container text-success'
-                    : active
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-surface-container-high text-outline'
-                }`}
-              >
-                {done ? (
-                  <Check className="h-4 w-4" />
-                ) : active ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <div>
-                <p className={`text-sm font-bold ${active ? 'text-primary' : 'text-on-surface'}`}>
-                  {step.titulo}
-                </p>
-                <p className="text-xs text-on-surface-variant">{step.sub}</p>
-              </div>
-            </div>
-          )
-        })}
+      {/* La vía: Dictar (hecha) → Generar (el tren avanza) → Aprobar */}
+      <div className="relative mt-12" aria-hidden="true">
+        <span className="absolute left-5 right-5 top-5 h-1.5 -translate-y-1/2 rounded-full bg-outline-variant" />
+        <span className="absolute left-5 top-5 h-1.5 w-1/2 -translate-y-1/2 rounded-full bg-turquoise" />
+        <span className="generando-tramo absolute left-1/2 right-5 top-5 h-1.5 -translate-y-1/2 overflow-hidden rounded-full">
+          <span className="generando-tren absolute inset-y-0 left-0 w-16 rounded-full bg-turquoise" />
+        </span>
+        <ol className="relative flex justify-between">
+          <li className="flex flex-col items-start gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-turquoise text-navy-deep">
+              <Check className="h-4 w-4" strokeWidth={2.75} />
+            </span>
+            <span className="font-display text-[15px] font-semibold text-on-surface-variant">Dictar</span>
+          </li>
+          <li className="flex flex-col items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-turquoise text-navy-deep shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_var(--color-turquoise-soft)]">
+              <Wand2 className="h-[18px] w-[18px]" strokeWidth={2.25} />
+            </span>
+            <span className="font-display text-[15px] font-extrabold text-on-surface">Generar</span>
+          </li>
+          <li className="flex flex-col items-end gap-2">
+            <span className="h-10 w-10 rounded-full border-4 border-outline-variant bg-background" />
+            <span className="font-display text-[15px] font-semibold text-on-surface-variant">Aprobar</span>
+          </li>
+        </ol>
       </div>
 
-      {/* Barra de progreso indeterminada */}
-      <div className="mb-6 h-1 w-full max-w-sm overflow-hidden rounded-full bg-surface-container-high">
-        <motion.div
-          className="h-full w-1/3 rounded-full bg-primary"
-          animate={{ x: ['-100%', '300%'] }}
-          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-        />
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-hairline pt-5">
+        <p className="text-sm text-on-surface-variant">
+          Lleva <span className="font-semibold tabular-nums text-on-surface">{segundos} s</span>. Ya se usó 1 crédito; si la IA falla, se devuelve.
+        </p>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low"
+          >
+            Dictar otra campaña
+          </button>
+        )}
       </div>
-
-      <p className="mb-4 flex items-center gap-1.5 text-xs text-on-surface-variant">
-        <Lock className="h-3.5 w-3.5" />
-        No cierres esta ventana mientras la IA trabaja · {seconds}s
-      </p>
-
-      {onCancel && (
-        <button
-          onClick={onCancel}
-          className="text-sm text-on-surface-variant transition-colors hover:text-error"
-        >
-          Cancelar generación
-        </button>
-      )}
-    </div>
+    </section>
   )
 }

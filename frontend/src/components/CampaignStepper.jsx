@@ -1,73 +1,89 @@
-import { Check } from 'lucide-react'
+import { Check, ChartColumn, CheckCheck, Mic, Send, Wand2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /**
- * Stepper del FSM de campaña — hace visible la máquina de estados.
- * Flujo principal: borrador → pendiente_ia → generado → pendiente_aprobacion → aprobado.
- * Los estados "rechazado" y "fracaso" se muestran como bifurcación desde revisión.
- * Deriva de los tokens de DESIGN.md (sin colores nuevos).
+ * El viaje de UNA campaña por la línea: Dictar → Generar → Aprobar → Publicar
+ * → Medir. Las estaciones recorridas van rellenas, la actual lleva el anillo y
+ * el ícono del paso, las que faltan son anillos huecos. Un rechazo marca la
+ * estación Aprobar en rojo y devuelve el tren a Generar.
+ *
+ * Mapea el estado FSM (`Campaign.VALID_TRANSITIONS`) sin inventar pasos:
+ * "Publicar" y "Medir" solo se marcan como hechos cuando `publicada` lo dice.
  */
-const FLOW = [
-  { key: 'borrador', label: 'Borrador' },
-  { key: 'pendiente_ia', label: 'Generando IA' },
-  { key: 'generado', label: 'Generado' },
-  { key: 'pendiente_aprobacion', label: 'En revisión' },
-  { key: 'aprobado', label: 'Aprobado' },
+const ESTACIONES = [
+  { id: 'dictar', label: 'Dictar', icono: Mic },
+  { id: 'generar', label: 'Generar', icono: Wand2 },
+  { id: 'aprobar', label: 'Aprobar', icono: CheckCheck },
+  { id: 'publicar', label: 'Publicar', icono: Send },
+  { id: 'medir', label: 'Medir', icono: ChartColumn },
 ]
 
-export default function CampaignStepper({ estado }) {
-  const rejected = estado === 'rechazado'
-  const failed = estado === 'fracaso'
-  // índice del estado actual dentro del flujo principal
-  const currentIndex = rejected || failed
-    ? FLOW.findIndex((s) => s.key === 'pendiente_aprobacion')
-    : FLOW.findIndex((s) => s.key === estado)
+function recorrido(estado, publicada) {
+  switch (estado) {
+    case 'borrador':
+    case 'pendiente_ia':
+      return { actual: 1, detalle: estado === 'pendiente_ia' ? 'Generando' : 'Por generar' }
+    case 'generado':
+      return { actual: 1, detalle: 'Lista para enviar' }
+    case 'pendiente_aprobacion':
+      return { actual: 2, detalle: 'En revisión del cliente' }
+    case 'rechazado':
+      return { actual: 1, detalle: 'Ajustar y regenerar', rechazo: 'Rechazada' }
+    case 'fracaso':
+      return { actual: 2, detalle: 'Rechazada dos veces', fin: true }
+    case 'aprobado':
+      return publicada ? { actual: 4, detalle: 'Publicada' } : { actual: 3, detalle: 'Aprobada' }
+    default:
+      return { actual: 0, detalle: '' }
+  }
+}
 
+export default function CampaignStepper({ estado, publicada = false }) {
+  const { actual, detalle, rechazo, fin } = recorrido(estado, publicada)
   return (
-    <div className="flex items-start">
-      {FLOW.map((step, i) => {
-        const done = i < currentIndex
-        const active = i === currentIndex
-        const isLast = i === FLOW.length - 1
-
+    <ol className="relative grid grid-cols-5" aria-label="Recorrido de esta campaña">
+      {/* La vía: tramo recorrido en turquesa, el que falta en gris */}
+      <span aria-hidden="true" className="absolute left-[10%] right-[10%] top-[17px] h-1.5 rounded-full bg-outline-variant" />
+      <span
+        aria-hidden="true"
+        className="absolute left-[10%] top-[17px] h-1.5 rounded-full bg-turquoise"
+        style={{ width: `${(Math.min(actual, 4) / 4) * 80}%` }}
+      />
+      {ESTACIONES.map(({ id, label, icono: Icono }, i) => {
+        const hecha = i < actual
+        const esActual = i === actual
+        const rechazada = (rechazo && id === 'aprobar') || (fin && esActual)
         return (
-          <div key={step.key} className="flex flex-1 items-start last:flex-none">
-            {/* Nodo */}
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors',
-                  done && 'bg-primary text-on-primary',
-                  active && !rejected && !failed && 'bg-primary text-on-primary ring-4 ring-primary/25',
-                  active && (rejected || failed) && 'bg-error text-white ring-4 ring-error/20',
-                  !done && !active && 'bg-surface-container-high text-outline',
-                )}
-              >
-                {done ? <Check className="h-4 w-4" /> : i + 1}
-              </div>
-              <span
-                className={cn(
-                  'whitespace-nowrap text-xs font-medium',
-                  // En pantallas angostas solo se rotula el paso actual.
-                  active ? 'text-on-surface' : 'hidden text-on-surface-variant sm:block',
-                )}
-              >
-                {active && rejected ? 'Rechazado' : active && failed ? 'Fracaso' : step.label}
+          <li key={id} className="relative flex flex-col items-center gap-2 text-center" aria-current={esActual ? 'step' : undefined}>
+            <span
+              className={cn(
+                'relative z-10 flex h-10 w-10 items-center justify-center rounded-full',
+                rechazada && 'bg-error text-on-error shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_color-mix(in_srgb,var(--color-error)_40%,transparent)]',
+                !rechazada && esActual && 'bg-turquoise text-navy-deep shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_var(--color-turquoise-soft)]',
+                !rechazada && hecha && 'bg-turquoise text-navy-deep',
+                !rechazada && !hecha && !esActual && 'border-4 border-outline-variant bg-background',
+              )}
+            >
+              {rechazada ? (
+                <X className="h-4 w-4" strokeWidth={2.75} aria-hidden="true" />
+              ) : esActual ? (
+                <Icono className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden="true" />
+              ) : hecha ? (
+                <Check className="h-4 w-4" strokeWidth={2.75} aria-hidden="true" />
+              ) : null}
+            </span>
+            <span className={cn('font-display text-[15px] leading-tight', esActual || rechazada ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
+              {label}
+            </span>
+            {(esActual || (rechazada && rechazo)) && (
+              <span className={cn('hidden text-[13px] sm:block', rechazada ? 'font-semibold text-error' : 'text-on-surface-variant')}>
+                {rechazada && rechazo ? rechazo : detalle}
               </span>
-            </div>
-
-            {/* Conector */}
-            {!isLast && (
-              <div
-                className={cn(
-                  'mx-1 mt-[17px] h-0.5 flex-1 rounded-full transition-colors sm:mx-2',
-                  i < currentIndex ? 'bg-primary' : 'bg-outline-variant',
-                )}
-              />
             )}
-          </div>
+            <span className="sr-only">{hecha ? 'hecha' : esActual ? `actual: ${detalle}` : rechazada ? 'rechazada' : 'pendiente'}</span>
+          </li>
         )
       })}
-    </div>
+    </ol>
   )
 }

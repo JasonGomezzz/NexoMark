@@ -452,6 +452,23 @@ html[data-theme='dark'] select option {
   }
 }
 
+/* Generando: un tramo turquesa (el tren) recorre la vía de Generar a Aprobar.
+   Movimiento continuo → lineal. Quieto con "reducir movimiento". */
+.generando-tramo {
+  container-type: inline-size;
+}
+.generando-tren {
+  animation: tren 1.8s linear infinite;
+}
+@keyframes tren {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100cqw);
+  }
+}
+
 /* Filete grueso que abre una sección (la "regla" de la línea). */
 .regla {
   border-top: 6px solid var(--color-regla);
