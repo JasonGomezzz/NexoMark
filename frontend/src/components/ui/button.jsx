@@ -4,8 +4,9 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 /**
- * Variantes del botón — sistema visual de NexoMark (ver DESIGN.md).
- * Patrón shadcn/ui en modo JavaScript.
+ * Variantes del botón — sistema "Línea" de NexoMark (ver DESIGN.md).
+ * Pastilla como los letreros de estación; todos los tamaños dan 44 px de
+ * objetivo táctil (sm solo baja el texto y el relleno).
  */
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold ' +
@@ -17,7 +18,7 @@ const buttonVariants = cva(
       variant: {
         default: 'bg-primary text-on-primary hover:bg-primary-container',
         outline:
-          'border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low',
+          'border border-outline-variant bg-transparent text-on-surface hover:border-outline hover:bg-surface-container-low',
         secondary:
           'bg-secondary-container text-on-secondary-container hover:bg-surface-container-high',
         ghost: 'text-on-surface-variant hover:text-primary hover:bg-primary/5',
@@ -26,10 +27,10 @@ const buttonVariants = cva(
         onBrand: 'bg-paper text-navy hover:bg-turquoise-soft',
       },
       size: {
-        default: 'h-11 px-6 text-base rounded-lg',
-        sm: 'h-9 px-4 text-sm rounded-lg',
-        lg: 'h-12 px-7 text-base rounded-lg',
-        icon: 'h-10 w-10 rounded-lg',
+        default: 'h-11 px-6 text-base rounded-full',
+        sm: 'h-11 px-4 text-sm rounded-full',
+        lg: 'h-12 px-7 text-base rounded-full',
+        icon: 'h-11 w-11 rounded-full',
       },
     },
     defaultVariants: {

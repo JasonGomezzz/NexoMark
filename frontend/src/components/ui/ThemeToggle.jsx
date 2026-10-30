@@ -14,9 +14,9 @@ export default function ThemeToggle({ className = '', tone = 'surface' }) {
       aria-label={label}
       title={label}
       className={cn(
-        'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.96]',
+        'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.96]',
         tone === 'navy'
-          ? 'text-on-navy-muted hover:bg-white/10 hover:text-on-navy'
+          ? 'text-on-navy-muted hover:bg-banda-2 hover:text-on-navy'
           : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface',
         className,
       )}
