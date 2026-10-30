@@ -1,5 +1,26 @@
 # Historial de documentos — NexoMark
 
+## Borrador v0.12 — 30 de octubre de 2026
+
+- Conservada la revisión local v0.11 en historial, junto con v0.10; solo se adaptan enlaces relativos.
+- Reflejadas las pruebas reales del Sandbox de TikTok: autorización, envío, finalización por el propietario, vinculación y contadores. Sin Direct Post ni aprobación de producción acreditada.
+- Descritos perfil/foto, verificaciones de cuenta, Google web y almacenamiento de sesión móvil; distinguido dictado móvil de transcripción web.
+- Documentadas mediciones guardadas, sincronización, disponibilidad y eliminación local frente a contenido externo.
+- Actualizadas instrucciones del repositorio renombrado a NexoMark y Pages manual; no se acredita un nuevo despliegue ni se cambian avisos de borrador por políticas vigentes.
+- La instalación de Flutter se comprobó en A56 el 30/10; las pruebas completas de ambos roles siguen pendientes.
+- Conservados los pendientes sobre proveedores, conservación, respaldos, correo y atención de solicitudes; no se afirman garantías nuevas.
+
+## Borrador v0.11 — 11 de octubre de 2026 (preparado localmente)
+
+- Conservada v0.10 en historial; Pages todavía sirve v0.10 hasta un nuevo despliegue.
+- Corregidos avisos para distinguir borrador público de documento vigente.
+- Descrito envío PHOTO/MEDIA_UPLOAD y consulta de estado implementados localmente con mocks.
+- Credenciales Sandbox configuradas; autorización y envío reales todavía pendientes.
+- Sin aprobación legal, sin Direct Post ni campaña enviada a TikTok.
+
+Esta entrada conserva lo conocido el 11/10 durante esa revisión local. Las
+pruebas reales realizadas posteriormente se reflejan en v0.12.
+
 ## Borrador v0.10 — 11 de octubre de 2026
 
 - Conservada v0.9 en `historial/`.

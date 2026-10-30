@@ -1,55 +1,56 @@
-# Configurar GitHub Pages para documentos de NexoMark
+# GitHub Pages para documentos de NexoMark
 
-Estado: incorporación autorizada de estos archivos al repo público en `piero`.
-Jason confirmó la fuente GitHub Actions en Pages; el workflow no se ha ejecutado
-y no hay URL pública verificada. Subir el código no despliega el sitio.
-La aplicación sigue en laptop. Pages no incluye servidor, PostgreSQL, backups ni Obsidian.
+Actualizado el 30 de octubre de 2026. Repositorio: `JasonGomezzz/NexoMark`.
+Versión preparada en el repositorio: borrador v0.12, sin vigencia.
 
-## Para Jason
+La PR #1 ya fue fusionada a la rama principal. La ejecución histórica
+`38188212909` desplegó borradores v0.10 y se comprobó entonces
+https://jasongomezzz.github.io/MarketMind-Voice/ . Tras el cambio de nombre del
+repositorio debe comprobarse la URL actual en Settings → Pages o en el resultado
+de un despliegue; no se presupone que esa dirección histórica siga activa.
 
-1. Abrir `JasonGomezzz/MarketMind-Voice` con la cuenta que administra el repo.
-2. En Settings → Pages → Build and deployment, elegir **GitHub Actions**.
-   No seleccionar la raíz de `piero` para publicar todo el proyecto.
-3. Revisar el environment `github-pages`: permitir la rama que se publicará y, si lo desean,
-   exigir un revisor. No cambiar la rama predeterminada ni conceder administración solo para esto.
-4. Habilitar Actions si está desactivado. Estas acciones usan permisos mínimos del token
-   temporal de GitHub; no requieren guardar un token personal, contraseña ni claves de proveedores.
+## Subir código y desplegar son pasos distintos
 
-## Archivos y rama de ejecución
+`.github/workflows/legal-pages.yml` solo tiene `workflow_dispatch`: no se ejecuta
+por push ni por PR. Subir los archivos a `piero` no despliega el sitio ni actualiza
+la rama principal. Esta actualización no cambia la fuente de Pages, la rama por
+defecto ni sus permisos, y no lanza el workflow.
 
-Se autorizó subir únicamente `legal-site/`, `.github/workflows/legal-pages.yml`
-y los dos archivos `scripts/prepare-legal-site*.mjs`. No incluye scripts/backups de PostgreSQL.
-El repo de trabajo sigue en `piero`; **GitHub requiere que el workflow manual exista también
-en la rama predeterminada** para mostrar Run workflow. El administrador debe incorporar
-esos archivos allí mediante un cambio revisado; no fusionar automáticamente todas las diferencias
-de `piero`, ni cambiar la rama por defecto para resolverlo. No se ha creado una PR para este paso.
-Una vez disponible, seleccionar explícitamente la rama revisada al ejecutar.
+## Despliegue manual posterior
 
-## Publicación manual posterior
+1. Revisar los textos y el commit de la rama que se pretende publicar.
+2. En Settings → Pages, comprobar la fuente **GitHub Actions** ya configurada y
+   la URL del sitio. El environment `github-pages` debe permitir esa rama.
+3. En Actions → Publicar documentos NexoMark → Run workflow, seleccionar la rama
+   revisada. El workflow debe estar presente en la rama predeterminada para
+   ofrecer ejecución manual; no hace falta cambiar esa rama ni fusionar todo `piero`.
+4. Marcar `confirm_publication` solo con autorización para publicar documentos,
+   nombres y correo. Para borradores, `allow_drafts` mantiene los avisos visibles;
+   si no se marca, el preparador bloquea los textos con borradores o pendientes.
+5. Autorizar el environment si existe revisor y esperar a que finalice el despliegue.
+6. Abrir la URL exacta emitida por GitHub y comprobar sin sesión las rutas de
+   privacidad y términos, versión, avisos, enlaces y vista móvil.
 
-En Actions → Publicar documentos NexoMark → Run workflow:
+## Qué se publica
 
-- Marcar la confirmación de publicación únicamente con autorización de ambos responsables.
-- `allow_drafts` está desmarcado por defecto y bloquea los textos con avisos/pendientes.
-  Si autorizan un sitio público de borradores, marcarlo mantiene esos avisos visibles.
-  Ese sitio no equivale a políticas vigentes ni debe presentarse como aprobación de TikTok.
-- Revisar que el entorno permita esa rama y autorizar el despliegue si existe revisor.
-- Esperar éxito y usar la URL exacta emitida por GitHub; no asumir una URL ya activa.
+El preparador incluye únicamente `index.html`, `privacidad.html`, `terminos.html`,
+`styles.css` e historial HTML permitido, y comprueba los enlaces locales. No
+publica README, CAMBIOS, estas instrucciones, la raíz del repo, Obsidian,
+credenciales ni datos de usuarios. Los archivos subidos al repositorio público
+sí son visibles en el código y su historial, aunque no formen parte de Pages.
 
-El preparador incluye index, privacidad, términos, estilos e historial HTML con enlaces válidos.
-No publica README, CAMBIOS, estas instrucciones ni la raíz del repositorio. Sin embargo,
-si estos documentos se suben al repo público, su código e historial serán visibles allí.
-Nombres y correo del proyecto serán públicos; no incluye claves ni datos de campañas.
+El workflow usa un token temporal con permisos limitados; no requiere claves de
+redes ni un token personal guardado. No seleccionar la raíz del proyecto como
+contenido estático del sitio.
 
-## Después de publicar
+## Uso en integraciones
 
-Comprobar sin iniciar sesión los enlaces `/privacidad.html` y `/terminos.html` bajo la URL
-real del sitio; verificar estilo, versión, enlaces, acceso móvil y avisos de estado.
-Las políticas para producción deben estar revisadas y vigentes, sin pendientes sin resolver.
-Solo después usar URLs verificadas en TikTok. Pages no reemplaza el sitio funcional ni el
-callback HTTPS, y no garantiza revisión o auditoría aprobada de TikTok.
+Antes de usar las URLs en TikTok u otra red, comprobar que las páginas publicadas
+son accesibles y reflejan el proyecto. Publicar borradores no los convierte en
+políticas vigentes ni acredita aprobación de producción. Pages no sustituye una
+aplicación funcional ni el callback HTTPS de las conexiones.
 
-Referencias oficiales:
+Referencias:
 
 - https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
 - https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow

@@ -1,69 +1,79 @@
-# Documentos públicos de NexoMark — borradores
+# Documentos de NexoMark — borradores
 
-Estos archivos son borradores para revisión, no políticas vigentes ni un sitio desplegado.
-Se autorizó incorporar esta carpeta y el preparador de Pages al repositorio público en `piero`.
-Los nombres de los responsables y el correo del proyecto serán visibles en el repositorio.
-Jason confirmó la fuente GitHub Actions en Pages. El workflow es manual y bloquea borradores
-por defecto; no se ha ejecutado ni completado TikTok. Consultar `PAGES_SETUP.md`.
+Actualizado el 30 de octubre de 2026. La versión del repositorio es el borrador
+**v0.12**, sin fecha de vigencia ni aprobación legal. `historial/` conserva v0.1
+a v0.11; solo se adaptan sus enlaces para consultarlos desde esa carpeta.
+Los responsables y el correo público del proyecto fueron confirmados por el usuario.
+No se incluyen contraseñas, claves, bases de datos ni campañas reales.
 
-## Revisar
+## Repositorio y sitio publicado
 
-Abra `index.html` en un navegador y siga los enlaces. No requiere servidor, dependencias ni sesión.
-También puede abrir `privacidad.html` y `terminos.html` directamente.
+El repositorio actual es `JasonGomezzz/NexoMark`; la rama de trabajo es `piero`.
+La PR #1 incorporó los documentos y el workflow a la rama principal. Se verificó
+históricamente un despliegue de v0.10 en
+https://jasongomezzz.github.io/MarketMind-Voice/ . Ese antecedente no confirma qué
+versión sirve hoy Pages ni que la URL siga siendo la misma tras renombrar el repo.
 
-## Antes de publicar
+El workflow `.github/workflows/legal-pages.yml` es **manual**. Subir commits a
+`piero` no actualiza el sitio publicado ni da vigencia a los documentos. Para
+desplegarlos después, consultar `PAGES_SETUP.md` y comprobar la URL que emita Pages.
+En esta actualización no se ejecuta ese despliegue ni se envía la app a revisión.
 
-- Los responsables y el correo público ya fueron confirmados por el usuario.
-- Revisar datos tratados, accesos, proveedores, ubicaciones y posibles transferencias.
-- Definir conservación, copias de seguridad y procedimiento manual para solicitudes.
-- Actualizar TikTok solo cuando se verifique la integración implementada.
-- Revisar las condiciones de uso y su adecuación legal; retirar los avisos de borrador
-  y establecer fecha de vigencia únicamente después de aprobar el texto.
+## Funciones reflejadas
 
-## Versiones
+- Acceso web, Google web configurado, edición de perfil, foto opcional y
+  verificaciones de cambios de correo y contraseña. La configuración no implica
+  que todas las cuentas de Google estén autorizadas en producción.
+- Generación con IA, revisión del cliente y publicación web confirmada por el usuario.
+- TikTok: autorización y envío probados en Sandbox; el propietario termina de
+  publicar en TikTok. Se verificaron vinculación y contadores de una publicación
+  existente. No se implementó Direct Post ni se acredita aprobación de producción.
+- Estadísticas de publicaciones registradas, con fechas de medición, avisos de
+  datos incompletos y disponibilidad. La API de X identificó un registro no
+  encontrado; se excluye de los totales conservando el historial.
+- Sincronización web de Facebook, Instagram y TikTok con espera mínima de cinco
+  minutos; X mantiene consulta manual con presupuesto. Facebook Insights devolvió
+  datos vacíos en la prueba real: falta autorizar/verificar `read_insights` y la
+  disponibilidad de esos contadores. No se sustituyen por cifras manuales.
+- Flutter: compilación, instalación y arranque verificados en un Samsung Galaxy
+  A56 el 30/10/2026. No demuestra pruebas completas de ambos roles. Las conexiones,
+  publicación y consultas externas se realizan en la web; Google nativo sigue deshabilitado.
 
-La versión actual es el borrador v0.10, del 11 de octubre de 2026, sin vigencia.
-`historial/` conserva v0.1 a v0.9 con enlaces relativos adaptados para poder consultarlas.
-Conexión TikTok implementada localmente y probada con mocks, sin credenciales ni OAuth real.
-El envío/publicación TikTok sigue pendiente; consultar `../backend/TIKTOK_SETUP.md`.
-Ambos responsables atenderán el correo público; se describe un procedimiento manual de solicitudes.
-Antes de publicar, comprobar acceso seguro al buzón, registro privado y eliminación de datos/respaldos.
-Se añadieron referencias oficiales de proveedores. Confirmar modalidad Gemini, condiciones de
-conservación y procesamiento; no declarar una región o garantías de no entrenamiento sin evidencia.
-Se revisó el informe DOCX del proyecto y la configuración actual: Gemini para texto,
-imagen, transcripción y voz; Django y n8n usan la misma clave (sin exponerla).
-El informe no acredita texto gratuito ni facturación actual. La política describe esa incertidumbre
-y recomienda datos ficticios para pruebas mientras se verifica la cuenta. No confundir créditos internos
-con saldo Google. El DOCX privado no se copia a este sitio ni a un despliegue público.
-El usuario confirmó ejecución en laptop por ahora; avisará si decide desplegar la aplicación.
-Gemini, redes sociales y el túnel ngrok siguen siendo servicios externos cuando se usan.
-Se verificó conexión a PostgreSQL local en Docker y volumen persistente compartido por Django/Spring.
-La recuperación de contraseña usa SMTP Gmail configurado. Campañas: n8n local y Resend
-confirmado en el workflow publicado/activo (webhook `marketmind-email` dentro del workflow IA).
-No se enviaron correos de prueba ni se validó la entrega o la vigencia de credenciales externas.
-Se creó un respaldo manual PostgreSQL y se restauró en una base de prueba separada (27 tablas).
-Ver `../scripts/POSTGRES_BACKUP.md`. No hay rutina periódica, rotación automática ni copia externa.
-Organizar custodia y conservación y revisar procesamiento externo antes de dar vigencia a la política.
-La evaluación se prevé en unas nueve semanas desde esa fecha; su fecha exacta y la
-continuidad del proyecto están pendientes. No se ha programado un cierre ni un borrado automático.
-`CAMBIOS.md` registra los cambios. La rotación de backups de 30 días es una propuesta,
-no un mecanismo implementado; revisión al cierre de tesis y atención manual requieren ejecución.
-Ningún cambio documental crea funciones de borrado, respaldos ni integración TikTok.
+## Revisar y preparar
 
-## Publicación futura en GitHub Pages
+Abrir `index.html`, `privacidad.html` y `terminos.html` directamente o servir esta
+carpeta con un servidor estático. Las páginas no requieren sesión ni dependencias.
 
-Con autorización, subir solamente estos archivos estáticos y configurar una fuente de Pages
-adecuada (rama dedicada o un workflow que despliegue exclusivamente esta carpeta).
-No publicar la raíz del proyecto, `.env`, credenciales, bases de datos ni campañas de usuarios.
-El repositorio se mantiene en la rama de trabajo actual; este borrador no cambia ramas ni ajustes.
+Desde la raíz del repositorio:
 
-Las URLs de privacidad y términos deben comprobarse en el sitio desplegado antes de usarse
-en TikTok. La fuente GitHub Actions está seleccionada, pero no hay URL pública verificada.
+```powershell
+node --test scripts/prepare-legal-site.test.mjs
+node scripts/prepare-legal-site.mjs "$env:TEMP/nexomark-legal-preview-v012" --allow-drafts
+```
 
-GitHub Pages puede alojar estos documentos, pero este índice informativo no sustituye
-el sitio funcional requerido para revisar una aplicación web en TikTok.
+Usar una carpeta de salida nueva: el preparador no sobrescribe directorios.
+Solo incluye HTML permitido, estilos e historial; valida enlaces y rechaza
+borradores por defecto si no se indica `--allow-drafts`.
 
-Referencias:
+## Pendientes antes de dar vigencia
 
-- https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site
-- https://developers.tiktok.com/docs/en/app-review-guidelines
+- Revisar el texto por los responsables, las prácticas reales y las condiciones aplicables.
+- Verificar modalidad de Gemini, condiciones externas y ubicaciones de procesamiento.
+  Los créditos internos no acreditan precios ni saldo del proveedor.
+- Organizar acceso seguro al buzón público y registro privado de solicitudes.
+- Verificar atención de solicitudes y eliminación de datos, incluidos respaldos.
+- Revisar conservación y custodia de copias. Se probó históricamente un respaldo
+  manual PostgreSQL y su restauración separada; no consta una rutina periódica,
+  rotación automática ni segunda copia externa verificada. Ver `../scripts/POSTGRES_BACKUP.md`.
+- Comprobar la entrega actual de correos. Hay configuración de Gmail SMTP y Resend
+  mediante n8n, pero esta actualización documental no realiza envíos de prueba.
+- Confirmar calendario académico y continuidad. No existe un cierre ni borrado
+  automático por una fecha de evaluación.
+
+La aplicación y su base siguen ejecutándose en la laptop para pruebas. El uso
+de Gemini, redes, correo y ngrok puede involucrar servicios externos. GitHub
+Pages aloja estos documentos, no Django, Spring ni PostgreSQL. Obsidian y los
+documentos privados de contexto permanecen fuera del repositorio.
+
+`CAMBIOS.md` registra las revisiones. Actualizar documentos no implementa funciones
+ni cambia por sí mismo el tratamiento autorizado o la aprobación de las redes.
