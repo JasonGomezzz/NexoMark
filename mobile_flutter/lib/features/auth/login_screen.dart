@@ -308,7 +308,7 @@ class _Tabs extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: context.colors.surfaceContainer,
-        borderRadius: BorderRadius.circular(Nexo.radiusButton + 2),
+        borderRadius: BorderRadius.circular(Nexo.radiusField + 2),
       ),
       child: Stack(
         children: [
@@ -321,7 +321,7 @@ class _Tabs extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: context.colors.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(Nexo.radiusButton),
+                  borderRadius: BorderRadius.circular(Nexo.radiusField),
                   border: Border.all(color: context.colors.outlineVariant),
                 ),
               ),
@@ -335,7 +335,7 @@ class _Tabs extends StatelessWidget {
                     selected: registro == (i == 1),
                     button: true,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(Nexo.radiusButton),
+                      borderRadius: BorderRadius.circular(Nexo.radiusField),
                       onTap: () => onChanged(i == 1),
                       child: Center(
                         child: Text(
@@ -376,7 +376,7 @@ class _RolSelector extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: activo ? context.colors.primaryFixed : context.colors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(Nexo.radiusCard),
+              borderRadius: BorderRadius.circular(Nexo.radiusSurface),
               border: Border.all(color: activo ? context.colors.primary : context.colors.outlineVariant, width: activo ? 2 : 1),
             ),
             child: Column(

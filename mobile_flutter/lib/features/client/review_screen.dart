@@ -125,7 +125,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
       children: [
-        AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c, radius: Nexo.radiusPanel)),
+        AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c, radius: Nexo.radiusSurface)),
         const SizedBox(height: 16),
         Align(alignment: Alignment.centerLeft, child: StatePill(c.estado)),
         const SizedBox(height: 10),

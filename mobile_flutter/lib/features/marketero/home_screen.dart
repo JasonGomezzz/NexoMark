@@ -136,7 +136,7 @@ class _DictarAhora extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: context.colors.primaryFixed,
-          borderRadius: BorderRadius.circular(Nexo.radiusPanel),
+          borderRadius: BorderRadius.circular(Nexo.radiusSurface),
           border: Border.all(color: context.colors.primary.withValues(alpha: 0.35)),
         ),
         child: Row(
@@ -211,15 +211,15 @@ class _MetricasSkeleton extends StatelessWidget {
     return const Column(
       children: [
         Row(children: [
-          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusCard)),
+          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusSurface)),
           SizedBox(width: 10),
-          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusCard)),
+          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusSurface)),
         ]),
         SizedBox(height: 10),
         Row(children: [
-          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusCard)),
+          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusSurface)),
           SizedBox(width: 10),
-          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusCard)),
+          Expanded(child: Skeleton(height: 104, radius: Nexo.radiusSurface)),
         ]),
       ],
     );

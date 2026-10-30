@@ -13,7 +13,7 @@ double contraste(Color a, Color b) {
 }
 
 void main() {
-  // Mismos pares que la web (tests/brandPalette.test.js) y la app Kotlin (PaletaContrasteTest).
+  // Mismos pares que la web (tests/brandPalette.test.js) más los de la línea y los gráficos.
   for (final (nombre, s, n) in [
     ('claro', nexoLightScheme, NexoColors.light),
     ('oscuro', nexoDarkScheme, NexoColors.dark),
@@ -38,8 +38,25 @@ void main() {
         test(par, () => expect(contraste(colores.$1, colores.$2), greaterThanOrEqualTo(4.5)));
       });
       test('borde de campo 3:1', () => expect(contraste(s.outline, s.surfaceContainerLowest), greaterThanOrEqualTo(3)));
+      test('texto terciario sobre fondo', () => expect(contraste(s.outline, s.surface), greaterThanOrEqualTo(4.5)));
+
+      // Series de los gráficos: objetos gráficos, 3:1 sobre el fondo y sobre las superficies.
+      for (final red in ['instagram', 'x', 'facebook', 'tiktok']) {
+        test('serie $red 3:1 sobre fondo y superficie', () {
+          expect(contraste(n.chart(red), s.surface), greaterThanOrEqualTo(3));
+          expect(contraste(n.chart(red), s.surfaceContainerLowest), greaterThanOrEqualTo(3));
+        });
+      }
     });
   }
+
+  group('banda de la línea', () {
+    test('estación sobre la banda', () => expect(contraste(Nexo.onNavy, Nexo.banda), greaterThanOrEqualTo(9)));
+    test('estación inactiva sobre la banda', () => expect(contraste(Nexo.onNavyMuted, Nexo.banda), greaterThanOrEqualTo(4.5)));
+    test('conteo sobre banda-2', () => expect(contraste(Nexo.onNavy, Nexo.banda2), greaterThanOrEqualTo(4.5)));
+    test('ícono de la estación actual', () => expect(contraste(Nexo.navyDeep, Nexo.turquoise), greaterThanOrEqualTo(4.5)));
+    test('turquesa sobre la banda (3:1, gráfico)', () => expect(contraste(Nexo.turquoise, Nexo.banda), greaterThanOrEqualTo(3)));
+  });
 
   group('marino', () {
     test('texto sobre marino', () => expect(contraste(Nexo.onNavy, Nexo.navy), greaterThanOrEqualTo(9)));
@@ -48,11 +65,14 @@ void main() {
     test('error sobre marino', () => expect(contraste(Nexo.onNavyError, Nexo.navy), greaterThanOrEqualTo(4.5)));
   });
 
-  test('los tokens coinciden con la web y Android', () {
+  test('los tokens coinciden con direcciones.md (B · Línea)', () {
     expect(nexoLightScheme.primary, const Color(0xFF087B75));
     expect(nexoDarkScheme.primary, const Color(0xFF17B8AD));
     expect(nexoLightScheme.surface, const Color(0xFFF5FAFA));
     expect(nexoDarkScheme.surface, const Color(0xFF0B1929));
     expect(Nexo.navy, const Color(0xFF14283F));
+    expect(nexoDarkScheme.surfaceContainerLowest, const Color(0xFF102236));
+    expect(NexoColors.light.chartInstagram, const Color(0xFFB4307E));
+    expect(NexoColors.dark.chartFacebook, const Color(0xFF5B8FE0));
   });
 }

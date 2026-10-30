@@ -1,24 +1,40 @@
 import 'package:flutter/widgets.dart';
 
-/// Movimiento NexoMark. Mismas curvas que `index.css` (`--ease-out`,
-/// `--ease-drawer`). Reglas: transform y opacidad; nada aparece desde escala
-/// 0 (se parte de 0.95); la interfaz se queda bajo 300 ms; lo que se usa
-/// decenas de veces al día casi no se mueve; con "reducir movimiento" del
-/// sistema se cambia de estado sin desplazar nada.
+/// Movimiento NexoMark (direcciones.md → «Dirección elegida» → Movimiento).
+/// Reglas: transform y opacidad; nada aparece desde escala 0 (se parte de
+/// 0.95, siempre con opacidad); la interfaz se queda entre 150 y 300 ms; lo
+/// que se usa decenas de veces al día (pestañas, filtros, filas) no se anima;
+/// con "reducir movimiento" todo queda en su estado final.
 abstract final class Motion {
-  /// Entradas y salidas.
+  /// Entrar o aparecer.
   static const easeOut = Cubic(0.23, 1, 0.32, 1);
 
-  /// Algo que se mueve o cambia de forma en pantalla.
+  /// Algo que se mueve en pantalla (el anillo que cambia de estación).
   static const easeInOut = Cubic(0.77, 0, 0.175, 1);
 
   /// Hojas inferiores y cajones (curva de iOS).
   static const drawer = Cubic(0.32, 0.72, 0, 1);
 
+  /// Presionar: escala 0.97.
   static const press = Duration(milliseconds: 140);
-  static const fast = Duration(milliseconds: 180);
-  static const base = Duration(milliseconds: 240);
-  static const sheet = Duration(milliseconds: 320);
+
+  /// Cambio de color o de estado pequeño.
+  static const fast = Duration(milliseconds: 160);
+
+  /// Nueva parada del dictado: la vía crece.
+  static const stop = Duration(milliseconds: 180);
+
+  /// Entradas de contenido.
+  static const base = Duration(milliseconds: 220);
+
+  /// El anillo de la estación se desliza.
+  static const move = Duration(milliseconds: 240);
+
+  /// Hojas inferiores.
+  static const sheet = Duration(milliseconds: 280);
+
+  /// Momentos firma: el encaje de la N y la aprobación del cliente.
+  static const signature = Duration(milliseconds: 420);
 
   /// Separación entre elementos que entran juntos.
   static const stagger = Duration(milliseconds: 50);

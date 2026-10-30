@@ -107,7 +107,7 @@ class _TikTokBlockState extends ConsumerState<TikTokBlock> {
                             margin: const EdgeInsets.only(bottom: 8),
                             decoration: BoxDecoration(
                               color: _elegida == c.id ? context.colors.primaryFixed : context.colors.surfaceContainerLow,
-                              borderRadius: BorderRadius.circular(Nexo.radiusButton),
+                              borderRadius: BorderRadius.circular(Nexo.radiusField),
                             ),
                             child: ListTile(
                               onTap: () => setState(() => _elegida = c.id),

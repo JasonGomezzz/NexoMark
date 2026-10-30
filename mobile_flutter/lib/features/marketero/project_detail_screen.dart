@@ -122,7 +122,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
             children: [
-              AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c, radius: Nexo.radiusPanel)),
+              AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c, radius: Nexo.radiusSurface)),
               const SizedBox(height: 16),
               Align(alignment: Alignment.centerLeft, child: StatePill(c.estado)),
               const SizedBox(height: 10),
@@ -218,7 +218,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                             ),
                         ],
                       ),
-                loading: () => const Skeleton(height: 72, radius: Nexo.radiusCard),
+                loading: () => const Skeleton(height: 72, radius: Nexo.radiusSurface),
                 error: (e, _) => ErrorBanner(message: toApiException(e).message),
               ),
             ],
@@ -360,7 +360,7 @@ class _Rechazo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: context.colors.errorContainer, borderRadius: BorderRadius.circular(Nexo.radiusCard)),
+      decoration: BoxDecoration(color: context.colors.errorContainer, borderRadius: BorderRadius.circular(Nexo.radiusSurface)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -717,7 +717,7 @@ class _DestinosSheetState extends ConsumerState<_DestinosSheet> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: _elegidos.contains(d.id) ? context.colors.primaryFixed : context.colors.surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(Nexo.radiusCard),
+                        borderRadius: BorderRadius.circular(Nexo.radiusSurface),
                         border: Border.all(color: _elegidos.contains(d.id) ? context.colors.primary : context.colors.outlineVariant),
                       ),
                       child: Row(
@@ -767,13 +767,13 @@ class _DetalleSkeleton extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: const [
-        AspectRatio(aspectRatio: 1, child: Skeleton(height: double.infinity, radius: Nexo.radiusPanel)),
+        AspectRatio(aspectRatio: 1, child: Skeleton(height: double.infinity, radius: Nexo.radiusSurface)),
         SizedBox(height: 16),
         Skeleton(width: 220, height: 22),
         SizedBox(height: 8),
         Skeleton(width: 160, height: 14),
         SizedBox(height: 24),
-        Skeleton(height: 120, radius: Nexo.radiusCard),
+        Skeleton(height: 120, radius: Nexo.radiusSurface),
       ],
     );
   }

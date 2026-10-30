@@ -316,7 +316,7 @@ class NexoCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: color ?? context.colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(Nexo.radiusCard),
+        borderRadius: BorderRadius.circular(Nexo.radiusSurface),
         border: Border.all(color: context.colors.outlineVariant),
       ),
       child: child,
@@ -337,7 +337,7 @@ class NavyPanel extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: padding,
-      decoration: BoxDecoration(color: Nexo.navy, borderRadius: BorderRadius.circular(Nexo.radiusPanel)),
+      decoration: BoxDecoration(color: Nexo.navy, borderRadius: BorderRadius.circular(Nexo.radiusSurface)),
       child: DefaultTextStyle.merge(style: const TextStyle(color: Nexo.onNavy), child: child),
     );
   }
@@ -452,7 +452,7 @@ class ErrorBanner extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
       decoration: BoxDecoration(
         color: context.colors.errorContainer,
-        borderRadius: BorderRadius.circular(Nexo.radiusCard),
+        borderRadius: BorderRadius.circular(Nexo.radiusSurface),
       ),
       child: Row(
         children: [
@@ -490,7 +490,7 @@ class InfoBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(Nexo.radiusCard)),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(Nexo.radiusSurface)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -580,7 +580,7 @@ class CreditsMeter extends StatelessWidget {
               builder: (context, v, _) => LinearProgressIndicator(
                 value: v,
                 minHeight: 8,
-                backgroundColor: Nexo.navyLine,
+                backgroundColor: Nexo.via,
                 color: agotado ? Nexo.onNavyError : Nexo.turquoise,
               ),
             ),
@@ -632,7 +632,7 @@ class FlowStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final line = onNavy ? Nexo.navyLine : context.colors.outlineVariant;
+    final line = onNavy ? Nexo.via : context.colors.outlineVariant;
     final done = onNavy ? Nexo.turquoiseSoft : context.colors.primary;
     final muted = onNavy ? Nexo.onNavyMuted : context.colors.onSurfaceVariant;
     final ink = onNavy ? Nexo.onNavy : context.colors.onSurface;
@@ -695,7 +695,7 @@ class FlowStepper extends StatelessWidget {
                             ? done
                             : i == current
                                 ? Nexo.turquoise
-                                : (onNavy ? Nexo.navyRaised : context.colors.surfaceContainerLowest),
+                                : (onNavy ? Nexo.banda2 : context.colors.surfaceContainerLowest),
                         border: Border.all(color: i <= current ? Colors.transparent : line, width: 2),
                       ),
                       child: i < current

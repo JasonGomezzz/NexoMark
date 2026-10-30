@@ -191,7 +191,7 @@ class _Perfil extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(color: Nexo.navyRaised, borderRadius: BorderRadius.circular(999)),
+                  decoration: BoxDecoration(color: Nexo.banda2, borderRadius: BorderRadius.circular(999)),
                   child: Text(
                     user.rol == Rol.cliente ? 'Cliente' : 'Marketero',
                     style: context.text.labelMedium?.copyWith(color: Nexo.turquoiseSoft),
@@ -224,7 +224,7 @@ class _Grupo extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: context.colors.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(Nexo.radiusCard),
+            borderRadius: BorderRadius.circular(Nexo.radiusSurface),
             border: Border.all(color: context.colors.outlineVariant),
           ),
           child: Column(
@@ -266,7 +266,7 @@ class _Opcion extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: context.colors.primaryFixed,
-        borderRadius: BorderRadius.circular(Nexo.radiusCard),
+        borderRadius: BorderRadius.circular(Nexo.radiusSurface),
         border: Border.all(color: context.colors.primary.withValues(alpha: 0.4)),
       ),
       child: tile,
@@ -347,7 +347,7 @@ class _Tema extends ConsumerWidget {
       child: Container(
         height: 48,
         padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(color: context.colors.surfaceContainer, borderRadius: BorderRadius.circular(Nexo.radiusButton + 2)),
+        decoration: BoxDecoration(color: context.colors.surfaceContainer, borderRadius: BorderRadius.circular(Nexo.radiusField + 2)),
         child: LayoutBuilder(
           builder: (context, c) => Stack(
             children: [
@@ -361,7 +361,7 @@ class _Tema extends ConsumerWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: context.colors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(Nexo.radiusButton),
+                    borderRadius: BorderRadius.circular(Nexo.radiusField),
                     border: Border.all(color: context.colors.outlineVariant),
                   ),
                 ),
@@ -375,7 +375,7 @@ class _Tema extends ConsumerWidget {
                         selected: modo == m,
                         button: true,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(Nexo.radiusButton),
+                          borderRadius: BorderRadius.circular(Nexo.radiusField),
                           onTap: () => ref.read(themeModeProvider.notifier).set(m),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,

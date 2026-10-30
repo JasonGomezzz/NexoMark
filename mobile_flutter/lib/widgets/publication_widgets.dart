@@ -231,7 +231,7 @@ class NetworkConnectionRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: context.colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(Nexo.radiusCard),
+        borderRadius: BorderRadius.circular(Nexo.radiusSurface),
         border: Border.all(color: context.colors.outlineVariant),
       ),
       child: Row(

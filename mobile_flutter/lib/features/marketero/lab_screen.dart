@@ -449,7 +449,7 @@ class _SinCreditos extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: context.nexo.warningContainer, borderRadius: BorderRadius.circular(Nexo.radiusCard)),
+      decoration: BoxDecoration(color: context.nexo.warningContainer, borderRadius: BorderRadius.circular(Nexo.radiusSurface)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -509,7 +509,7 @@ class _SelectorChips extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: valor == e.key ? context.colors.primaryFixed : context.colors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(Nexo.radiusButton),
+                    borderRadius: BorderRadius.circular(Nexo.radiusField),
                     border: Border.all(
                       color: valor == e.key ? context.colors.primary : context.colors.outlineVariant,
                       width: valor == e.key ? 2 : 1,

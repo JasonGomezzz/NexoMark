@@ -84,9 +84,9 @@ class StatsScreen extends ConsumerWidget {
               children: const [
                 Skeleton(height: 40, radius: 99),
                 SizedBox(height: 16),
-                Skeleton(height: 260, radius: Nexo.radiusPanel),
+                Skeleton(height: 260, radius: Nexo.radiusSurface),
                 SizedBox(height: 12),
-                Skeleton(height: 260, radius: Nexo.radiusPanel),
+                Skeleton(height: 260, radius: Nexo.radiusSurface),
               ],
             ),
             error: (e, _) => ListView(
@@ -170,7 +170,7 @@ class StatsScreen extends ConsumerWidget {
                           ),
                       ];
                     },
-                    loading: () => [const Skeleton(height: 120, radius: Nexo.radiusCard)],
+                    loading: () => [const Skeleton(height: 120, radius: Nexo.radiusSurface)],
                     error: (e, _) => [ErrorBanner(message: toApiException(e).message)],
                   ),
                 ],

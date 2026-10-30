@@ -34,7 +34,7 @@ String heroImagen(int id) => 'campana-imagen-$id';
 /// Imagen de la campaña: completa si viene en base64, si no la miniatura.
 /// Entra con un fundido corto al terminar de cargar (sin saltos).
 class CampaignImage extends ConsumerWidget {
-  const CampaignImage({super.key, required this.campaign, this.radius = Nexo.radiusCard, this.hero = true, this.fit = BoxFit.cover});
+  const CampaignImage({super.key, required this.campaign, this.radius = Nexo.radiusSurface, this.hero = true, this.fit = BoxFit.cover});
 
   final Campaign campaign;
   final double radius;
