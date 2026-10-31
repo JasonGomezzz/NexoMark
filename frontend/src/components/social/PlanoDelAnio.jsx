@@ -20,6 +20,13 @@ const COLOR = {
   tiktok: 'var(--color-chart-tiktok)',
 }
 
+// Etiquetas del plano en formato compacto ("1,2 M"): la cifra exacta está en el
+// detalle por red y en la tabla para lector de pantalla.
+const COMPACTO = new Intl.NumberFormat('es-PE', { notation: 'compact', maximumFractionDigits: 1 })
+const compacto = (v) => (v === null || v === undefined ? 'sin dato' : COMPACTO.format(v))
+// En la columna angosta del móvil, sin decimales ("1 M") para que quepa sin cortarse.
+const COMPACTO_MOVIL = new Intl.NumberFormat('es-PE', { notation: 'compact', maximumFractionDigits: 0 })
+
 function tamano(n) {
   if (n >= 3) return 'h-[38px] w-[38px]'
   if (n === 2) return 'h-8 w-8'
@@ -43,7 +50,7 @@ function Estacion({ pubs, futuro, seleccionada, onClick, etiqueta, color }) {
         )}
         style={{ borderColor: color }}
       >
-        {pubs || null}
+        {pubs ? (pubs > 99 ? COMPACTO.format(pubs) : pubs) : null}
       </span>
     </button>
   )
@@ -124,9 +131,9 @@ export default function PlanoDelAnio({ redes, anual, anio, mesElegido, onElegirM
                       etiqueta={etiquetaDe(fila, i)}
                       color={fila.color}
                     />
-                    {m.total > 0 && !fila.sinLectura && like != null && (
+                    {m.total > 0 && !esFuturo(i) && !fila.sinLectura && like != null && (
                       <span aria-hidden="true" className="mt-0.5 text-[12px] font-semibold tabular-nums text-on-surface-variant">
-                        {formatoMetrica(like)}
+                        {compacto(like)}
                       </span>
                     )}
                   </div>
@@ -180,9 +187,9 @@ export default function PlanoDelAnio({ redes, anual, anio, mesElegido, onElegirM
                     etiqueta={etiquetaDe(fila, i)}
                     color={fila.color}
                   />
-                  {p.total > 0 && !fila.sinLectura && like != null && (
-                    <span aria-hidden="true" className="absolute left-[calc(50%+22px)] text-[12px] font-semibold tabular-nums text-on-surface-variant">
-                      {formatoMetrica(like)}
+                  {p.total > 0 && !futuro && !fila.sinLectura && like != null && (
+                    <span aria-hidden="true" className="absolute left-[calc(50%+20px)] whitespace-nowrap text-[12px] font-semibold tabular-nums text-on-surface-variant">
+                      {COMPACTO_MOVIL.format(like)}
                     </span>
                   )}
                 </div>
