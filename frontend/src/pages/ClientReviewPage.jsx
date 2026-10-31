@@ -9,7 +9,7 @@ import { getCampaignById, approveCampaign, rejectCampaign } from '../services/cl
 import { Button } from '@/components/ui/button'
 import StatusBadge from '@/components/StatusBadge'
 import RejectModal from '@/components/campaign/RejectModal'
-import NexoN from '@/components/NexoN'
+import SelloConforme from '@/components/SelloConforme'
 import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import RedIcon from '@/components/social/RedIcon'
 import XVariantReviewCard from '@/components/social/XVariantReviewCard'
@@ -321,8 +321,8 @@ export default function ClientReviewPage() {
 }
 
 /**
- * Momento firma: la aprobación. Las dos piezas de la N encajan (quien crea y
- * quien aprueba) y la línea se llena hasta Publicar. Con "reducir movimiento"
+ * Momento firma: la aprobación. El sello «conforme» cae sobre la pieza y las
+ * dos piezas de la N encajan dentro (quien crea y quien aprueba). Con "reducir movimiento"
  * aparece directamente encajada.
  */
 function Aprobada({ campaign, destinos, onInicio }) {
@@ -330,11 +330,16 @@ function Aprobada({ campaign, destinos, onInicio }) {
   return (
     <section role="status" aria-live="polite" className="mx-auto max-w-2xl py-8 sm:py-14">
       <div className="flex items-center gap-5">
-        <span className="grid h-24 w-24 shrink-0 place-items-center rounded-[22px] bg-banda">
-          <NexoN encajar className="h-14 w-14" />
+        <span className="relative shrink-0">
+          {campaign.imagenB64 ? (
+            <img src={`data:image/png;base64,${campaign.imagenB64}`} alt="" className="h-28 w-28 rounded-[12px] object-cover" />
+          ) : (
+            <span className="block h-28 w-28 rounded-[12px] bg-surface-container-high" />
+          )}
+          <SelloConforme estampar retraso={0.1} tamano={76} className="absolute -bottom-5 -right-6" />
         </span>
         <div>
-          <p className="text-sm font-semibold text-primary">Aprobada</p>
+          <p className="text-sm font-semibold text-primary">Conforme</p>
           <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">
             Lo aprobado es lo publicado
           </h1>
@@ -352,33 +357,22 @@ function Aprobada({ campaign, destinos, onInicio }) {
           : 'Tu agencia la publicará; no tiene cuentas de destino.'}
       </motion.p>
 
-      <ol className="relative mt-10 grid grid-cols-3" aria-label="Recorrido">
-        <span aria-hidden="true" className="absolute left-[16.6%] right-[16.6%] top-5 h-1.5 -translate-y-1/2 rounded-full bg-outline-variant" />
-        <motion.span
-          aria-hidden="true"
-          className="absolute left-[16.6%] top-5 h-1.5 -translate-y-1/2 rounded-full bg-turquoise"
-          initial={{ width: '0%' }}
-          animate={{ width: '33.4%' }}
-          transition={{ duration: 0.42, ease: [0.23, 1, 0.32, 1], delay: 0.2 }}
-        />
+      <ol className="mt-12 flex flex-wrap items-center gap-3" aria-label="Orden de trabajo">
         {[
           { label: 'Aprobar', hecha: true },
           { label: 'Publicar', actual: true },
           { label: 'Medir' },
-        ].map(({ label, hecha, actual }) => (
-          <li key={label} className="relative flex flex-col items-center gap-2">
-            <span
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-full',
-                hecha && 'bg-turquoise text-navy-deep',
-                actual && 'bg-turquoise text-navy-deep shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_var(--color-turquoise-soft)]',
-                !hecha && !actual && 'border-4 border-outline-variant bg-background',
-              )}
-            >
-              {hecha && <Check className="h-4 w-4" strokeWidth={2.75} aria-hidden="true" />}
-              {actual && <Send className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden="true" />}
+        ].map(({ label, hecha, actual }, i) => (
+          <li key={label} className="flex items-center gap-3">
+            {i > 0 && <span aria-hidden="true" className={cn('h-px w-8', hecha || actual ? 'bg-primary' : 'bg-outline-variant')} />}
+            <span className={cn('casilla h-10 w-10', hecha && 'border-0 bg-primary-fixed text-primary', actual && 'casilla-actual', !hecha && !actual && 'casilla-pliego')} aria-hidden="true">
+              {hecha && <Check className="h-4 w-4" strokeWidth={2.75} />}
+              {actual && <Send className="h-[18px] w-[18px]" strokeWidth={2.25} />}
             </span>
-            <span className={cn('font-display text-[15px]', actual ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>{label}</span>
+            <span className={cn('font-display text-[15px]', actual ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
+              {label}
+              <span className="sr-only">{hecha ? ': hecho' : actual ? ': en curso' : ': pendiente'}</span>
+            </span>
           </li>
         ))}
       </ol>

@@ -2,15 +2,15 @@ import { Check, ChartColumn, CheckCheck, Mic, Send, Wand2, X } from 'lucide-reac
 import { cn } from '@/lib/utils'
 
 /**
- * El viaje de UNA campaña por la línea: Dictar → Generar → Aprobar → Publicar
- * → Medir. Las estaciones recorridas van rellenas, la actual lleva el anillo y
- * el ícono del paso, las que faltan son anillos huecos. Un rechazo marca la
- * estación Aprobar en rojo y devuelve el tren a Generar.
+ * La orden de trabajo de UNA campaña (dirección "Conforme"): cinco casillas
+ * — Dictar, Generar, Aprobar, Publicar, Medir —. Las hechas van selladas con
+ * ✓, la actual rellena en turquesa con el ícono del paso y las que faltan,
+ * punteadas. Un rechazo sella Aprobar en rojo y devuelve el trabajo a Generar.
  *
  * Mapea el estado FSM (`Campaign.VALID_TRANSITIONS`) sin inventar pasos:
- * "Publicar" y "Medir" solo se marcan como hechos cuando `publicada` lo dice.
+ * "Publicar" y "Medir" solo se marcan hechos cuando `publicada` lo dice.
  */
-const ESTACIONES = [
+const PASOS = [
   { id: 'dictar', label: 'Dictar', icono: Mic },
   { id: 'generar', label: 'Generar', icono: Wand2 },
   { id: 'aprobar', label: 'Aprobar', icono: CheckCheck },
@@ -28,7 +28,7 @@ function recorrido(estado, publicada) {
     case 'pendiente_aprobacion':
       return { actual: 2, detalle: 'En revisión del cliente' }
     case 'rechazado':
-      return { actual: 1, detalle: 'Ajustar y regenerar', rechazo: 'Rechazada' }
+      return { actual: 1, detalle: 'Ajustar y regenerar', rechazo: 'Cambios pedidos' }
     case 'fracaso':
       return { actual: 2, detalle: 'Rechazada dos veces', fin: true }
     case 'aprobado':
@@ -41,38 +41,37 @@ function recorrido(estado, publicada) {
 export default function CampaignStepper({ estado, publicada = false }) {
   const { actual, detalle, rechazo, fin } = recorrido(estado, publicada)
   return (
-    <ol className="relative grid grid-cols-5" aria-label="Recorrido de esta campaña">
-      {/* La vía: tramo recorrido en turquesa, el que falta en gris */}
-      <span aria-hidden="true" className="absolute left-[10%] right-[10%] top-[17px] h-1.5 rounded-full bg-outline-variant" />
-      <span
-        aria-hidden="true"
-        className="absolute left-[10%] top-[17px] h-1.5 rounded-full bg-turquoise"
-        style={{ width: `${(Math.min(actual, 4) / 4) * 80}%` }}
-      />
-      {ESTACIONES.map(({ id, label, icono: Icono }, i) => {
+    <ol className="grid grid-cols-5 gap-2 sm:gap-3" aria-label="Orden de trabajo de esta campaña">
+      {PASOS.map(({ id, label, icono: Icono }, i) => {
         const hecha = i < actual
         const esActual = i === actual
         const rechazada = (rechazo && id === 'aprobar') || (fin && esActual)
         return (
-          <li key={id} className="relative flex flex-col items-center gap-2 text-center" aria-current={esActual ? 'step' : undefined}>
-            <span
-              className={cn(
-                'relative z-10 flex h-10 w-10 items-center justify-center rounded-full',
-                rechazada && 'bg-error text-on-error shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_color-mix(in_srgb,var(--color-error)_40%,transparent)]',
-                !rechazada && esActual && 'bg-turquoise text-navy-deep shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_var(--color-turquoise-soft)]',
-                !rechazada && hecha && 'bg-turquoise text-navy-deep',
-                !rechazada && !hecha && !esActual && 'border-4 border-outline-variant bg-background',
+          <li key={id} className="flex min-w-0 flex-col gap-2" aria-current={esActual ? 'step' : undefined}>
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'casilla h-10 w-10 rounded-[9px]',
+                  rechazada && 'border-0 bg-error text-on-error',
+                  !rechazada && esActual && 'casilla-actual',
+                  !rechazada && hecha && 'border-0 bg-primary-fixed text-primary',
+                  !rechazada && !hecha && !esActual && 'casilla-pliego',
+                )}
+                aria-hidden="true"
+              >
+                {rechazada ? (
+                  <X className="h-4 w-4" strokeWidth={2.75} />
+                ) : hecha ? (
+                  <Check className="h-4 w-4" strokeWidth={2.75} />
+                ) : (
+                  <Icono className="h-[18px] w-[18px]" strokeWidth={esActual ? 2.25 : 1.75} />
+                )}
+              </span>
+              {i < PASOS.length - 1 && (
+                <span aria-hidden="true" className={cn('hidden h-px flex-1 sm:block', hecha ? 'bg-primary' : 'bg-outline-variant')} />
               )}
-            >
-              {rechazada ? (
-                <X className="h-4 w-4" strokeWidth={2.75} aria-hidden="true" />
-              ) : esActual ? (
-                <Icono className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden="true" />
-              ) : hecha ? (
-                <Check className="h-4 w-4" strokeWidth={2.75} aria-hidden="true" />
-              ) : null}
-            </span>
-            <span className={cn('font-display text-[15px] leading-tight', esActual || rechazada ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
+            </div>
+            <span className={cn('truncate font-display text-[15px] leading-tight', esActual || rechazada ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
               {label}
             </span>
             {(esActual || (rechazada && rechazo)) && (

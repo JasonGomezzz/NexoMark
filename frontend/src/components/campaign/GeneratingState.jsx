@@ -7,7 +7,7 @@ import { Check, Wand2 } from 'lucide-react'
  * 30 s). No finge pasos por tiempo: muestra lo que sí se sabe (está generando
  * y cuánto lleva). El crédito ya se descontó y se devuelve si la IA falla.
  * `onCancel` solo deja esta pantalla: la generación sigue en el servidor y la
- * campaña aparece en la estación Generar.
+ * campaña aparece en el paso Generar.
  */
 export default function GeneratingState({ onCancel }) {
   const [segundos, setSegundos] = useState(0)
@@ -19,7 +19,7 @@ export default function GeneratingState({ onCancel }) {
 
   return (
     <section role="status" aria-live="polite" className="mx-auto max-w-3xl py-6 sm:py-12">
-      <p className="text-sm font-semibold text-on-surface-variant">Estación Generar</p>
+      <p className="text-sm font-semibold text-on-surface-variant">Paso 2 de 5 · Generar</p>
       <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">
         Generando la campaña
       </h1>

@@ -15,6 +15,7 @@ import VersionHistoryPanel from '../components/VersionHistoryPanel'
 import { Button } from '@/components/ui/button'
 import StatusBadge from '@/components/StatusBadge'
 import CampaignStepper from '@/components/CampaignStepper'
+import SelloConforme from '@/components/SelloConforme'
 import { useEstacionPagina } from '@/components/linea/EstacionContext'
 import { etapaDeEstado } from '@/components/linea/estaciones'
 
@@ -326,7 +327,7 @@ export default function CampaignDetailPage() {
             )}
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
-              <figure className="min-w-0">
+              <figure className="relative min-w-0">
                 {campaign.imagen_b64 ? (
                   <ImageLightbox
                     src={`data:image/png;base64,${campaign.imagen_b64}`}
@@ -342,6 +343,7 @@ export default function CampaignDetailPage() {
                     )}
                   </div>
                 )}
+                {campaign.estado === 'aprobado' && <SelloConforme tamano={72} className="absolute -right-3 top-3 z-10" />}
               </figure>
 
               <div className="flex min-w-0 flex-col">
