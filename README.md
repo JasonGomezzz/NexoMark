@@ -21,8 +21,7 @@ Arquitectura políglota distribuida sobre una misma base de datos PostgreSQL:
 - **Spring Boot** (Java) — API de cara al cliente final (revisar/aprobar
   campañas), solo lee/actualiza estado, nunca migra el schema.
 - **React** — frontend web (SuperAdmin, Marketero, Cliente).
-- **Flutter** — app móvil de presentación con creación y lectura por voz.
-- **Android/Kotlin** — cliente móvil anterior, conservado como referencia.
+- **Flutter** — app móvil Android/iOS adaptada al backend actual; incluye dictado y revisión de campañas. Ver alcance y pruebas en [`mobile_flutter/README.md`](mobile_flutter/README.md).
 - **n8n** — orquesta la generación asíncrona de copy + imagen con Gemini.
 
 ## Índice
@@ -35,8 +34,7 @@ Arquitectura políglota distribuida sobre una misma base de datos PostgreSQL:
 - [4-8. Backend Django](#4-crear-y-activar-el-entorno-virtual-del-backend)
 - [9. Spring Boot](#9-levantar-spring-boot)
 - [10. Frontend React](#10-correr-el-frontend-web)
-- [11. App móvil Android/Kotlin](#11-correr-la-app-movil-androidkotlin)
-- [12. App móvil Flutter con voz](#12-correr-la-app-movil-flutter-con-voz)
+- [11. App móvil Flutter](#11-correr-la-app-movil-flutter)
 - [Usuarios de prueba (3 roles)](#usuarios-de-prueba-3-roles)
 - [Arranque rápido del día a día](#orden-recomendado-para-volver-a-correr-el-proyecto)
 - [Despliegue en producción](#despliegue-en-producción)
@@ -353,67 +351,32 @@ El dashboard del cliente se conecta por WebSocket a Spring Boot
 (`ws://localhost:8081/ws/client-campaigns`) para recibir campañas nuevas sin
 refrescar la página.
 
-## 11. Correr la app móvil (Android/Kotlin)
+## 11. Correr la app móvil Flutter
 
-1. Abre la carpeta `mobile/` en **Android Studio** (Gradle sync automático).
-2. Crea un emulador (AVD) desde Android Studio, API 28 o superior (`minSdk 24`,
-   pero el cleartext/network config está pensado para el emulador estándar).
-3. Corre la app (▶️) en modo `debug`.
+La única app móvil mantenida está en `mobile_flutter/`. Se retiró el cliente
+Android/Kotlin anterior; su código permanece en el historial de Git.
 
-La app ya trae las URLs configuradas por variante de build — **no hay que
-tocar nada a mano**:
+Consultar [`mobile_flutter/README.md`](mobile_flutter/README.md) para requisitos,
+ejecución en A56 por USB, emulador, alcance y límites. Requiere un SDK Flutter
+compatible con Dart 3.13 y los servicios Django/Spring de la laptop encendidos.
 
-| Variante | Django | Spring Boot |
-|---|---|---|
-| `debug` (emulador local) | `http://10.0.2.2:8000/` | `http://10.0.2.2:8081/` |
-| `release` (producción) | `https://marketmind-django.onrender.com/` | `https://marketmind-springboot.onrender.com/` |
-
-`10.0.2.2` es el alias que el emulador Android usa para referirse a
-`localhost` de tu Mac/PC — **nunca uses `localhost` ni `127.0.0.1`** dentro
-del emulador, da timeout porque el emulador tiene su propia red virtual.
-
-Requisitos para que el modo `debug` funcione:
-
-- Django (`runserver`, paso 8) y Spring Boot (paso 9) deben estar corriendo en
-  tu máquina **antes** de abrir la app.
-- El emulador debe tener acceso a internet (para el tráfico normal); el
-  tráfico HTTP hacia `10.0.2.2` está permitido explícitamente en
-  `network_security_config.xml` (Android bloquea HTTP sin cifrar desde API 28
-  por defecto — este archivo es la excepción puntual solo para el host del
-  emulador, no un `usesCleartextTraffic` global).
-- Usa las mismas credenciales de [Usuarios de prueba](#usuarios-de-prueba-3-roles):
-  el login móvil de marketero/cliente pega contra Django (`:8000`), y las
-  pantallas de campañas del cliente pegan contra Spring Boot (`:8081`).
-
-## 12. Correr la app móvil Flutter con voz
-
-La aplicación nueva está en `mobile_flutter/`. Incluye dictado en español para
-crear el prompt y lectura del copy mediante Gemini TTS. Si Gemini no tiene una
-API key válida, utiliza automáticamente la voz del dispositivo como modo demo.
+Desde `mobile_flutter/`, con Flutter compatible en PATH:
 
 ```bash
-cd mobile_flutter
 flutter pub get
-flutter run
+flutter run --dart-define=API_HOST=10.0.2.2
 ```
 
-El emulador Android usa `http://10.0.2.2:8000` por defecto. Para un teléfono
-físico conectado a la misma red, indica la IP local de la computadora:
+El emulador usa `10.0.2.2`; un Android por USB puede usar `127.0.0.1` con los
+puertos reenviados mediante `adb reverse`, como explica la guía móvil. Flutter
+usa Django en 8000 y Spring en 8080 por defecto. Si Spring corre en 8081, indicar
+también `--dart-define=SPRING_URL=http://10.0.2.2:8081` en el emulador (o el host
+y puerto que correspondan al dispositivo). No usar el antiguo `API_BASE_URL`.
 
-```bash
-flutter run --dart-define=API_BASE_URL=http://192.168.1.20:8000
-```
-
-La clave nunca se guarda en Flutter. Configura la voz real en `backend/.env`:
-
-```env
-GEMINI_API_KEY=tu-clave-real
-GEMINI_TTS_MODEL=gemini-2.5-flash-preview-tts
-GEMINI_TTS_VOICE=Kore
-```
-
-Luego reinicia Django. El endpoint autenticado usado por la app es
-`POST /api/campaigns/voice/synthesize/`.
+El dictado móvil usa el reconocedor del dispositivo; se envía el texto confirmado.
+La app no contiene claves de Gemini. Google nativo, conexión/publicación social y
+consulta de contadores externos no están habilitados en esta integración móvil;
+las funciones sociales se realizan desde la web.
 
 ## Usuarios de prueba (3 roles)
 
@@ -523,10 +486,11 @@ despliegue:
 
 **APK Android (release):**
 
-1. Las URLs de producción ya están en `mobile/app/build.gradle.kts` (variante
-   `release`), no requieren configuración adicional.
-2. Compilar el APK firmado con el keystore del proyecto:
-   `Build > Generate Signed Bundle / APK` en Android Studio.
+1. La app Flutter no fija URLs públicas de producción por defecto. Configurar
+   `DJANGO_URL` y `SPRING_URL` mediante `--dart-define` para un entorno HTTPS verificado.
+2. Configurar la firma Android de Flutter con credenciales privadas fuera del
+   repositorio antes de distribuir un release. No se ha validado un release firmado;
+   las pruebas documentadas corresponden al APK debug.
 
 ## Problemas comunes (Mac y Windows)
 

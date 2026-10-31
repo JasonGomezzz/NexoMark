@@ -17,7 +17,7 @@ import io.flutter.plugin.common.MethodChannel
  * El plugin speech_to_text elige el reconocedor en el dispositivo si existe
  * (Android 12+), pero no informa si tiene el español instalado. Aquí se lee
  * con checkRecognitionSupport (Android 13+) y se puede pedir la descarga con
- * triggerModelDownload, igual que la app Kotlin (ui/voice/SpeechDictation.kt).
+ * triggerModelDownload cuando el reconocedor del sistema lo admite.
  * Referencias: developer.android.com/reference/android/speech/SpeechRecognizer.
  */
 class MainActivity : FlutterActivity() {

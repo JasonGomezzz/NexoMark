@@ -26,7 +26,4 @@ abstract final class AppConfig {
       _django.isNotEmpty ? _django : 'http://$host:8000';
   static String get springUrl =>
       _spring.isNotEmpty ? _spring : 'http://$host:8080';
-
-  /// Esquema con el que Django devuelve el control a la app tras conectar una red.
-  static const oauthScheme = 'nexomark';
 }

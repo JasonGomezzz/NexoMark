@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Sistema visual "Nexo" (frontend/DESIGN.md). Los valores son los mismos de
-/// `frontend/src/index.css` y de la app Kotlin (`ui/theme/Color.kt`); el test
+/// `frontend/src/index.css`; el test
 /// `test/paleta_test.dart` comprueba el contraste AA de los pares de texto.
 abstract final class Nexo {
   // Marca: iguales en ambos temas.

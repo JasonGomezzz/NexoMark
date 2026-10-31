@@ -15,7 +15,7 @@ double contraste(Color a, Color b) {
 }
 
 void main() {
-  // Mismos pares que la web (tests/brandPalette.test.js) y la app Kotlin (PaletaContrasteTest).
+  // Mismos pares que la web (frontend/tests/brandPalette.test.mjs).
   for (final (nombre, s, n) in [
     ('claro', nexoLightScheme, NexoColors.light),
     ('oscuro', nexoDarkScheme, NexoColors.dark),

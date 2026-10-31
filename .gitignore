@@ -38,16 +38,13 @@ CLAUDE.md
 # Contexto local para asistentes IA (no commitear)
 .ai-context/
 
-# Mobile
-mobile/.gradle/
-mobile/build/
-mobile/local.properties
+# Cachés locales de la app Kotlin retirada (el código ya no se mantiene).
+mobile/
 
 # Java / Spring Boot
 springboot/target/
 *.class
 *.jar
-!mobile/gradle/wrapper/gradle-wrapper.jar
 *.war
 springboot/.gradle/
 

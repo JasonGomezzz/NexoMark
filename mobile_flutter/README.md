@@ -2,8 +2,9 @@
 
 Actualizado el 30 de octubre de 2026. Integración en `piero` importada desde
 `origin/remejora` (`61798c7c`), adaptada al backend actual. No se fusionaron los
-backends ni las pantallas web de esa rama. La app Kotlin de `mobile/` permanece
-separada. Se utiliza el PNG aprobado de NexoMark y su paleta clara/oscura.
+backends ni las pantallas web de esa rama. Flutter es la única app móvil mantenida;
+se retiró la app Kotlin anterior y queda disponible en el historial de Git.
+Se utiliza el PNG aprobado de NexoMark y su paleta clara/oscura.
 
 ## Alcance actual
 
@@ -121,8 +122,9 @@ el estado final frente al icono aprobado; no sustituye una revisión visual de t
   login completo, generación o aprobación real desde el teléfono.
 - Pendientes: ambos roles de extremo a extremo, micrófono/dictado, cambios de perfil,
   generación con créditos y revisión contra Spring en el dispositivo.
-- Aviso no bloqueante: `flutter_web_auth_2` aplica Kotlin Gradle Plugin. Revisar
-  compatibilidad antes de futuras actualizaciones de Flutter/AGP u OAuth nativo.
+- Se retiró `flutter_web_auth_2` y su callback Android: no se utiliza en los flujos
+  actuales. Si se implementa OAuth nativo en el futuro, requerirá una integración
+  nueva y verificada con el backend; no basta con registrar un esquema de retorno.
 
 El APK queda en `build/app/outputs/flutter-apk/app-debug.apk` y no se versiona.
 Tampoco se suben `.env`, `local.properties`, keystores, configuraciones privadas de

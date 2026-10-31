@@ -39,13 +39,10 @@ test('brand text and actions meet WCAG AA contrast in both themes', () => {
 test('mobile themes, legal pages and PDF export use the same brand', () => {
   const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
   const flutter = read('../../mobile_flutter/lib/core/theme/tokens.dart')
-  const android = read('../../mobile/app/src/main/java/com/marketmind/mobile/ui/theme/Color.kt')
   const legal = read('../../legal-site/styles.css')
   const pdf = read('../../backend/templates/campaigns/campaign_pdf.html')
-  for (const source of [flutter, android]) {
-    assert.match(source, /0xFF17B8AD/)
-    assert.match(source, /0xFF14283F/)
-  }
+  assert.match(flutter, /0xFF17B8AD/)
+  assert.match(flutter, /0xFF14283F/)
   for (const source of [legal, pdf]) {
     assert.match(source, /#14283f/i)
     assert.match(source, /#087b75/i)
