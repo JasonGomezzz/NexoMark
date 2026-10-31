@@ -1,16 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'motion/react'
-import {
-  ClipboardCheck,
-  CircleCheck,
-  CircleX,
-  AlertCircle,
-  ArrowRight,
-  Inbox,
-  X,
-  ImageOff,
-} from 'lucide-react'
+import { AlertCircle, ArrowRight, ImageOff } from 'lucide-react'
 import { getPendingCampaigns, getCampaignSummary } from '../services/clientCampaigns'
 import { Button } from '@/components/ui/button'
 import XPendientesCliente from '@/components/social/XPendientesCliente'
@@ -33,7 +23,6 @@ export default function ClientDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [retry, setRetry] = useState(0)
-  const [detailCampaign, setDetailCampaign] = useState(null)
 
   const handleRealtimeCampaign = useCallback((campaign) => {
     if (campaign.estado !== 'pendiente_aprobacion') return
@@ -101,276 +90,106 @@ export default function ClientDashboardPage() {
     }
   }, [retry, location.key])
 
-  const porRevisar = summary?.pendientes ?? pending.length
-
-  const stats = [
-    {
-      key: 'revisar',
-      label: 'Por revisar',
-      value: porRevisar,
-      icon: ClipboardCheck,
-      highlight: true,
-    },
-    { key: 'aprobadas', label: 'Aprobadas', value: summary?.aprobadas ?? null, icon: CircleCheck, tint: 'bg-success-container text-success' },
-    { key: 'rechazadas', label: 'Rechazadas', value: summary?.rechazadas ?? null, icon: CircleX, tint: 'bg-error-container text-error' },
-  ]
+  const porRevisar = summary?.pendientes ?? (loading ? null : pending.length)
 
   return (
-    <div className="space-y-8">
-      {/* Encabezado */}
+    <div className="space-y-12">
       <header>
-        <h1 className="text-4xl font-bold tracking-tight text-on-surface">
-          Hola, {nombre.split(' ')[0]}
+        <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">
+          Hola{nombre && nombre !== 'usuario' ? `, ${nombre.split(' ')[0]}` : ''}
         </h1>
-        <p className="mt-2 text-base text-on-surface-variant">
-          {loading
-            ? 'Cargando tus campañas…'
-            : porRevisar > 0
-              ? `Tienes ${porRevisar} ${porRevisar === 1 ? 'campaña' : 'campañas'} esperando tu revisión.`
-              : 'No tienes campañas pendientes por ahora.'}
+        <p className="mt-2 text-[15px] text-on-surface-variant">
+          Aquí apruebas lo que tu agencia publica en tus redes. Lo que apruebes es exactamente lo que sale.
         </p>
       </header>
 
       <XPendientesCliente />
 
-      {/* Stat cards */}
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {stats.map(({ key, label, value, icon: Icon, highlight, tint }, index) =>
-          highlight ? (
-            <motion.div
-              key={key}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: index * 0.06 }}
-              className="flex h-40 flex-col justify-between rounded-xl border border-primary/20 bg-primary-container p-6 text-on-primary-container shadow-lg transition-transform hover:-translate-y-1"
-            >
-              <div className="flex items-start justify-between">
-                <span className="text-[13px] font-boldst opacity-80">{label}</span>
-                <span className="rounded-lg bg-white/20 p-2">
-                  <Icon className="h-5 w-5" />
-                </span>
-              </div>
-              <div className="text-5xl font-extrabold tabular-nums">
-                {loading ? (
-                  <span className="inline-block h-10 w-16 animate-pulse rounded bg-white/20" />
-                ) : (
-                  String(value).padStart(2, '0')
-                )}
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={key}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: index * 0.06 }}
-              className="flex h-40 flex-col justify-between rounded-xl border border-outline-variant bg-white p-6 shadow-sm transition-shadow hover:shadow-lg"
-            >
-              <div className="flex items-start justify-between">
-                <span className="text-[13px] font-boldst text-on-surface-variant">
-                  {label}
-                </span>
-                <span className={`rounded-lg p-2 ${tint}`}>
-                  <Icon className="h-5 w-5" />
-                </span>
-              </div>
-              <div className="text-5xl font-extrabold tabular-nums text-on-surface">
-                {value ?? '—'}
-              </div>
-            </motion.div>
-          ),
-        )}
-      </section>
-
-      {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
-          <AlertCircle className="h-4 w-4" />
-          No se pudieron cargar las campañas.
+        <div role="alert" className="flex flex-wrap items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
+          <AlertCircle className="h-4 w-4" aria-hidden="true" />
+          No se pudieron cargar tus campañas.
           <button
-            className="font-semibold underline"
             onClick={() => {
               setLoading(true)
               setError(false)
-              setRetry((c) => c + 1)
+              setRetry((value) => value + 1)
             }}
+            className="inline-flex min-h-11 items-center font-semibold underline"
           >
             Reintentar
           </button>
         </div>
       )}
 
-      {/* Lista de campañas pendientes */}
-      <section>
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold text-on-surface">Campañas recientes</h2>
-            <p className="mt-1 text-sm text-on-surface-variant">
-              Las 7 solicitudes más recientes enviadas por marketers.
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('/client-campaigns')}>
-            Ver todas
-          </Button>
+      <section aria-labelledby="por-aprobar-titulo" className="regla pt-5">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <span className="cifra text-[44px] tabular-nums text-on-surface">{porRevisar ?? '…'}</span>
+          <h2 id="por-aprobar-titulo" className="text-2xl font-extrabold text-on-surface">
+            {porRevisar === 1 ? 'campaña por aprobar' : 'campañas por aprobar'}
+          </h2>
         </div>
-
-        {loading ? (
-          <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl border border-outline-variant bg-white" />
-            ))}
-          </div>
-        ) : !error && pending.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-outline">
-              <Inbox className="h-7 w-7" />
-            </div>
-            <h3 className="text-lg font-semibold text-on-surface">Todo al día</h3>
-            <p className="max-w-sm text-sm text-on-surface-variant">
-              No tienes campañas esperando revisión. Cuando un marketero envíe una, aparecerá aquí.
-            </p>
-          </div>
+        {!loading && pending.length === 0 ? (
+          <p className="mt-2 text-[15px] text-on-surface-variant">Todo al día. Cuando tu agencia te envíe una campaña, aparecerá aquí y te avisaremos.</p>
         ) : (
-          <div className="space-y-3">
-            <AnimatePresence initial={false}>
-              {pending.map((c) => (
-                <motion.article
-                  key={c.id}
-                  layout
-                  initial={{ opacity: 0, y: -12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.25 }}
-                  className="flex items-center gap-4 rounded-xl border border-outline-variant bg-white p-4 shadow-sm transition-shadow hover:shadow-lg"
-                >
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-container-high">
-                    {c.imagenB64 ? (
-                      <img
-                        src={`data:image/png;base64,${c.imagenB64}`}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : null}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-on-surface">{c.titulo}</h3>
-                    <p className="truncate text-sm text-on-surface-variant">
-                      {c.clienteNombre || 'Cliente'} · {c.plataforma || '—'}
-                    </p>
-                    <p className="mt-1 text-[13px] font-medium text-primary">
-                      Enviada {relativeTimeFrom(campaignSentAt(c))}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setDetailCampaign(c)}>
-                      Detalles
-                    </Button>
-                    <Button size="sm" onClick={() => navigate(`/review/${c.id}`)}>
-                      Revisar ahora
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </motion.article>
-              ))}
-            </AnimatePresence>
-          </div>
+          <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
+            {(loading ? [] : pending).map((c) => (
+              <li key={c.id} className="relative flex items-center gap-4 py-4 hover:bg-surface-container-low sm:px-2">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[10px] bg-surface-container-high">
+                  {c.imagenB64 ? (
+                    <img src={`data:image/png;base64,${c.imagenB64}`} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="flex h-full items-center justify-center text-outline">
+                      <ImageOff className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/review/${c.id}`)}
+                    className="line-clamp-2 text-left font-semibold leading-snug text-on-surface after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-[10px] focus-visible:after:ring-2 focus-visible:after:ring-primary"
+                  >
+                    {c.titulo}
+                  </button>
+                  <p className="mt-1 text-[13px] text-on-surface-variant">
+                    {c.marketeroNombre ? `De ${c.marketeroNombre} · ` : ''}enviada {relativeTimeFrom(campaignSentAt(c))}
+                  </p>
+                </div>
+                <span className="hidden items-center gap-1 text-sm font-semibold text-primary sm:inline-flex">
+                  Revisar
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
+        {loading && <div className="mt-4 h-24 animate-pulse rounded-[14px] bg-surface-container-high" />}
       </section>
 
-      <CampaignDetailsModal
-        campaign={detailCampaign}
-        onClose={() => setDetailCampaign(null)}
-      />
-    </div>
-  )
-}
-
-function CampaignDetailsModal({ campaign, onClose }) {
-  if (!campaign) return null
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="campaign-details-title"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
-      }}
-    >
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-xl border border-outline-variant bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-outline-variant px-5 py-4">
-          <div className="min-w-0">
-            <h3 id="campaign-details-title" className="truncate text-lg font-semibold text-on-surface">
-              {campaign.titulo}
-            </h3>
-            <p className="mt-1 text-sm text-on-surface-variant">
-              {campaign.clienteNombre || 'Cliente'} · {campaign.plataforma || '—'}
-            </p>
+      <section aria-labelledby="historial-titulo" className="regla pt-5">
+        <h2 id="historial-titulo" className="text-2xl font-extrabold text-on-surface">
+          Lo que ya decidiste
+        </h2>
+        <dl className="mt-4 grid max-w-xl grid-cols-2 gap-6">
+          <div>
+            <dt className="text-sm text-on-surface-variant">Aprobadas</dt>
+            <dd className="cifra mt-1 text-[32px] tabular-nums text-on-surface">{summary ? summary.aprobadas ?? 'sin dato' : '…'}</dd>
           </div>
-          <button
-            type="button"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
-            aria-label="Cerrar detalles"
-            onClick={onClose}
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="grid max-h-[calc(90vh-73px)] gap-5 overflow-y-auto p-5 md:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="space-y-4">
-            <section className="rounded-lg border border-outline-variant p-4">
-              <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
-                Copy propuesto
-              </p>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-on-surface">
-                {campaign.textoGenerado || 'Sin copy generado.'}
-              </p>
-            </section>
-
-            <section className="rounded-lg border border-outline-variant p-4">
-              <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
-                Detalles
-              </p>
-              <div className="grid gap-2 text-sm sm:grid-cols-2">
-                <DetailMeta label="Industria" value={campaign.industria} />
-                <DetailMeta label="Tono" value={campaign.tono} />
-                <DetailMeta label="Estado" value={campaign.estado} />
-                <DetailMeta label="Marketero" value={campaign.marketeroNombre} />
-                <DetailMeta label="Enviada" value={relativeTimeFrom(campaignSentAt(campaign))} />
-              </div>
-            </section>
+          <div>
+            <dt className="text-sm text-on-surface-variant">Con cambios pedidos</dt>
+            <dd className="cifra mt-1 text-[32px] tabular-nums text-on-surface">{summary ? summary.rechazadas ?? 'sin dato' : '…'}</dd>
           </div>
-
-          <section className="rounded-lg border border-outline-variant p-4">
-            <p className="mb-2 text-[13px] font-semibold text-on-surface-variant">
-              Imagen
-            </p>
-            {campaign.imagenB64 ? (
-              <img
-                src={`data:image/png;base64,${campaign.imagenB64}`}
-                alt={`Imagen propuesta para ${campaign.titulo}`}
-                className="aspect-square w-full rounded-lg object-cover"
-              />
-            ) : (
-              <div className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-lg bg-surface-container-high text-center text-on-surface-variant">
-                <ImageOff className="h-8 w-8 text-outline" />
-                <p className="text-sm">Imagen no disponible</p>
-              </div>
-            )}
-          </section>
+        </dl>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Button variant="outline" onClick={() => navigate('/client-campaigns?etapa=publicar')}>
+            Ver aprobadas
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/stats')}>
+            Ver cómo rinden
+          </Button>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function DetailMeta({ label, value }) {
-  return (
-    <div>
-      <p className="text-[13px] text-on-surface-variant">{label}</p>
-      <p className="capitalize text-on-surface">{value || '—'}</p>
+      </section>
     </div>
   )
 }
