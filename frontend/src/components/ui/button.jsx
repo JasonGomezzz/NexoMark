@@ -4,8 +4,8 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 /**
- * Variantes del botón — sistema "Línea" de NexoMark (ver DESIGN.md).
- * Pastilla como los letreros de estación; todos los tamaños dan 44 px de
+ * Variantes del botón — sistema "Conforme" de NexoMark (ver DESIGN.md).
+ * Radio de 10 px (controles de imprenta); todos los tamaños dan 44 px de
  * objetivo táctil (sm solo baja el texto y el relleno).
  */
 const buttonVariants = cva(
@@ -27,10 +27,10 @@ const buttonVariants = cva(
         onBrand: 'bg-paper text-navy hover:bg-turquoise-soft',
       },
       size: {
-        default: 'h-11 px-6 text-base rounded-full',
-        sm: 'h-11 px-4 text-sm rounded-full',
-        lg: 'h-12 px-7 text-base rounded-full',
-        icon: 'h-11 w-11 rounded-full',
+        default: 'h-11 px-6 text-base rounded-[10px]',
+        sm: 'h-11 px-4 text-sm rounded-[10px]',
+        lg: 'h-12 px-7 text-base rounded-[10px]',
+        icon: 'h-11 w-11 rounded-[10px]',
       },
     },
     defaultVariants: {

@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   NexoMark IA — sistema visual "Línea" (dirección B, elegida el 30/10/2026)
-   Cada campaña es un viaje por cinco estaciones: Dictar → Generar → Aprobar →
-   Publicar → Medir. El marino es el andén (la banda), el turquesa el tren.
-   Marino #14283F + turquesa #17B8AD del icono aprobado. Overpass (display) +
-   Inter (texto). Claro y oscuro con html[data-theme].
-   Fuente de verdad visual: frontend/DESIGN.md. Contrato compartido con
-   Flutter: docs/diseno/direcciones.md («Dirección elegida»).
+   NexoMark IA — sistema visual "Conforme" (dirección C, elegida el 31/10/2026)
+   Cada campaña es una prueba de imprenta: el marino es la mesa que enmarca la
+   pantalla, el trabajo ocurre en un pliego claro con marcas de corte, el
+   recorrido Dictar → Generar → Aprobar → Publicar → Medir es la orden de
+   trabajo (casillas que se sellan) y el cliente aprueba con un sello.
+   Marino #14283F + turquesa #17B8AD del icono aprobado. Bricolage Grotesque
+   (display) + Inter (texto). Claro y oscuro con html[data-theme].
+   Fuente de verdad visual: frontend/DESIGN.md. Contrato con Flutter:
+   docs/diseno/direcciones.md («Dirección elegida»).
    Tailwind v4 config CSS-first (@theme) — NO hay tailwind.config.js.
    ========================================================================== */
 
@@ -16,7 +18,7 @@
 @theme {
   /* --- Tipografía --- */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Overpass", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* --- Marca (fijos en ambos temas) --- */
   --color-navy: #14283f;
@@ -30,12 +32,17 @@
   --color-on-navy-error: #ffb4ab;
   --color-paper: #ffffff;
 
-  /* --- La línea (navegación y trazos) --- */
+  /* --- La mesa, el pliego y la imprenta --- */
+  --color-cama: #14283f;
+  --color-cama-2: #1d3550;
+  --color-cama-line: #2c4862;
+  --color-registro: #79ddd3;
+  --color-hairline: #c9dadd;
+  /* Alias heredados de la dirección anterior: apuntan a la mesa. */
   --color-banda: #14283f;
   --color-banda-2: #1d3550;
   --color-via: #2c4862;
-  --color-regla: #14283f;
-  --color-hairline: #d6e5e7;
+  --color-regla: #9fb8be;
 
   /* --- Series por red (orden fijo; validadas con dataviz en claro) --- */
   --color-chart-instagram: #b4307e;
@@ -44,10 +51,10 @@
   --color-chart-tiktok: #c2501a;
 
   /* --- Color: superficies --- */
-  --color-background: #f5fafa;
-  --color-surface: #f5fafa;
+  --color-background: #f7fbfb;
+  --color-surface: #f7fbfb;
   --color-surface-dim: #d4e2e5;
-  --color-surface-bright: #f5fafa;
+  --color-surface-bright: #f7fbfb;
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-low: #edf5f5;
   --color-surface-container: #e5efef;
@@ -64,7 +71,7 @@
 
   /* --- Color: bordes --- */
   --color-outline: #5a737d;
-  --color-outline-variant: #b6cdd1;
+  --color-outline-variant: #9fb8be;
 
   /* --- Color: primary (turquesa accesible en claro) --- */
   --color-primary: #087b75;
@@ -124,11 +131,18 @@
 }
 
 html[data-theme='dark'] {
-  --color-background: #0b1929;
+  --color-background: #0f2236;
   --color-surface: #14283f;
   --color-surface-dim: #0b1929;
   --color-surface-bright: #26445c;
-  --color-surface-container-lowest: #102236;
+  --color-surface-container-lowest: #14283f;
+  --color-cama: #07111d;
+  --color-cama-2: #14283f;
+  --color-cama-line: #22405a;
+  --color-registro: #3fa79e;
+  --color-banda: #07111d;
+  --color-banda-2: #14283f;
+  --color-via: #22405a;
   --color-surface-container-low: #193249;
   --color-surface-container: #203b52;
   --color-surface-container-high: #29485f;
@@ -168,7 +182,7 @@ html[data-theme='dark'] {
   --color-warning: #ffbd7c;
   --color-warning-container: #563100;
   --color-regla: #3d5a6e;
-  --color-hairline: #1f3a52;
+  --color-hairline: #22405a;
   --color-chart-instagram: #d45a9c;
   --color-chart-x: #8e9a2e;
   --color-chart-facebook: #5b8fe0;
@@ -265,7 +279,7 @@ html[data-theme='dark'] select {
 }
 
 html[data-theme='dark'] select option {
-  background-color: #102236;
+  background-color: #14283f;
   color: #f3fafb;
 }
 
@@ -500,9 +514,50 @@ html[data-theme='dark'] select option {
   }
 }
 
-/* Filete grueso que abre una sección (la "regla" de la línea). */
+/* Regla de imprenta: filete fino que abre una sección del pliego. */
 .regla {
-  border-top: 6px solid var(--color-regla);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+/* El pliego sobre la mesa: marcas de corte en las cuatro esquinas. */
+.corte {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 0 solid var(--color-registro);
+  pointer-events: none;
+}
+.corte-a { top: -12px; left: -12px; border-right-width: 1.5px; border-bottom-width: 1.5px; }
+.corte-b { top: -12px; right: -12px; border-left-width: 1.5px; border-bottom-width: 1.5px; }
+.corte-c { bottom: -12px; left: -12px; border-right-width: 1.5px; border-top-width: 1.5px; }
+.corte-d { bottom: -12px; right: -12px; border-left-width: 1.5px; border-top-width: 1.5px; }
+
+/* Casillas de la orden de trabajo: punteadas hasta que se sellan. */
+.casilla {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 7px;
+  border: 1.5px dashed var(--color-cama-line);
+  color: var(--color-on-navy-muted);
+  transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+.casilla-actual {
+  border: 0;
+  background: var(--color-turquoise);
+  color: var(--color-navy-deep);
+}
+.casilla-sellada {
+  border: 0;
+  background: color-mix(in srgb, var(--color-turquoise) 22%, transparent);
+  color: var(--color-turquoise-soft);
+}
+/* Sobre el pliego (recorrido de una campaña) las casillas por sellar usan el pelo. */
+.casilla-pliego {
+  border-color: var(--color-outline-variant);
+  color: var(--color-outline);
 }
 
 /* Cifras en la tipografía de la línea. */

@@ -3,7 +3,6 @@ import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-do
 import { AnimatePresence, motion } from 'motion/react'
 import {
   BarChart3,
-  ChevronDown,
   Coins,
   FileText,
   House,
@@ -22,17 +21,18 @@ import { useVerifiedUser } from '../hooks/useVerifiedUser'
 import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import Avatar from '@/components/account/Avatar'
-import LineaNav from '@/components/linea/LineaNav'
+import OrdenTrabajo, { PasoActual } from '@/components/linea/OrdenTrabajo'
 import { EstacionContext } from '@/components/linea/EstacionContext'
 import { conteosDeLinea, estacionDeRuta, estacionesDeRol } from '@/components/linea/estaciones'
 import { useFotoPerfil } from '../hooks/useFotoPerfil'
 import { cn } from '@/lib/utils'
 
 /**
- * Marco del panel (dirección "Línea"): una banda marina con el recorrido de la
- * campaña como navegación. Cada estación lleva a su etapa y muestra cuántas
- * campañas esperan ahí. Lo secundario (inicio, todas las campañas, créditos,
- * configuración, salir) vive en el menú de la cuenta y, en el móvil, en el cajón.
+ * Marco del panel (dirección "Conforme"): la mesa marina enmarca la pantalla y
+ * cada página es un pliego claro con marcas de corte. A la izquierda, la orden
+ * de trabajo: el recorrido de la campaña como casillas que llevan a su paso y
+ * dicen cuántas campañas esperan ahí. En el móvil, una pastilla con el paso
+ * actual y un cajón con la orden y lo secundario.
  */
 const SECUNDARIO = {
   marketero: [
@@ -124,76 +124,6 @@ function Creditos({ tokens, onClick, compacto = false }) {
       {!compacto && <span className="text-[13px]">Créditos</span>}
       <span className="cifra text-lg text-on-navy tabular-nums">{tokens ?? '…'}</span>
     </button>
-  )
-}
-
-function MenuCuenta({ role, nombre, foto, onLogout }) {
-  const [abierto, setAbierto] = useState(false)
-  const botonRef = useRef(null)
-  const panelRef = useRef(null)
-
-  useEffect(() => {
-    if (!abierto) return undefined
-    const alClic = (event) => {
-      if (!panelRef.current?.contains(event.target) && !botonRef.current?.contains(event.target)) setAbierto(false)
-    }
-    const alTecla = (event) => {
-      if (event.key === 'Escape') {
-        setAbierto(false)
-        botonRef.current?.focus()
-      }
-    }
-    document.addEventListener('pointerdown', alClic)
-    window.addEventListener('keydown', alTecla)
-    panelRef.current?.querySelector('a, button')?.focus()
-    return () => {
-      document.removeEventListener('pointerdown', alClic)
-      window.removeEventListener('keydown', alTecla)
-    }
-  }, [abierto])
-
-  return (
-    <div className="relative">
-      <button
-        ref={botonRef}
-        type="button"
-        onClick={() => setAbierto((v) => !v)}
-        aria-expanded={abierto}
-        aria-controls="menu-cuenta"
-        className="flex min-h-11 items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-on-navy transition-colors duration-150 hover:bg-banda-2"
-      >
-        <Avatar nombre={nombre} src={foto} tono="navy" className="h-9 w-9 text-sm" />
-        <span className="hidden max-w-36 truncate text-sm font-semibold xl:block">{nombre || 'Mi cuenta'}</span>
-        <ChevronDown className={cn('h-4 w-4 text-on-navy-muted transition-transform duration-200', abierto && 'rotate-180')} aria-hidden="true" />
-        <span className="sr-only">Abrir menú de la cuenta</span>
-      </button>
-      <AnimatePresence>
-        {abierto && (
-          <motion.div
-            ref={panelRef}
-            id="menu-cuenta"
-            initial={{ opacity: 0, transform: 'translateY(-4px) scale(0.98)' }}
-            animate={{ opacity: 1, transform: 'translateY(0px) scale(1)' }}
-            exit={{ opacity: 0, transform: 'translateY(-4px) scale(0.98)', transition: { duration: 0.12 } }}
-            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-            style={{ transformOrigin: 'top right' }}
-            className="absolute right-0 top-[calc(100%+10px)] z-50 w-72 rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 text-on-surface shadow-lg"
-          >
-            <div className="flex items-center gap-3 border-b border-hairline px-3 pb-3 pt-2">
-              <Avatar nombre={nombre} src={foto} className="h-10 w-10 text-sm" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{nombre || 'Usuario'}</p>
-                <p className="text-[13px] text-on-surface-variant">{ROLE_LABEL[role] ?? role}</p>
-              </div>
-              <ThemeToggle />
-            </div>
-            <div className="pt-2">
-              <ListaSecundaria role={role} onNavigate={() => setAbierto(false)} onLogout={onLogout} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   )
 }
 
@@ -293,70 +223,94 @@ export default function AppLayout() {
     navigate('/credits')
   }
 
+  const usuario = (
+    <div className="flex items-center gap-3 px-2">
+      <Avatar nombre={nombre} src={foto} tono="navy" className="h-10 w-10 text-sm" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-on-navy">{nombre || 'Usuario'}</p>
+        <p className="text-[13px] text-on-navy-muted">{ROLE_LABEL[role] ?? role}</p>
+      </div>
+      <ThemeToggle tone="navy" />
+    </div>
+  )
+
   return (
-    <div className="app-shell min-h-screen bg-background">
-      <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-full focus:bg-paper focus:px-4 focus:py-2 focus:text-navy">
+    <div className="app-shell min-h-screen bg-cama lg:grid lg:grid-cols-[236px_minmax(0,1fr)]">
+      <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-[10px] focus:bg-paper focus:px-4 focus:py-2 focus:text-navy">
         Saltar al contenido
       </a>
 
-      {/* Banda de la línea (escritorio) */}
-      <header className="hidden bg-banda text-on-navy lg:block">
-        <div className="mx-auto grid h-24 max-w-[1440px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-8 px-8">
-          <Link to="/dashboard" className="justify-self-start rounded-lg text-lg" aria-label="NexoMark IA, ir al inicio">
-            <BrandLogo tone="navy" />
-          </Link>
-          <nav aria-label="Recorrido de la campaña" className="mx-auto w-full max-w-[820px]">
-            <LineaNav estaciones={estaciones} actual={actual} conteos={conteos} />
+      {/* Mesa (escritorio): marca, orden de trabajo y lo secundario */}
+      <aside className="sticky top-0 hidden h-screen flex-col gap-6 overflow-y-auto px-4 py-6 text-on-navy lg:flex" aria-label="Menú principal">
+        <Link to="/dashboard" className="self-start rounded-[10px] px-2 text-lg" aria-label="NexoMark IA, ir al inicio">
+          <BrandLogo tone="navy" />
+        </Link>
+        <div>
+          <p className="mb-2 px-2 text-[13px] font-semibold text-on-navy-muted">Orden de trabajo</p>
+          <nav aria-label="Orden de trabajo">
+            <OrdenTrabajo estaciones={estaciones} actual={actual} conteos={conteos} />
           </nav>
-          <div className="flex items-center justify-end gap-2">
-            {role === 'superadmin' && (
-              <nav aria-label="Administración" className="mr-1 hidden items-center gap-1 2xl:flex">
-                {SECUNDARIO.superadmin.filter((i) => i.to.startsWith('/admin')).map(({ to, label }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    end
-                    className={({ isActive }) =>
-                      cn('inline-flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-on-navy-muted hover:text-on-navy', isActive && 'bg-banda-2 text-on-navy')
-                    }
-                  >
-                    {label}
-                  </NavLink>
-                ))}
-              </nav>
-            )}
-            {showCredits && <Creditos tokens={tokens} onClick={irACreditos} />}
-            <MenuCuenta role={role} nombre={nombre} foto={foto} onLogout={handleLogout} />
-          </div>
         </div>
-      </header>
+        <div className="h-px bg-cama-line" aria-hidden="true" />
+        <nav aria-label="Más opciones">
+          <ListaSecundaria role={role} tono="navy" onLogout={handleLogout} />
+        </nav>
+        <div className="mt-auto space-y-3">
+          {showCredits && (
+            <button
+              type="button"
+              onClick={irACreditos}
+              aria-label={`Créditos de IA: ${tokens ?? 'cargando'}. Ver detalle`}
+              className="flex w-full items-baseline justify-between rounded-[12px] border border-cama-line px-3 py-3 text-left text-[13px] text-on-navy-muted transition-colors hover:border-turquoise-soft hover:text-on-navy"
+            >
+              Créditos de IA
+              <span className={`cifra text-[22px] tabular-nums ${tokens === 0 ? 'text-on-navy-error' : 'text-on-navy'}`}>{tokens ?? '…'}</span>
+            </button>
+          )}
+          {usuario}
+        </div>
+      </aside>
 
-      {/* Banda del móvil y tableta: fila superior + línea en miniatura */}
-      <header className="bg-banda text-on-navy lg:hidden">
-        <div className="flex h-14 items-center gap-1 px-2">
+      <div className="min-w-0 lg:py-[22px] lg:pr-[22px]">
+        {/* Mesa (móvil y tableta): menú, marca y el paso actual */}
+        <header className="flex h-14 items-center gap-1 px-2 text-on-navy lg:hidden">
           <button
             ref={menuButtonRef}
             type="button"
             onClick={() => setDrawerOpen(true)}
             aria-label="Abrir menú"
             aria-expanded={drawerOpen}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-on-navy hover:bg-banda-2"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] text-on-navy hover:bg-cama-2"
           >
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
-          <Link to="/dashboard" className="rounded-lg text-base" aria-label="NexoMark IA, ir al inicio">
-            <BrandLogo tone="navy" />
+          <Link to="/dashboard" className="rounded-[10px] text-base" aria-label="NexoMark IA, ir al inicio">
+            <BrandLogo tone="navy" compact />
           </Link>
-          <div className="ml-auto flex items-center gap-1">
-            {showCredits ? <Creditos tokens={tokens} onClick={irACreditos} compacto /> : <ThemeToggle tone="navy" />}
+          <div className="ml-auto flex items-center gap-1.5">
+            <PasoActual estaciones={estaciones} actual={actual} />
+            {showCredits && <Creditos tokens={tokens} onClick={irACreditos} compacto />}
           </div>
-        </div>
-        <nav aria-label="Recorrido de la campaña" className="px-2 pb-2">
-          <LineaNav estaciones={estaciones} actual={actual} conteos={conteos} mini />
-        </nav>
-      </header>
+        </header>
 
-      {/* Cajón (móvil y tableta) */}
+        {/* El pliego: cada pantalla vive aquí, con marcas de corte sobre la mesa */}
+        <main
+          id="contenido"
+          className="relative mx-2 mb-2 min-h-[calc(100vh-64px)] min-w-0 overflow-x-clip rounded-[14px] bg-background px-4 py-6 sm:px-6 lg:m-0 lg:min-h-[calc(100vh-44px)] lg:rounded-[18px] lg:px-10 lg:py-9"
+        >
+          <span className="corte corte-a hidden lg:block" aria-hidden="true" />
+          <span className="corte corte-b hidden lg:block" aria-hidden="true" />
+          <span className="corte corte-c hidden lg:block" aria-hidden="true" />
+          <span className="corte corte-d hidden lg:block" aria-hidden="true" />
+          <div className="mx-auto max-w-[1280px]">
+            <EstacionContext.Provider value={fijarEstacion}>
+              <Outlet />
+            </EstacionContext.Provider>
+          </div>
+        </main>
+      </div>
+
+      {/* Cajón (móvil y tableta): la orden de trabajo y lo secundario */}
       <AnimatePresence>
         {drawerOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
@@ -374,46 +328,36 @@ export default function AppLayout() {
               role="dialog"
               aria-modal="true"
               aria-label="Menú principal"
-              className="absolute inset-y-0 left-0 flex w-[min(19rem,86vw)] flex-col bg-banda text-on-navy shadow-2xl"
+              className="absolute inset-y-0 left-0 flex w-[min(19rem,86vw)] flex-col gap-5 overflow-y-auto bg-cama px-3 pb-5 text-on-navy shadow-2xl"
               initial={{ transform: 'translateX(-100%)' }}
               animate={{ transform: 'translateX(0%)' }}
               exit={{ transform: 'translateX(-100%)' }}
               transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
             >
-              <div className="flex h-14 items-center justify-between pl-4 pr-2">
+              <div className="flex h-14 items-center justify-between pl-2">
                 <BrandLogo tone="navy" className="text-base" />
                 <button
                   type="button"
                   onClick={() => setDrawerOpen(false)}
                   aria-label="Cerrar menú"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full text-on-navy-muted hover:bg-banda-2 hover:text-on-navy"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] text-on-navy-muted hover:bg-cama-2 hover:text-on-navy"
                 >
                   <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
-              <div className="flex items-center gap-3 border-y border-via px-4 py-4">
-                <Avatar nombre={nombre} src={foto} tono="navy" className="h-10 w-10 text-sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{nombre || 'Usuario'}</p>
-                  <p className="text-[13px] text-on-navy-muted">{ROLE_LABEL[role] ?? role}</p>
-                </div>
-                <ThemeToggle tone="navy" />
+              <div>
+                <p className="mb-2 px-2 text-[13px] font-semibold text-on-navy-muted">Orden de trabajo</p>
+                <nav aria-label="Orden de trabajo">
+                  <OrdenTrabajo estaciones={estaciones} actual={actual} conteos={conteos} onNavigate={() => setDrawerOpen(false)} />
+                </nav>
               </div>
-              <div className="flex-1 overflow-y-auto px-2 py-3">
-                <ListaSecundaria role={role} tono="navy" onNavigate={() => setDrawerOpen(false)} onLogout={handleLogout} />
-              </div>
+              <div className="h-px bg-cama-line" aria-hidden="true" />
+              <ListaSecundaria role={role} tono="navy" onNavigate={() => setDrawerOpen(false)} onLogout={handleLogout} />
+              <div className="mt-auto">{usuario}</div>
             </motion.aside>
           </div>
         )}
       </AnimatePresence>
-
-      <main id="contenido" className="relative min-w-0 overflow-x-clip px-4 py-6 sm:px-6 lg:px-10 lg:py-9">
-        <div className="mx-auto max-w-[1360px]">
-          <EstacionContext.Provider value={fijarEstacion}>
-            <Outlet />
-          </EstacionContext.Provider>
-        </div>
-      </main>
     </div>
   )
 }
