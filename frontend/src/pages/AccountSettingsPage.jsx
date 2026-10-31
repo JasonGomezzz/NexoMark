@@ -117,7 +117,7 @@ export default function AccountSettingsPage() {
 
   if (error || !user) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
+      <div className="flex items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
         <AlertCircle className="h-4 w-4" />
         No se pudo cargar tu perfil. Verifica tu sesión.
       </div>
@@ -150,7 +150,7 @@ export default function AccountSettingsPage() {
         </header>
 
         {/* Perfil: foto y nombre */}
-        <section aria-labelledby="perfil-titulo" className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+        <section aria-labelledby="perfil-titulo" className="regla pt-5">
           <h2 id="perfil-titulo" className="flex items-center gap-2 text-xl font-semibold text-on-surface">
             <UserRound className="h-5 w-5 text-primary" aria-hidden="true" />
             Perfil
@@ -185,7 +185,7 @@ export default function AccountSettingsPage() {
         </section>
 
         {/* Acceso y seguridad: correo, contraseña y Google */}
-        <section aria-labelledby="acceso-titulo" className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+        <section aria-labelledby="acceso-titulo" className="regla pt-5">
           <h2 id="acceso-titulo" className="flex items-center gap-2 text-xl font-semibold text-on-surface">
             <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
             Acceso y seguridad
@@ -262,7 +262,7 @@ export default function AccountSettingsPage() {
         {(user.rol === 'marketero' || user.rol === 'cliente') && <SocialConnectionsCard />}
 
         {/* Apariencia */}
-        <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+        <section className="regla pt-5">
           <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold text-on-surface">
             {theme === 'dark' ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
             Apariencia
@@ -276,7 +276,7 @@ export default function AccountSettingsPage() {
               onClick={() => setTheme('light')}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
                 theme === 'light'
-                  ? 'bg-surface-container-lowest text-primary shadow-sm'
+                  ? 'bg-primary-fixed text-on-primary-fixed'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
@@ -288,7 +288,7 @@ export default function AccountSettingsPage() {
               onClick={() => setTheme('dark')}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
                 theme === 'dark'
-                  ? 'bg-surface-container-lowest text-primary shadow-sm'
+                  ? 'bg-primary-fixed text-on-primary-fixed'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >

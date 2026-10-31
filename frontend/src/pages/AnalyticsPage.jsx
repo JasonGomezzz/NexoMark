@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 period === value
                   ? 'bg-primary text-on-primary'
-                  : 'border border-outline-variant bg-white text-on-surface-variant hover:bg-surface-container-low'
+                  : 'border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
               }`}
             >
               {label}
@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
       )}
 
       {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
+        <div className="flex items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
           <AlertCircle className="h-4 w-4" />
           {error}
         </div>
@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
           {/* Charts */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Barras — campañas por marketero */}
-            <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+            <div className="regla pt-5">
               <h3 className="mb-4 text-sm font-semibold text-on-surface">
                 Campañas por marketero
               </h3>
@@ -213,7 +213,7 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Dona — distribución de estados FSM */}
-            <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+            <div className="regla pt-5">
               <h3 className="mb-4 text-sm font-semibold text-on-surface">
                 Distribución por estado
               </h3>
@@ -260,7 +260,7 @@ export default function AnalyticsPage() {
 
           {/* Campañas por plataforma (barras horizontales — datos reales) */}
           {data.campanas_por_plataforma?.length > 0 && (
-            <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+            <div className="regla pt-5">
               <h3 className="mb-5 text-sm font-semibold text-on-surface">
                 Campañas por plataforma
               </h3>
@@ -300,15 +300,12 @@ function PlatformBars({ rows }) {
   )
 }
 
-/** Stat card según spec del DESIGN.md (misma estructura que Dashboard). */
-function StatCard({ icon: Icon, tint, label, value, sub }) {
+/** Cifra de la plataforma (sistema "Línea"): regla, rótulo y número; sin ícono decorativo. */
+function StatCard({ label, value, sub }) {
   return (
-    <div className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm transition-all hover:shadow-lg">
-      <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${tint}`}>
-        <Icon className="h-6 w-6" />
-      </div>
+    <div className="regla pt-5">
       <p className="text-sm text-on-surface-variant">{label}</p>
-      <h3 className="mt-1 text-3xl font-bold tabular-nums text-on-surface">{value ?? '—'}</h3>
+      <p className="cifra mt-2 text-[36px] text-on-surface">{value ?? 'sin dato'}</p>
       {sub && <p className="mt-1 text-[13px] text-on-surface-variant">{sub}</p>}
     </div>
   )

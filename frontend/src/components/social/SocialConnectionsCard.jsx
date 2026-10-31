@@ -70,7 +70,7 @@ export default function SocialConnectionsCard() {
   }
 
   return (
-    <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
+    <section className="regla pt-5">
       <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold text-on-surface">
         <Link2 className="h-5 w-5 text-primary" />
         Redes conectadas

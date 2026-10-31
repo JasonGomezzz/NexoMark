@@ -23,6 +23,7 @@ import CreditsDetailPage from './pages/CreditsDetailPage'
 import MetaRetornoPage from './pages/MetaRetornoPage'
 import XRetornoPage from './pages/XRetornoPage'
 import TikTokRetornoPage from './pages/TikTokRetornoPage'
+import NotFoundPage from './pages/NotFoundPage'
 import PrivateRoute from './components/PrivateRoute'
 import RoleRoute from './components/RoleRoute'
 import AppLayout from './components/AppLayout'
@@ -88,7 +89,7 @@ export default function App() {
             </Route>
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </MotionConfig>

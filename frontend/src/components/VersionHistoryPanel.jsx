@@ -78,7 +78,7 @@ export default function VersionHistoryPanel({
   return (
     <>
       {/* Trigger en la columna de metadatos del detalle */}
-      <div className="rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
+      <div className="regla pt-5">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[13px] font-semibold text-on-surface-variant">
             Historial de versiones
