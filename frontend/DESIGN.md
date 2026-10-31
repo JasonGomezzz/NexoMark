@@ -1,207 +1,174 @@
-# NexoMark IA — Sistema visual "Nexo"
+# NexoMark IA — Sistema visual "Línea"
 
-> Fuente de verdad visual del frontend React y única identidad del producto.
-> Identidad tomada del icono aprobado (`brand/nexomark-icon-approved-1024.png`,
-> traído de la rama `piero` y verificado): **azul marino `#14283F`**,
-> **turquesa `#17B8AD`** y blanco. Tipografía **Inter**. Modo **claro y oscuro**.
-> Tailwind v4 CSS-first: todos los tokens viven en `src/index.css` (`@theme` para
-> claro y `html[data-theme='dark']` para oscuro). No existe `tailwind.config.js`.
+> Fuente de verdad visual del frontend React. Dirección **B · Línea**, elegida por Jason el 30/10/2026.
+> Contrato compartido con Flutter: `docs/diseno/direcciones.md`, sección «Dirección elegida» (fuera de Git).
+> Si cambia un token aquí o en `src/index.css`, se cambia también allí el mismo día.
+> Tailwind v4 CSS-first: todos los tokens viven en `src/index.css`.
+> - `@theme` para claro y `html[data-theme='dark']` para oscuro.
+> - No existe `tailwind.config.js`.
 
-## Marca
+## La idea
 
-- **Nombre visible:** NexoMark IA. El código, los paquetes y el repositorio siguen como `marketmind`.
-- **Logo:** `components/BrandLogo.jsx` = icono (`/nexomark-icon-192.png`) + "NexoMark" en Inter 800 + cápsula "IA".
-  `tone="navy"` sobre superficies marinas (texto blanco, cápsula turquesa). El tamaño sigue al `font-size` del contenedor.
-- **Favicon:** `/favicon.png` (64 px) y `apple-touch-icon` `/nexomark-icon-192.png`, reducciones del maestro.
-- **Idea gráfica:** la N son dos piezas que encajan (quien crea y quien aprueba). El marino es el contenedor
-  (barra lateral, paneles de marca, pie); el turquesa es la pieza que avanza (paso actual, progreso, acción).
-- `<html lang="es">`, título "NexoMark IA — De la idea dictada al post publicado", `theme-color` `#14283F`.
+Cada campaña es un viaje por una línea de cinco estaciones: **Dictar → Generar → Aprobar → Publicar → Medir**.
+- **El marino es el andén:** la banda de navegación.
+- **El turquesa es el tren que avanza:** la estación actual, la vía del dictado y el micrófono.
+- **La N son dos piezas que encajan:** quien crea y quien aprueba. Encajan dos veces:
+  - al entrar al login y al registro;
+  - cuando el cliente aprueba.
+
+El recorrido **es** la navegación:
+- **Banda:** cada estación lleva a su etapa (`components/linea/estaciones.js`) y muestra cuántas campañas esperan ahí.
+- **Tramo por rol:**
+  - marketero: las 5 estaciones;
+  - superadmin: sin Dictar, porque no crea campañas;
+  - cliente: Aprobar, Publicar y Medir.
 
 ## Color
 
-Estrategia: **restringida en la app** (neutros fríos + un acento) y **comprometida en la portada**
-(campos marinos y turquesa que ocupan regiones enteras). Las superficies se separan por tono y,
-en la app, por un borde fino del color de tema; no hay vidrio ni degradados decorativos.
+Estrategia **restringida** en la app:
+- neutros fríos y un acento;
+- la banda marina como contenedor fijo;
+- los colores por red solo en datos.
 
-### Marca (iguales en ambos temas)
-
-| Token | Hex | Uso |
-|---|---|---|
-| `navy` | `#14283F` | Barra lateral, panel de acceso, panel del flujo, pie |
-| `navy-deep` | `#0B1929` | Velo de cajones, fondo oscuro |
-| `navy-raised` | `#1D3550` | Bloques sobre marino (créditos, testimonio) |
-| `navy-line` | `#2C4862` | Divisores sobre marino |
-| `turquoise` | `#17B8AD` | Pieza turquesa: paso actual, barras de avance, cápsula IA |
-| `turquoise-soft` | `#79DDD3` | Texto/acento turquesa sobre marino |
-| `on-navy` / `on-navy-muted` | `#FFFFFF` / `#B9CBD8` | Texto sobre marino (≥ 9:1) |
-| `on-navy-error` | `#FFB4AB` | Error sobre marino |
-| `paper` | `#FFFFFF` | Botón `onBrand` (no lo altera el modo oscuro) |
-
-### Semánticos
+**Sin degradados, sin vidrio, sin desenfoque y sin sombras en reposo.**
 
 | Token | Claro | Oscuro | Uso |
 |---|---|---|---|
 | `background` | `#F5FAFA` | `#0B1929` | Fondo de página |
-| `surface-container-lowest` | `#FFFFFF` | `#14283F` | Tarjetas, inputs |
-| `surface-container-low` | `#EDF5F5` | `#193249` | Secciones alternas, piezas de la portada |
-| `surface-container` / `-high` / `-highest` | `#E5EFEF` / `#DCE9EA` / `#D3E3E5` | `#203B52` / `#29485F` / `#33546B` | Chips, fondos sutiles |
-| `on-surface` | `#14283F` | `#F3FAFB` | Texto principal |
-| `on-surface-variant` | `#425C67` | `#BDCFD7` | Texto secundario |
-| `outline` | `#5A737D` | `#90ACBA` | Bordes de campos (≥ 3:1), placeholders (≥ 4.5:1) |
-| `outline-variant` | `#B6CDD1` | `#3D5A6E` | Bordes de tarjeta, divisores |
-| **`primary`** | **`#087B75`** | **`#17B8AD`** | Botones, enlaces, foco. En claro es el turquesa oscurecido por contraste |
-| `on-primary` | `#FFFFFF` | `#0B1929` | Texto sobre `primary` |
-| `primary-container` | `#086A65` | `#21C9BB` | Hover del botón primario |
-| `primary-fixed` / `on-primary-fixed` | `#E4F6F3` / `#14283F` | `#143A42` / `#D1F4EE` | Selección suave, badge "Pendiente IA" |
-| `secondary-container` | `#E9F2F5` | `#1C364B` | Badge "Generado" |
-| `tertiary` / `tertiary-container` | `#904900` / `#FFE3C2` | `#FFBD7C` / `#633600` | Ámbar: avisos, etiquetas de ejemplo |
-| `success` / `success-container` | `#2A7430` / `#DCF3DD` | `#8FD991` / `#173D1B` | Solo el estado "Aprobado" |
-| `error` / `error-container` | `#BA1A1A` / `#FFDAD6` | `#FFB4AB` / `#93000A` | Rechazado, destructivo |
-| `warning` / `warning-container` | `#9A4F00` / `#FFE3C2` | `#FFBD7C` / `#563100` | Pendiente |
+| `surface-container-lowest` | `#FFFFFF` | `#102236` | Campos, menús, hojas modales |
+| `surface-container-low` / `-high` | `#EDF5F5` / `#DCE9EA` | `#193249` / `#29485F` | Hover de filas, esqueletos |
+| `on-surface` / `on-surface-variant` | `#14283F` / `#425C67` | `#F3FAFB` / `#BDCFD7` | Texto |
+| `outline` | `#5A737D` | `#90ACBA` | Bordes de campo (3:1 o más), texto terciario, placeholders |
+| `outline-variant` | `#B6CDD1` | `#3D5A6E` | Divisores, estaciones inactivas, meses futuros |
+| `hairline` | `#D6E5E7` | `#1F3A52` | Hilos entre filas |
+| `primary` / `on-primary` | `#087B75` / `#FFFFFF` | `#17B8AD` / `#0B1929` | Botón principal, enlaces, foco |
+| `banda` / `banda-2` / `via` | `#14283F` / `#1D3550` / `#2C4862` | igual | Banda de la línea, conteos, vía |
+| `regla` | `#14283F` | `#3D5A6E` | Filete de 6 px que abre una sección |
+| `turquoise` / `turquoise-soft` | `#17B8AD` / `#79DDD3` | igual | Estación actual, vía del dictado, micrófono |
+| `chart-instagram` / `-x` / `-facebook` / `-tiktok` | `#B4307E` / `#6F7A16` / `#2463C8` / `#C2501A` | `#D45A9C` / `#8E9A2E` / `#5B8FE0` / `#DE7340` | Una línea por red (orden fijo) |
+| Estados | `success`, `error`, `warning`, `tertiary` y sus `-container` | | Badges FSM, avisos, «Datos de ejemplo» |
 
-**Contraste verificado:** `tests/brandPalette.test.js` exige 4.5:1 en 22 pares reales de texto y
-estado (badges FSM, enlaces, placeholders, etiquetas de ejemplo) en ambos temas, y en el texto sobre
-marino. Si cambias un token, el test te dice qué par se rompe.
+- `tests/brandPalette.test.js` exige 4.5:1 en los pares de texto, en ambos temas.
+- Los colores por red pasan los 5 chequeos de `dataviz/validate_palette.js` sobre `#F5FAFA`, `#FFFFFF`, `#14283F` y `#0B1929`.
+- No se usan turquesa, verde ni ámbar para series: quedan para estados.
 
 ## Tipografía
 
-Inter en todos los roles (cargada de Google Fonts, 400–800).
+- **Overpass** (600, 700 y 800) es la voz de la línea: titulares, estaciones, cifras y el texto dictado. Desciende de la señalética vial. Se aplica a todos los `h1`, `h2` y `h3` desde la base, y con la utilidad `font-display`.
+- **Inter** (400 a 700) es para el cuerpo, los controles y las tablas.
 
-| Rol | Tamaño | Peso | Tracking | Uso |
-|---|---|---|---|---|
-| Display portada | `clamp(1.85rem, 5.3vw, 4.6rem)` | 800 | −0.035em | Titular del hero, siempre en 2 líneas |
-| Sección portada | `clamp(2rem, 4vw, 3.5rem)` | 800 | −0.03em | Títulos de sección |
-| h1 app | 36–40 px | 700 | −0.02em | Título de página |
-| h2/h3 | 20–24 px | 600–700 | −0.01em | Tarjetas, pasos |
-| Cuerpo | 16–18 px, interlineado 1.6 | 400 | — | Texto corrido en tinta plena |
-| Pequeño | 13–15 px | 500–600 | — | Rótulos, ayudas. Nada por debajo de 13 px |
-
-- Titulares con `text-wrap: balance` (regla base). Cifras con `tabular-nums`.
-- Sin mayúsculas espaciadas en rótulos nuevos, sin eyebrows sobre los titulares, sin palabra resaltada en otro color.
-
-## Formas (radios)
-
-La familia es la del icono: **cuadrado redondeado** para contenedores y **círculo** para lo que es
-un punto en un recorrido (nodos del stepper, avatares, interruptores de selección).
-
-| Token / utilidad | Valor | Uso |
+| Rol | Tamaño / interlineado | Peso |
 |---|---|---|
-| `rounded-lg` | 10 px | Botones, inputs, ítems de navegación |
-| `rounded-xl` | 14 px | Tarjetas de la app, fragmentos de interfaz |
-| `rounded-2xl` | 18 px | Piezas del tablero de la portada, paneles marinos |
-| `rounded-3xl` | 22 px | Modales |
-| `rounded-full` | — | Nodos del stepper, avatares, badges FSM |
+| Título de página | 30 → 38 / 1.05, −0.02em | 800 |
+| Frase dictada | 25 → 34 / 1.18, −0.02em | 700 |
+| h2 de sección | 24 / 1.2 | 800 |
+| Cifra (`.cifra`) | 28–56 / 1, −0.02em | 800 |
+| Cuerpo | 15 / 1.5 | 400 |
+| Pequeño | 13 / 1.4 | 500 |
 
-## Elevación
+- Mínimo 13 px. La única excepción son las etiquetas de los gráficos, a 12 px.
+- No se usan mayúsculas espaciadas ni rótulos encima de los títulos.
+- Las cifras de las tablas van con `tabular-nums`.
 
-Sombras solo en lo que flota: menús, toasts, modales y el cajón móvil (`shadow-lg`, `shadow-xl`,
-`shadow-2xl`, teñidas de marino; más profundas en oscuro). Nada en reposo lleva sombra.
-Las clases históricas `glass-card`, `glass-liquid`, `glass-liquid-dark`, `glass-soft` y `glass-float`
-se conservan por compatibilidad con páginas existentes, pero ahora son **superficies sólidas** del tema
-(ver `index.css`): sin transparencia ni desenfoque.
+## Formas, trazos y espacio
+
+**Formas:**
+- Botones en pastilla (`rounded-full`) con 44 px de alto en todos los tamaños.
+- Campos de 10 px (alto 44–48 px, borde `outline`).
+- Superficies de 14 px y hojas modales de 22 px.
+- Estaciones, micrófono, avatares y badges, en círculo o pastilla.
+
+**Trazos:**
+- Vía de 6 px (4 px en la línea en miniatura).
+- Anillo de 4–5 px en las estaciones.
+- Hilos de 1 px.
+- `.regla`: filete de 6 px que abre cada sección, en lugar de tarjetas.
+- Foco: 2 px `primary`, separado de 2–3 px.
+
+**Espacio:**
+- Base 4.
+- Margen lateral de 40 px en escritorio y 16 px en móvil.
+- Entre secciones, 40–48 px.
+
+**Sombras:**
+- `shadow-sm` y `shadow-md` valen «nada».
+- Solo flota lo que flota: menú de cuenta y toasts (`shadow-lg`), hojas modales (`shadow-xl`) y cajón (`shadow-2xl`).
+
+## Componentes de la línea
+
+- **`AppLayout` + `LineaNav`:**
+  - Escritorio: banda marina de 96 px con el logo, la línea y, a la derecha, créditos y menú de cuenta. El menú guarda inicio, todas las campañas, créditos, guía, configuración, tema y salir.
+  - Móvil: fila superior con el menú, el logo y los créditos, y debajo la línea en miniatura.
+  - Estación actual: círculo turquesa de 40 px con el ícono del paso y un anillo `turquoise-soft`.
+  - Una página puede fijar su estación con `useEstacionPagina` (`EstacionContext`); el detalle lo hace según el estado de la campaña.
+- **Vía del dictado** (`VoiceBriefCard` + `useBriefDictado`):
+  - Cada frase final es una parada con su tiempo; la frase en curso va tenue y con cursor.
+  - La vía termina en el micrófono, de 84 px (68 px en móvil).
+  - "Prefiero escribir" cambia a un área de texto grande.
+  - La Web Speech API no entrega el nivel de voz, así que los anillos solo dicen «te escucho».
+- **Próxima estación:**
+  - A la derecha del dictado, los 7 campos se muestran como paradas.
+  - Al completar, se vuelven el formulario con la marca «propuesto por la IA» o «falta».
+- **`CampaignStepper`:**
+  - El viaje de una campaña por los 5 verbos (no por los estados internos).
+  - El rechazo marca Aprobar en rojo.
+- **La pieza:**
+  - En el detalle, imagen y copy primero; a la derecha, «Siguiente paso» según el estado.
+  - En la revisión del cliente, la pieza se muestra como el post publicado: cuenta, imagen a todo el ancho (`ImageLightbox variante="post"`) y copy.
+- **`PlanoDelAnio`:** una línea por red y un mes por estación.
+  - El tamaño y el número de la estación dicen cuántas publicaciones hubo; debajo, los me gusta en formato compacto.
+  - Una estación hueca es un mes sin publicaciones; los meses que no llegan van en gris.
+  - En móvil, el plano va en vertical. Tiene una tabla `sr-only` equivalente.
+- **Listas:**
+  - Filas finas en las que el título es un enlace que cubre la fila.
+  - Pestañas por estación y búsqueda.
+  - Mini recorrido de 5 puntos en escritorio.
 
 ## Movimiento
 
-Curvas en `@theme`: `--ease-out` `cubic-bezier(.23,1,.32,1)` para entradas, `--ease-drawer`
-`cubic-bezier(.32,.72,0,1)` para el cajón. Botones `active:scale-[0.97]` en 150 ms.
+**Curvas** (en `@theme`):
+- `--ease-out` `cubic-bezier(.23,1,.32,1)` para entrar;
+- `--ease-in-out` `cubic-bezier(.77,0,.175,1)` para moverse;
+- `--ease-drawer` `cubic-bezier(.32,.72,0,1)`.
 
-- **Momento firma:** la demostración del flujo del hero (`FlowDemo`): la transcripción se escribe,
-  la barra de generación avanza y los pasos se marcan con el círculo turquesa. Se repite con
-  "Reproducir de nuevo" o al elegir otro ejemplo. No llama a la API.
-- Entrada única de la foto del hero (`.shutter-in`, clip-path 1.1 s).
-- Pasos y funciones aparecen una vez al entrar en pantalla (16 px, escalonado 70 ms).
-- `prefers-reduced-motion`: todo se muestra en su estado final (el flujo aparece completo).
-- La galería es estática: no hay carrusel infinito.
+| Qué | Duración |
+|---|---|
+| Presionar (escala 0.97) | 140 ms |
+| Hover de color | 160 ms |
+| Menú de cuenta (sale de su botón) | 180 ms; salida en 120 ms |
+| Parada nueva del dictado (`.entra`) | 180 ms |
+| Formulario que propone la IA (`.entra-lenta`) | 200 ms |
+| Hojas modales (`.entra-hoja`, desde abajo) | 220 ms |
+| Cajón | 280 ms |
+| **Encaje de la N** (`NexoN encajar`) | 420 ms, una vez |
+| **Aprobación del cliente** (la N encaja y la vía se llena hasta Publicar) | 420 ms |
+| Tren de «Generando» (movimiento continuo, lineal) | 1.8 s |
+| Anillos de escucha | 1.6 s |
 
-## Marco de la app (`components/AppLayout.jsx`)
+- No se anima lo que se usa decenas de veces al día: la banda, los filtros, las filas y la selección de mes.
+- Nada aparece desde escala 0.
+- Con «reducir movimiento», todo queda en su estado final: lo cubren `MotionConfig reducedMotion="user"`, la regla global de `index.css` y `useReducedMotion` en las secciones de la portada.
 
-- Escritorio (≥ 1024 px): barra lateral marina fija de 256 px (pegada al desplazar), con logo,
-  navegación por rol, bloque de créditos (marketero/superadmin), usuario, botón de tema y salida.
-  Ítem activo: fondo turquesa al 15 % + icono turquesa.
-- Móvil y tableta: barra superior con menú, logo y tema; la navegación se abre en un cajón desde la
-  izquierda (Esc cierra, el foco entra al cajón y vuelve al botón).
-- El contenido desplaza el documento (no un contenedor interno) y recorta el desborde horizontal.
+## Datos (reglas)
 
-## Portada (`pages/LandingPage.jsx`)
-
-Tablero de piezas rellenas con 8–12 px de separación: propuesta (2 líneas) + acción, panel marino con
-el flujo **Dictar → Generar → Aprobar → Publicar → Medir** (selector de tres ejemplos), foto de ambiente
-rotulada "generada con IA"; después pasos con garantías reales, funciones con fragmentos de interfaz
-(`data-ui`), galería estática de imágenes de ejemplo, planes de ejemplo en tabla y cierre con el nombre
-a todo lo ancho. Contrato de dirección en `.impeccable/surfaces/src-pages-landingpage-jsx.md`.
-
-## Datos de ejemplo (regla)
-
-Lo inventado no se borra (decisión de Jason): se rotula con `.demo-tag` (ámbar, 13 px) o con un aviso
-visible. Hoy: testimonios del panel de acceso (sin foto, avatar de iniciales), "Generación 10× más
-rápida", precios S/ 99 y S/ 299, "98% completado" (dentro del flujo de ejemplo), métricas de ejemplo en
-Funciones. Un dato que no existe se escribe "sin dato" o "Sin definir", nunca 0 ni "—" ambiguo.
+- Un dato que no existe se escribe **«sin dato»**, nunca 0. Un 0 contado (publicaciones del mes) sí es 0.
+- Lo inventado se rotula «ejemplo» (`.demo-tag`). Están rotulados:
+  - el testimonio del acceso;
+  - el «10× más rápida»;
+  - los precios S/ 99 y S/ 299;
+  - las métricas de ejemplo de la portada.
+- X y TikTok solo aparecen si el servidor los activa o si ya hay publicaciones en esa red.
+- TikTok no entrega métricas: se dice, no se dibuja.
 
 ## Idioma
 
-Todo en español (Perú). Voz activa, sentence case, acciones con el verbo de lo que hacen
-("Crear cuenta", "Reproducir de nuevo"). Errores que dicen qué pasó y qué hacer.
+- Español de Perú, en voz activa.
+- Los botones dicen lo que hacen: «Dictar una campaña», «Completar campos», «Enviar al cliente», «Aprobar y publicar», «Pedir cambios».
+- Los errores dicen qué pasó y qué hacer.
 
-## Coherencia con el backend (no inventar)
+## Coherencia con el backend
 
-- JWT propio de Django; se entra con correo y contraseña o con Google (ID token verificado en el servidor; las cuentas creadas con Google no tienen contraseña hasta que la crean con «Olvidé mi contraseña»). Roles: SuperAdmin, Marketero (crea campañas), Cliente (revisa y aprueba).
-- 1 crédito = 1 generación; mejorar texto y restaurar versiones no gastan. Planes reales: sin definir.
-- Rutas por rol verificadas con `GET /api/auth/me/` (`PrivateRoute` + `RoleRoute`); `/stats` es de los tres roles.
-
----
-
-# Especificaciones de componentes
-
-Cada valor sale de los tokens de arriba; no se inventan colores ni tamaños nuevos.
-
-## Botón (`components/ui/button.jsx`)
-
-Variantes: `default` (primary), `outline`, `secondary`, `ghost`, `light`, `onBrand` (blanco con texto
-marino, para superficies de marca en ambos temas). Tamaños `sm` 36 px, `default` 44 px, `lg` 48 px,
-`icon` 40 px; todos `rounded-lg`. Para enlaces con aspecto de botón usar `ButtonLink` (no anidar
-`<button>` dentro de `<a>`). Foco: anillo `primary` con separación del color de fondo.
-
-## Campo de formulario (`components/auth/AuthField.jsx`)
-
-Etiqueta visible encima, alto 48 px, borde `outline` (3:1), foco `primary` + anillo al 30 %, error en
-`error` anunciado con `role="alert"`, ayuda en 13 px. Contraseña con botón mostrar/ocultar.
-
-## Stat card
-
-`rounded-xl border border-outline-variant bg-white p-6` (en oscuro `bg-white` sigue el tema). Ícono
-48 px en cuadro tintado (`bg-primary/10 text-primary`, `bg-tertiary-container text-tertiary`,
-`bg-success-container text-success`). Número `text-3xl font-bold tabular-nums`.
-
-## Badge de estado FSM
-
-Pill `rounded-full px-3 py-1.5 text-sm font-semibold`; siempre estos seis:
-
-| Estado | Etiqueta | Fondo | Texto |
-|---|---|---|---|
-| `borrador` | Borrador | `surface-container-high` | `on-surface-variant` |
-| `pendiente_ia` | Pendiente IA | `primary-fixed` | `primary` |
-| `generado` | Generado | `secondary-container` | `primary` |
-| `pendiente_aprobacion` | Pendiente aprobación | `warning-container` | `tertiary` |
-| `aprobado` | Aprobado | `success-container` | `success` |
-| `rechazado` | Rechazado | `error-container` | `error` |
-
-## Stepper FSM (`components/CampaignStepper.jsx`)
-
-Nodos circulares de 36 px: hecho `bg-primary text-on-primary` con check, actual `bg-primary` +
-`ring-4 ring-primary/25`, rechazado/fracaso `bg-error`, futuro `bg-surface-container-high text-outline`.
-Conectores de 2 px `bg-primary` (tramo recorrido) o `bg-outline-variant`. En pantallas angostas solo se
-rotula el paso actual. Mismo lenguaje que el flujo de la portada.
-
-## Tabla de datos
-
-Contenedor `rounded-xl border border-outline-variant` dentro de `overflow-x-auto`. Cabecera
-`bg-surface-container-low`, filas con borde `outline-variant/40` y hover `surface-container-low`.
-Números `tabular-nums`. Estado con badge FSM.
-
-## Estado vacío, skeleton, toasts, modal y cajón
-
-- Vacío: ícono en círculo 64 px `bg-surface-container-high`, título 18 px, descripción 14 px, una acción.
-- Skeleton: `animate-pulse bg-surface-container-high` con la silueta del contenido.
-- Toasts: solo vía `components/ui/AppToaster` (superficie sólida, borde fino, `shadow-lg`, `rounded-xl`).
-- Modal: velo `bg-on-surface/40`, tarjeta `glass-liquid rounded-3xl p-8` (sólida), cerrar con X, velo y Esc.
-- Cajón: entra desde el lado con `--ease-drawer` (≈ 280 ms), velo `navy-deep/60`.
+- Cada rol ve lo suyo, recortado en el servidor.
+- 1 crédito = 1 generación; completar los campos y restaurar versiones no gastan.
+- La aprobación del cliente pide valoración y `version` (Spring).
+- Al aprobar se publica en los destinos elegidos al enviar; sin destinos, la interfaz lo dice («no se publica sola»).
