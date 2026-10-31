@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Check, CircleCheck, History, Info, Mic, RefreshCw, Star, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import featureImage from '@/assets/landing/feature-image.webp'
@@ -152,6 +152,8 @@ const FEATURES = [
 ]
 
 export default function FeaturesBento() {
+  // Con "reducir movimiento" el contenido nace en su estado final (antes quedaba invisible).
+  const sinMovimiento = useReducedMotion()
   return (
     <section id="funciones" aria-labelledby="funciones-title" className="scroll-mt-16 bg-surface-container-low px-2 py-24 sm:px-3 lg:py-36">
       <div className="mx-auto max-w-[1440px]">
@@ -164,25 +166,25 @@ export default function FeaturesBento() {
         <p className="mt-4 px-2 text-base text-on-surface-variant sm:px-3 lg:px-8">
           Fragmentos de la interfaz con contenido de ejemplo.
         </p>
-        <div className="mt-12 grid gap-2 sm:gap-3 md:grid-cols-2 lg:mt-16 xl:grid-cols-4">
+        <div className="mt-12 grid gap-x-8 gap-y-6 px-2 sm:px-3 md:grid-cols-2 lg:mt-16 lg:px-8 xl:grid-cols-4">
           {FEATURES.map((f, i) => {
             const fragmentFirst = i % 2 === 1
             const wide = i === 0 || i === FEATURES.length - 1
             return (
               <motion.article
                 key={f.titulo}
-                initial={{ opacity: 0, transform: 'translateY(16px)' }}
+                initial={sinMovimiento ? false : { opacity: 0, transform: 'translateY(16px)' }}
                 whileInView={{ opacity: 1, transform: 'translateY(0px)' }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.5, delay: (i % 4) * 0.07, ease: [0.23, 1, 0.32, 1] }}
                 className={cn(
-                  'flex min-h-[22rem] flex-col justify-between gap-8 rounded-2xl bg-background p-6 sm:p-8',
+                  'regla flex min-h-[20rem] flex-col justify-between gap-8 px-2 pb-8 pt-6 sm:px-3',
                   fragmentFirst && 'md:flex-col-reverse',
                   wide && 'md:col-span-2 md:min-h-0 md:flex-row md:items-center md:[&>*]:flex-1',
                 )}
               >
                 <div>
-                  <h3 className="text-xl font-bold tracking-[-0.01em] text-on-surface">{f.titulo}</h3>
+                  <h3 className="text-xl font-extrabold tracking-[-0.01em] text-on-surface">{f.titulo}</h3>
                   <p className="mt-2 max-w-[38ch] text-base leading-relaxed text-on-surface-variant">{f.texto}</p>
                 </div>
                 {f.fragment}

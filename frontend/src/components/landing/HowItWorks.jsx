@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 
 /**
  * "Cómo funciona": el recorrido real, paso por paso, con lo que garantiza cada
@@ -28,6 +28,8 @@ const STEPS = [
 ]
 
 export default function HowItWorks() {
+  // Con "reducir movimiento" el contenido nace en su estado final (antes quedaba invisible).
+  const sinMovimiento = useReducedMotion()
   return (
     <section id="como-funciona" aria-labelledby="como-funciona-title" className="scroll-mt-16 px-4 py-24 sm:px-6 lg:px-10 lg:py-36">
       <div className="mx-auto max-w-[1440px]">
@@ -44,19 +46,22 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        <ol className="mt-16 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:mt-24 lg:grid-cols-5">
+        <ol className="relative mt-16 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:mt-24 lg:grid-cols-5">
+          {/* La vía que une las cinco estaciones (escritorio) */}
+          <span aria-hidden="true" className="absolute left-[18px] right-[calc(20%-18px)] top-[18px] hidden h-1.5 -translate-y-1/2 rounded-full bg-turquoise lg:block" />
           {STEPS.map((step, i) => (
             <motion.li
               key={step.verbo}
-              initial={{ opacity: 0, transform: 'translateY(16px)' }}
+              initial={sinMovimiento ? false : { opacity: 0, transform: 'translateY(16px)' }}
               whileInView={{ opacity: 1, transform: 'translateY(0px)' }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.5, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
             >
-              <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-high" aria-hidden="true">
-                <div className="h-full rounded-full bg-turquoise" style={{ width: `${((i + 1) / STEPS.length) * 100}%` }} />
-              </div>
-              <h3 className="mt-6 text-2xl font-bold tracking-[-0.02em] text-on-surface">{step.verbo}</h3>
+              <span
+                aria-hidden="true"
+                className={`relative z-10 block h-9 w-9 rounded-full ${i === 0 ? 'bg-turquoise shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_var(--color-turquoise-soft)]' : 'border-[5px] border-turquoise bg-background'}`}
+              />
+              <h3 className="mt-6 text-2xl font-extrabold tracking-[-0.02em] text-on-surface">{step.verbo}</h3>
               <p className="mt-3 text-base leading-relaxed text-on-surface-variant">{step.texto}</p>
             </motion.li>
           ))}
