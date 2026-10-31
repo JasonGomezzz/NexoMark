@@ -135,7 +135,7 @@ export default function UsersAdminPage() {
       {/* Encabezado */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-on-surface">Usuarios</h1>
+          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Usuarios</h1>
           <p className="mt-2 text-base text-on-surface-variant">
             Gestiona cuentas, roles y la cuota de créditos de cada usuario.
           </p>
@@ -217,12 +217,12 @@ export default function UsersAdminPage() {
                               onClick={() => handleToggleActive(u)}
                               disabled={isSelf}
                               title={isSelf ? 'No puedes modificar tu propia cuenta' : ''}
-                              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                              className={`inline-flex min-h-10 items-center gap-1 rounded-full border px-3 text-[13px] font-medium transition-colors ${
                                 isSelf
                                   ? 'cursor-not-allowed border-outline-variant/50 bg-surface-container-high text-outline'
                                   : u.is_active
-                                    ? 'border-error/20 bg-error-container text-error hover:brightness-95'
-                                    : 'border-success/20 bg-success-container text-success hover:brightness-95'
+                                    ? 'border-outline-variant text-on-surface-variant hover:border-error hover:bg-error-container hover:text-on-error-container'
+                                    : 'border-success/40 text-success hover:bg-success-container'
                               }`}
                             >
                               {u.is_active ? <Ban className="h-3.5 w-3.5" /> : <CircleCheck className="h-3.5 w-3.5" />}
@@ -232,7 +232,7 @@ export default function UsersAdminPage() {
                               onClick={() => handleResetQuota(u)}
                               disabled={isSelf}
                               title={isSelf ? 'No puedes modificar tu propia cuenta' : ''}
-                              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                              className={`inline-flex min-h-10 items-center gap-1 rounded-full border px-3 text-[13px] font-medium transition-colors ${
                                 isSelf
                                   ? 'cursor-not-allowed border-outline-variant/50 bg-surface-container-high text-outline'
                                   : 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'

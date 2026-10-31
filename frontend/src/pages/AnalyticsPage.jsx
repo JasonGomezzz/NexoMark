@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
       {/* Header + selector */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-on-surface">Analytics</h1>
+          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Analítica</h1>
           <p className="mt-2 text-base text-on-surface-variant">
             Métricas globales de la plataforma.
           </p>
@@ -150,9 +150,11 @@ export default function AnalyticsPage() {
               tint="bg-tertiary-container text-tertiary"
               label="Tiempo prom. aprobación"
               value={
-                data.kpi.tiempo_promedio_aprobacion_dias != null
-                  ? `${data.kpi.tiempo_promedio_aprobacion_dias}d`
-                  : '—'
+                data.kpi.tiempo_promedio_aprobacion_dias == null
+                  ? 'sin dato'
+                  : data.kpi.tiempo_promedio_aprobacion_dias < 1
+                    ? 'menos de 1 día'
+                    : `${data.kpi.tiempo_promedio_aprobacion_dias} días`
               }
               sub="De creación a aprobado"
             />

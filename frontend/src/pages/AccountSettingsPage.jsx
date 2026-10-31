@@ -143,7 +143,7 @@ export default function AccountSettingsPage() {
       <AppToaster />
       <div className="max-w-3xl space-y-6">
         <header>
-          <h1 className="text-4xl font-bold tracking-tight text-on-surface">Configuración</h1>
+          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Configuración</h1>
           <p className="mt-2 text-base text-on-surface-variant">
             Tu perfil, cómo entras a NexoMark y las redes donde se publica.
           </p>

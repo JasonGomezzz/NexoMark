@@ -107,15 +107,13 @@ export default function CreditsDetailPage() {
     0,
     Math.min(100, Math.round(((QUOTA_DEFAULT - data.tokens_disponibles) / QUOTA_DEFAULT) * 100)),
   )
-  // Longitud del arco del donut (stroke-dasharray: usado, resto de 100)
-  const dashArray = `${pctUsado}, 100`
 
   return (
     <div className="space-y-6">
       <PlanesModal open={showPlanes} onClose={() => setShowPlanes(false)} />
 
       <header>
-        <h1 className="text-4xl font-bold tracking-tight text-on-surface">Créditos de IA</h1>
+        <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Créditos de IA</h1>
         <p className="mt-2 text-base text-on-surface-variant">
           Gestión y detalle de consumo de tu cuenta.
         </p>
@@ -123,15 +121,14 @@ export default function CreditsDetailPage() {
 
       {/* Bento hero: saldo + donut de uso, y KPIs apilados a la derecha */}
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="relative overflow-hidden rounded-2xl border border-outline-variant bg-white p-8 shadow-sm lg:col-span-2">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-          <div className="relative z-10 flex flex-col items-center gap-8 md:flex-row md:justify-between">
-            <div className="flex-1 space-y-4 text-center md:text-left">
+        <div className="regla relative pt-6 lg:col-span-2">
+          <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <div className="flex-1 space-y-4">
               <div>
-                <p className="text-[13px] font-semiboldr text-outline">
+                <p className="text-[13px] font-semibold text-outline">
                   Saldo disponible
                 </p>
-                <h2 className="mt-2 text-5xl font-extrabold tracking-tight text-primary">
+                <h2 className="cifra mt-2 text-[56px] text-on-surface">
                   {data.tokens_disponibles}{' '}
                   <span className="text-xl font-normal text-outline">créditos</span>
                 </h2>
@@ -142,7 +139,7 @@ export default function CreditsDetailPage() {
               </p>
               <button
                 onClick={() => setShowPlanes(true)}
-                className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-6 py-3 text-sm font-semibold text-on-surface shadow-sm transition-colors hover:bg-surface-container active:scale-95"
+                className="mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-outline-variant px-6 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low active:scale-[0.97]"
               >
                 <ShoppingCart className="h-4 w-4" />
                 Ver planes
@@ -150,32 +147,15 @@ export default function CreditsDetailPage() {
               <CreditRequestButton className="mt-2" />
             </div>
 
-            {/* Donut de uso (SVG puro, sin dependencias) */}
-            <div className="w-32 shrink-0 text-center">
-              <svg viewBox="0 0 36 36" className="h-32 w-32 text-primary">
-                <path
-                  className="fill-none stroke-surface-container-high"
-                  strokeWidth="3.8"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                  className="fill-none stroke-current"
-                  strokeWidth="3.8"
-                  strokeLinecap="round"
-                  strokeDasharray={dashArray}
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <text
-                  x="18"
-                  y="20.35"
-                  textAnchor="middle"
-                  fill="currentColor"
-                  className="text-[9px] font-semibold"
-                >
-                  {pctUsado}%
-                </text>
-              </svg>
-              <p className="mt-1 text-[13px] font-medium text-outline">Usado</p>
+            {/* Uso de la cuota como barra (no anillo): cuánto se usó de la cuota inicial */}
+            <div className="w-full max-w-xs shrink-0">
+              <div className="flex items-baseline justify-between text-sm">
+                <span className="text-on-surface-variant">Usado de la cuota inicial</span>
+                <span className="font-semibold tabular-nums text-on-surface">{pctUsado}%</span>
+              </div>
+              <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-surface-container-high" role="img" aria-label={`Usado ${pctUsado}% de la cuota inicial`}>
+                <div className="h-full rounded-full bg-turquoise" style={{ width: `${pctUsado}%` }} />
+              </div>
             </div>
           </div>
         </div>

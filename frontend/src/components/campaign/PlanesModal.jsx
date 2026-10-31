@@ -85,7 +85,7 @@ export default function PlanesModal({ open, onClose }) {
 
         {!checkoutPlan ? (
           <>
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-error-container px-4 py-1.5 text-[13px] font-boldst text-error">
+            <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-error-container px-4 py-1.5 text-[13px] font-bold text-error">
               <AlertTriangle className="h-3.5 w-3.5" />
               Créditos agotados
             </span>

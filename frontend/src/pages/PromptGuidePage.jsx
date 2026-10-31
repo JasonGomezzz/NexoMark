@@ -161,7 +161,7 @@ export default function PromptGuidePage() {
       <AppToaster />
       <div className="space-y-8">
         <header className="max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-on-surface">Guía de prompts IA</h1>
+          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Guía de prompts IA</h1>
           <p className="mt-2 text-base text-on-surface-variant">
             Un buen brief produce mejor copy e imagen. Usa los templates o arma tu brief
             estructurado y llévalo directo al formulario de nueva campaña.
