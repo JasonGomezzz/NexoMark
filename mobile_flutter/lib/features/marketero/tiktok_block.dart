@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -87,7 +88,7 @@ class _TikTokBlockState extends ConsumerState<TikTokBlock> {
               const SizedBox(height: 10),
               const InfoBanner(
                 tone: InfoTone.warning,
-                message: 'Falta verificar en el portal de TikTok el dominio desde donde descarga la imagen. Hasta entonces no se puede enviar.',
+                message: 'Enviar a TikTok todavía no está disponible: TikTok aún no autoriza a NexoMark a entregar imágenes.',
               ),
             ],
             const SizedBox(height: 10),
@@ -181,7 +182,7 @@ class _ConfirmarSheet extends StatelessWidget {
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: () => Navigator.pop(context, true),
-            icon: const Icon(Icons.send_rounded),
+            icon: const Icon(LucideIcons.send),
             label: const Text('Enviar al buzón de TikTok'),
           ),
         ],
