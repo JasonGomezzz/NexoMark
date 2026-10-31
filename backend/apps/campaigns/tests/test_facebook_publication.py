@@ -17,6 +17,38 @@ from apps.campaigns.models import FacebookPublication
 pytestmark = pytest.mark.django_db
 
 
+@patch('apps.campaigns.facebook_publication.send_photo', return_value=('987654', '123456_987654'))
+def test_same_content_cannot_be_republished_after_revision_change(send, api_client, fb_publication):
+    from apps.campaigns.serializers import CampaignSerializer
+    campaign, page = fb_publication
+    assert publish(api_client, fb_publication).data['data']['status'] == 'published'
+    original = FacebookPublication.objects.get()
+    campaign.version += 1
+    campaign.save()
+    for response in [api_client.get(f'/api/campaigns/{campaign.pk}/publish-facebook/', {'page_id': page.pk}),
+                     publish(api_client, fb_publication)]:
+        assert response.data['data']['status'] == 'published'
+        assert response.data['data']['publication_id'] == original.pk
+        assert response.data['data']['previous_version'] is True
+    assert CampaignSerializer(campaign).data['publication_status']['facebook'] == 'published'
+    assert FacebookPublication.objects.count() == 1
+    send.assert_called_once()
+
+
+@patch('apps.campaigns.facebook_publication.send_photo', return_value=('987654', '123456_987654'))
+def test_new_approved_content_warns_and_requires_new_explicit_post(send, api_client, fb_publication):
+    campaign, page = fb_publication
+    publish(api_client, fb_publication)
+    campaign.version += 1
+    campaign.texto_generado = 'Otro contenido aprobado'
+    campaign.save()
+    response = api_client.get(f'/api/campaigns/{campaign.pk}/publish-facebook/', {'page_id': page.pk})
+    assert response.data['data'] == {'status': 'not_published', 'has_previous_publication': True}
+    assert FacebookPublication.objects.count() == 1
+    assert publish(api_client, fb_publication).data['data']['status'] == 'published'
+    assert send.call_count == 2
+
+
 @pytest.fixture
 def fb_publication(settings, campaign, user_marketero):
     key = Fernet.generate_key()

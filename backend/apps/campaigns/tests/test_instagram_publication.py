@@ -17,6 +17,25 @@ from apps.campaigns.instagram_publication import jpeg_image
 pytestmark = pytest.mark.django_db
 
 
+@patch('apps.campaigns.instagram_publication.graph')
+def test_previous_success_overrides_current_failed_duplicate_without_new_write(graph, api_client, publication_setup):
+    from apps.campaigns.serializers import CampaignSerializer
+    campaign, account = publication_setup
+    graph.side_effect = [{'id': 'container'}, {'status_code': 'FINISHED'}, {'id': '67890'}]
+    publish(api_client, publication_setup)
+    original = InstagramPublication.objects.get()
+    campaign.version += 1
+    campaign.save()
+    InstagramPublication.objects.create(campaign=campaign, account=account, instagram_user_id=account.instagram_user_id,
+        username=account.username, campaign_version=campaign.version, caption=original.caption,
+        image_jpeg=original.image_jpeg, status='failed', image_expires_at=timezone.now())
+    response = api_client.get(f'/api/campaigns/{campaign.pk}/publish-instagram/', {'account_id': account.pk})
+    assert response.data['data']['status'] == 'published'
+    assert publish(api_client, publication_setup).data['data']['publication_id'] == original.pk
+    assert CampaignSerializer(campaign).data['publication_status']['instagram'] == 'published'
+    assert graph.call_count == 3
+
+
 @pytest.fixture
 def publication_setup(settings, campaign, user_marketero):
     key = Fernet.generate_key()

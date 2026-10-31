@@ -18,12 +18,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .platform_content import platform_copy
+from .publication_guard import existing_content, publication_feedback, instagram_permalink
 
 from apps.authentication.instagram import cipher
 from apps.authentication.models import InstagramAccount
 from apps.authentication.permissions import IsMarketero
 from core.exceptions import api_response
-from .models import Campaign, InstagramPublication
+from .models import Campaign, InstagramPublication, PublicationMetricSnapshot
 
 
 def jpeg_image(value):
@@ -59,13 +60,16 @@ def graph(token, method, path, **payload):
     return data
 
 
-def result(publication):
+def result(publication, campaign=None):
+    feedback = publication_feedback(publication, 'instagram', campaign)
+    snapshot = PublicationMetricSnapshot.objects.filter(platform='instagram', publication_id=publication.pk).order_by('-measured_at', '-pk').first()
     message = publication.message or ('Instagram está confirmando la publicación. No la reenvíes.'
         if publication.status == 'publishing' else 'Instagram está preparando la imagen.')
-    return Response(api_response(True, message, {
-        'status': publication.status, 'media_id': publication.media_id,
+    return Response(api_response(True, feedback['publication_notice'] or message, {
+        **feedback, 'media_id': publication.media_id,
         'username': publication.username,
-    }), status=202 if publication.status == 'preparing' else 200)
+        'publication_url': instagram_permalink(snapshot.metrics.get('_permalink')) if snapshot and feedback['status'] == 'published' else '',
+    }), status=202 if feedback['status'] == 'preparing' else 200)
 
 
 def owned_account(owner, value):
@@ -81,11 +85,12 @@ class InstagramPublishView(APIView):
     def get(self, request, campaign_id):
         campaign = get_object_or_404(Campaign, pk=campaign_id, marketero=request.user)
         account = owned_account(request.user, request.query_params.get('account_id'))
-        publication = InstagramPublication.objects.filter(campaign=campaign,
-            instagram_user_id=account.instagram_user_id, campaign_version=campaign.version).first()
+        records = InstagramPublication.objects.filter(campaign=campaign, instagram_user_id=account.instagram_user_id)
+        publication = existing_content(records, campaign, 'instagram', platform_copy(campaign, 'instagram'), jpeg_image)
         if publication:
-            return result(publication)
-        return Response(api_response(True, 'Todavía no se publicó en esta cuenta.', {'status': 'not_published'}))
+            return result(publication, campaign)
+        return Response(api_response(True, 'Todavía no se publicó este contenido en esta cuenta.',
+            {'status': 'not_published', 'has_previous_publication': records.filter(status='published').exists()}))
 
     def post(self, request, campaign_id):
         if request.data.get('confirm') is not True:
@@ -98,10 +103,12 @@ class InstagramPublishView(APIView):
             account = owned_account(request.user, request.data.get('account_id'))
             if campaign.estado != 'aprobado' or 'instagram' not in (campaign.plataformas or [campaign.plataforma]):
                 return Response(api_response(False, 'La campaña debe estar aprobada y tener Instagram seleccionado.'), status=400)
-            if request.data.get('version') != campaign.version:
+            if type(request.data.get('version')) is not int or request.data['version'] != campaign.version:
                 return Response(api_response(False, 'La campaña cambió. Recarga antes de publicar.'), status=409)
-            publication = InstagramPublication.objects.filter(campaign=campaign, instagram_user_id=account.instagram_user_id,
-                campaign_version=campaign.version).first()
+            publication = existing_content(InstagramPublication.objects.filter(campaign=campaign,
+                instagram_user_id=account.instagram_user_id), campaign, 'instagram', platform_copy(campaign, 'instagram'), jpeg_image)
+            if publication and publication.campaign_version != campaign.version:
+                return result(publication, campaign)
             if publication and publication.status != 'preparing':
                 return result(publication)
             if account.expires_at <= timezone.now():

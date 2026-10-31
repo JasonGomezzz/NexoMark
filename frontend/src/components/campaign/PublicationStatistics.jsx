@@ -83,7 +83,7 @@ export default function PublicationStatistics({ campaignId, onSynchronized }) {
     {error && <p role="alert" className="text-error">{error} <button className="underline" onClick={() => setRefresh(v => v + 1)}>Reintentar</button></p>}
     {(!data || data.year !== year) && !error && <p role="status">Cargando estadísticas…</p>}
     {data && data.year === year && <>
-      {data.publications.some(row => row.availability === 'unverified' || (row.availability_note && row.availability !== 'unavailable')) &&
+      {data.publications.some(row => row.availability === 'unverified' || (row.availability_note && !['unavailable', 'removed'].includes(row.availability))) &&
         <p role="status" className="mb-4 bg-warning-container p-3 text-sm">Sincronización incompleta: algunas cifras son de la última medición guardada. Revisa los avisos y las fechas del historial antes de compartir el reporte.</p>}
       {!campaignId && <PlatformStatisticsExplorer data={data} selected={selectedPlatform} onSelect={setSelectedPlatform} />}
       {campaignId && <div className="grid gap-6 xl:grid-cols-2">
@@ -119,6 +119,7 @@ export default function PublicationStatistics({ campaignId, onSynchronized }) {
             <td className="p-2"><span className="flex items-center gap-2"><PlatformIcon platform={row.platform} />{labels[row.platform]} · {row.destination}</span>
               <Link className="underline" to={`/campaigns/${row.campaign_id}`}>{row.title}</Link><p className="text-xs">Versión {row.version}</p>
               {row.availability === 'unavailable' && <p className="text-sm font-semibold text-error">No encontrada en la red · excluida de los totales</p>}
+              {row.availability === 'removed' && <p className="text-sm font-semibold">Eliminada según informó el propietario · excluida de los totales; cifras históricas</p>}
               {row.availability === 'unverified' && <p className="text-sm font-semibold">Disponibilidad sin verificar · cifras históricas</p>}
               {row.availability_note && <p className="max-w-sm text-xs">{row.availability_note}</p>}
               {row.confirmation_source === 'user_confirmed_display_api' && <p className="text-xs">Publicación existente vinculada por el propietario y verificada por API; estado del envío original: {row.delivery_status}.</p>}

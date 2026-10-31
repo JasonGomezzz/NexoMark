@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .platform_content import platform_copy
+from .publication_guard import existing_content, publication_feedback
 from twitter_text import parse_tweet
 
 from apps.authentication.models import XAccount
@@ -133,18 +134,19 @@ def send_post(publication, token):
     return post_id
 
 
-def result(publication, validation):
-    return Response(api_response(True, publication.message or
+def result(publication, validation, campaign=None):
+    feedback = publication_feedback(publication, 'twitter', campaign)
+    return Response(api_response(True, feedback['publication_notice'] or publication.message or
         'La publicación está en proceso. No vuelvas a enviarla.', {
-            'status': publication.status, 'username': publication.username,
+            **feedback, 'username': publication.username,
             'post_id': publication.post_id,
             'publication_url': f'https://x.com/i/status/{publication.post_id}'
-                if publication.status == 'published' else '',
+                if feedback['status'] == 'published' else '',
             'text_validation': validation,
             'caption': publication.caption,
             'caption_source': 'marketer_summary' if publication.summary_id else 'client_approved',
             'summary_id': str(publication.summary_id) if publication.summary_id else None,
-        }), status=202 if publication.status in ('preparing', 'publishing') else 200)
+        }), status=202 if feedback['status'] in ('preparing', 'publishing') else 200)
 
 
 def owned_account(owner, value):
@@ -164,10 +166,10 @@ class XPublishView(APIView):
         validation = text_validation(caption)
         if request.query_params.get('account_id'):
             account = owned_account(request.user, request.query_params['account_id'])
-            publication = XPublication.objects.filter(campaign=campaign,
-                x_user_id=account.x_user_id, campaign_version=campaign.version).first()
+            records = XPublication.objects.filter(campaign=campaign, x_user_id=account.x_user_id)
+            publication = existing_content(records, campaign, 'twitter', caption, jpeg_image)
             if publication:
-                return result(publication, text_validation(publication.caption))
+                return result(publication, text_validation(publication.caption), campaign)
         return Response(api_response(True, 'Prepara la publicación de X.',
             {'status': 'not_published', 'text_validation': validation, 'caption': caption,
              'caption_source': 'marketer_summary' if summary else 'client_approved'}))
@@ -188,8 +190,10 @@ class XPublishView(APIView):
                 return Response(api_response(False, 'Confirma expresamente el resumen de X como marketero.'), status=400)
             caption = summary.caption if summary else platform_copy(campaign, 'twitter')
             validation = text_validation(caption)
-            existing = XPublication.objects.filter(campaign=campaign, x_user_id=account.x_user_id,
-                campaign_version=campaign.version).first()
+            existing = existing_content(XPublication.objects.filter(campaign=campaign, x_user_id=account.x_user_id),
+                campaign, 'twitter', caption, jpeg_image)
+            if existing and existing.campaign_version != campaign.version:
+                return result(existing, text_validation(existing.caption), campaign)
             if existing and existing.status != 'failed':
                 return result(existing, text_validation(existing.caption))
             if not validation['valid']:

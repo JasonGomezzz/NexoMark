@@ -32,16 +32,30 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     def get_publication_status(self, campaign):
         from .models import InstagramPublication, FacebookPublication, XPublication, TikTokUpload, PublicationAvailability
+        from .publication_guard import existing_content, publication_feedback
+        from .platform_content import platform_copy
+        from .facebook_publication import jpeg_image as facebook_image
+        from .instagram_publication import jpeg_image as instagram_image
         result = {}
         for platform, model in [('instagram', InstagramPublication), ('facebook', FacebookPublication), ('twitter', XPublication), ('tiktok', TikTokUpload)]:
             publications = model.objects.filter(campaign=campaign, campaign_version=campaign.version)
+            if platform in ('facebook', 'instagram'):
+                identity = 'facebook_page_id' if platform == 'facebook' else 'instagram_user_id'
+                all_records = model.objects.filter(campaign=campaign)
+                chosen = []
+                for destination in all_records.values_list(identity, flat=True).distinct():
+                    publication = existing_content(all_records.filter(**{identity: destination}), campaign, platform,
+                        platform_copy(campaign, platform), facebook_image if platform == 'facebook' else instagram_image)
+                    if publication:
+                        chosen.append(publication.pk)
+                publications = all_records.filter(pk__in=chosen)
             checks = PublicationAvailability.objects.filter(campaign=campaign, platform=platform,
                                                             publication_id__in=publications.values('pk'))
-            missing = set(checks.filter(state='unavailable').values_list('publication_id', flat=True))
-            records = list(publications.exclude(pk__in=missing).values_list('status', flat=True))
+            missing = set(checks.filter(state__in=['unavailable', 'removed']).values_list('publication_id', flat=True))
+            records = [publication_feedback(p, platform, campaign)['status'] for p in publications.exclude(pk__in=missing)]
             result[platform] = ('published' if 'published' in records else records[-1] if records else 'not_published')
             if missing and not records:
-                result[platform] = 'unavailable'
+                result[platform] = 'removed' if checks.filter(state='removed').exists() else 'unavailable'
             if platform == 'tiktok' and result[platform] != 'published' and model.objects.filter(
                     campaign=campaign, campaign_version=campaign.version, publication_link__isnull=False).exclude(pk__in=missing).exists():
                 result[platform] = 'linked'

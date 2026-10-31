@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../services/api'
 import { getPlatformCopy } from '../services/campaignPublication'
+import { registeredPublicationLabel } from '../services/publicationState'
 import { Button } from '@/components/ui/button'
 
 export default function InstagramPublicationDialog({ campaign, onClose }) {
   const [accounts, setAccounts] = useState([])
   const [accountId, setAccountId] = useState('')
   const [loading, setLoading] = useState(true)
-  const [checking, setChecking] = useState(false)
+  const [checkingRequest, setChecking] = useState(false)
   const [busy, setBusy] = useState(false)
   const [outcome, setOutcome] = useState(null)
   const [error, setError] = useState('')
@@ -15,6 +16,8 @@ export default function InstagramPublicationDialog({ campaign, onClose }) {
   const mounted = useRef(true)
   const cancelWait = useRef(null)
   const dialog = useRef(null)
+  const checking = checkingRequest || Boolean(accountId && !error &&
+    (outcome?.checkedVersion !== campaign.version || outcome?.checkedAccount !== accountId))
 
   useEffect(() => {
     mounted.current = true
@@ -37,11 +40,11 @@ export default function InstagramPublicationDialog({ campaign, onClose }) {
     let active = true
     api.get(`/api/campaigns/${campaign.id}/publish-instagram/`, { params: { account_id: accountId } })
       .then(({ data }) => {
-        if (active && data.data.status !== 'not_published') setOutcome({ ...data.data, message: data.message })
+        if (active) setOutcome({ ...data.data, message: data.message, checkedVersion: campaign.version, checkedAccount: accountId })
       }).catch(() => { if (active) setError('No se pudo comprobar si esta campaña ya fue publicada.') })
       .finally(() => { if (active) setChecking(false) })
     return () => { active = false }
-  }, [accountId, campaign.id])
+  }, [accountId, campaign.id, campaign.version])
 
   function handleKeyDown(event) {
     if (event.key === 'Escape' && !busy) onClose()
@@ -57,7 +60,7 @@ export default function InstagramPublicationDialog({ campaign, onClose }) {
   }
 
   async function publish() {
-    if (inFlight.current || !accountId || checking || error) return
+    if (inFlight.current || !accountId || checking || error || outcome && !['not_published', 'preparing'].includes(outcome.status)) return
     inFlight.current = true
     setBusy(true)
     setError('')
@@ -69,7 +72,7 @@ export default function InstagramPublicationDialog({ campaign, onClose }) {
           account_id: Number(accountId), version: campaign.version, confirm: true,
         })
         if (!mounted.current) break
-        setOutcome({ ...data.data, message: data.message })
+        setOutcome({ ...data.data, message: data.message, checkedVersion: campaign.version, checkedAccount: accountId })
         if (data.data.status !== 'preparing') break
         await new Promise((resolve) => {
           const timer = setTimeout(resolve, 60000)
@@ -85,13 +88,13 @@ export default function InstagramPublicationDialog({ campaign, onClose }) {
   }
 
   const selected = accounts.find((account) => String(account.id) === accountId)
-  const locked = outcome && outcome.status !== 'preparing'
+  const locked = outcome && !['not_published', 'preparing'].includes(outcome.status)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div ref={dialog} tabIndex={-1} onKeyDown={handleKeyDown} role="dialog" aria-modal="true"
         aria-labelledby="instagram-publication-title" className="glass-liquid max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl p-6">
-        <h2 id="instagram-publication-title" className="text-xl font-semibold">Publicar en Instagram</h2>
-        <p className="my-3 text-sm">Se enviarán esta imagen y el texto aprobado a la cuenta que elijas. Será una publicación real.</p>
+        <h2 id="instagram-publication-title" className="text-xl font-semibold">Instagram · publicación de la campaña</h2>
+        <p className="my-3 text-sm">Comprobamos los envíos de esta cuenta, incluidas versiones anteriores con el mismo texto e imagen. Una publicación existente no se vuelve a enviar.</p>
         {campaign.imagen_b64 ? (
           <img src={`data:image/png;base64,${campaign.imagen_b64}`} alt="Imagen aprobada para Instagram"
             className="mx-auto max-h-72 rounded-xl object-contain" />
@@ -112,11 +115,13 @@ export default function InstagramPublicationDialog({ campaign, onClose }) {
         {!loading && !accounts.length && <p className="my-2 text-sm">Conecta o renueva tu cuenta en Configuración antes de publicar.</p>}
         {getPlatformCopy(campaign, 'instagram').length > 2200 && <p role="alert">El texto supera los 2200 caracteres permitidos.</p>}
         {error && <p role="alert" className="my-3 text-error">{error}</p>}
-        {outcome && <p role="status" className="my-3">{outcome.message}{outcome.status === 'published' && ` Cuenta: @${outcome.username}.`}</p>}
+        {outcome?.status === 'not_published' && outcome.has_previous_publication && <p role="status" className="my-3 text-sm">Esta cuenta tiene una publicación anterior con otro contenido. Si confirmas, se creará una nueva; no se editará la anterior.</p>}
+        {outcome && outcome.status !== 'not_published' && <p role="status" className="my-3">{outcome.message}{outcome.status === 'published' && ` Cuenta: @${outcome.username}.`}</p>}
+        {outcome?.status === 'published' && outcome.publication_url && <a href={outcome.publication_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline">Ver publicación en Instagram</a>}
         <div className="mt-4 flex flex-wrap justify-end gap-3">
           <Button variant="outline" disabled={busy} onClick={onClose}>Cerrar</Button>
           <Button disabled={loading || checking || busy || !!error || !accountId || !campaign.imagen_b64 || locked || getPlatformCopy(campaign, 'instagram').length > 2200}
-            onClick={publish}>{checking ? 'Verificando…' : busy ? 'Publicando…' : outcome?.status === 'published' ? 'Ya publicada' : outcome?.status === 'preparing' ? 'Continuar publicación' : `Publicar${selected ? ` en @${selected.username}` : ''}`}</Button>
+            onClick={publish}>{checking ? 'Verificando…' : busy ? 'Publicando…' : registeredPublicationLabel(outcome?.status) || (outcome?.status === 'preparing' ? 'Continuar publicación' : `Publicar${selected ? ` en @${selected.username}` : ''}`)}</Button>
         </div>
       </div>
     </div>

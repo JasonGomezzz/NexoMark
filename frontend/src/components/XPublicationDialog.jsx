@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import api from '../services/api'
 import { getPlatformCopy } from '../services/campaignPublication'
 import { canConfirmXPublication } from '../services/xPublication'
+import { registeredPublicationLabel } from '../services/publicationState'
 import { Button } from '@/components/ui/button'
 
 export default function XPublicationDialog({ campaign, onClose }) {
@@ -152,7 +153,7 @@ export default function XPublicationDialog({ campaign, onClose }) {
       <div className="mt-4 flex flex-wrap justify-end gap-3">
         <Button variant="outline" disabled={busy} onClick={onClose}>Cerrar</Button>
         <Button disabled={!allowed} onClick={publish}>{checking ? 'Verificando…' : busy ? 'Publicando…'
-          : outcome?.status === 'published' ? 'Ya publicada' : `${outcome?.status === 'failed' ? 'Volver a confirmar' : 'Publicar'}${selected ? ` en @${selected.username}` : ''}`}</Button>
+          : registeredPublicationLabel(outcome?.status) || `${outcome?.status === 'failed' ? 'Volver a confirmar' : 'Publicar'}${selected ? ` en @${selected.username}` : ''}`}</Button>
       </div>
     </div>
   </div>

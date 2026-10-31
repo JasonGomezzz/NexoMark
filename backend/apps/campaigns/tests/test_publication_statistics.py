@@ -264,3 +264,21 @@ def test_campaign_deletion_removes_local_report_records_without_network_calls(ap
     assert not PublicationAvailability.objects.exists()
     assert not PublicationMetricSnapshot.objects.exists()
     assert not api_client.get(BASE).data['data']['publications']
+
+
+def test_owner_reported_removal_stays_excluded_when_meta_cannot_verify(api_client, publication):
+    from apps.campaigns.social_metric_readers import PublicationUnverifiable
+    PublicationMetricSnapshot.objects.create(campaign=publication.campaign, platform='instagram',
+        publication_id=publication.pk, day=timezone.localdate(), metrics={'likes': 7},
+        measured_at=timezone.now() - timedelta(minutes=6))
+    PublicationAvailability.objects.create(campaign=publication.campaign, platform='instagram',
+        publication_id=publication.pk, state='removed', note='Informado por el propietario; no confirmado por API.',
+        checked_at=timezone.now() - timedelta(minutes=6))
+    url = f'/api/campaigns/{publication.campaign_id}/publication-statistics/refresh/'
+    with patch('apps.campaigns.publication_statistics.read_counters', side_effect=PublicationUnverifiable('Permisos o privacidad.')):
+        response = api_client.post(url, {'platform': 'instagram', 'publication_id': publication.pk}, format='json')
+    assert response.data['data']['availability'] == 'removed'
+    data = api_client.get(BASE).data['data']
+    assert data['platforms']['instagram']['publications'] == 0
+    assert data['publications'][0]['metrics']['likes'] == 7
+    assert data['publications'][0]['availability'] == 'removed'

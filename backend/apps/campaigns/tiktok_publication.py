@@ -26,6 +26,7 @@ from core.exceptions import api_response
 from .facebook_publication import jpeg_image
 from .models import Campaign, TikTokUpload
 from .platform_content import platform_copy
+from .publication_guard import existing_content, publication_feedback
 
 MESSAGES = {
     'sending': 'Envío iniciado. No reenvíes esta campaña.',
@@ -94,20 +95,21 @@ def send_upload(upload, token):
     return publish_id
 
 
-def result(upload=None):
+def result(upload=None, campaign=None):
+    feedback = publication_feedback(upload, 'tiktok', campaign) if upload else {}
     status = upload.status if upload else 'not_sent'
     link = getattr(upload, 'publication_link', None) if upload else None
     message = ('Publicación existente vinculada y verificada por API. El estado del envío original se conserva; no reenvíes.'
                if link else MESSAGES.get(status, 'Todavía no se envió esta campaña.'))
-    return Response(api_response(True, message, {
-        'status': status, 'account_name': upload.display_name if upload else '',
+    return Response(api_response(True, feedback.get('publication_notice') or message, {
+        'status': status, **feedback, 'account_name': upload.display_name if upload else '',
         'upload_id': upload.pk if upload else None,
         'linked_publication': {'post_id': link.post_id, 'post_url': link.post_url,
                                'verified_at': link.verified_at.isoformat()} if link else None,
         'media_ready': media_ready(),
         'confirmation_source': upload.confirmation_source if upload else '',
         'published_at': upload.published_at.isoformat() if upload and upload.published_at else None,
-    }), status=202 if status in ('sending', 'processing') else 200)
+    }), status=202 if feedback.get('status', status) in ('sending', 'processing') else 200)
 
 
 class TikTokUploadView(APIView):
@@ -116,9 +118,9 @@ class TikTokUploadView(APIView):
     def get(self, request, campaign_id):
         campaign = get_object_or_404(Campaign, pk=campaign_id, marketero=request.user)
         account = owned_account(request.user, request.query_params.get('account_id'))
-        upload = TikTokUpload.objects.filter(campaign=campaign, open_id=account.open_id,
-                                            campaign_version=campaign.version).first()
-        return result(upload)
+        upload = existing_content(TikTokUpload.objects.filter(campaign=campaign, open_id=account.open_id).select_related('publication_link'),
+            campaign, 'tiktok', platform_copy(campaign, 'tiktok'), tiktok_jpeg)
+        return result(upload, campaign)
 
     def post(self, request, campaign_id):
         if request.data.get('confirm') is not True:
@@ -130,10 +132,10 @@ class TikTokUploadView(APIView):
                 return Response(api_response(False, 'Se requiere una campaña aprobada con TikTok seleccionado.'), status=400)
             if type(request.data.get('version')) is not int or request.data['version'] != campaign.version:
                 return Response(api_response(False, 'La campaña cambió. Recarga antes de enviarla.'), status=409)
-            existing = TikTokUpload.objects.filter(campaign=campaign, open_id=account.open_id,
-                                                   campaign_version=campaign.version).first()
+            existing = existing_content(TikTokUpload.objects.filter(campaign=campaign, open_id=account.open_id).select_related('publication_link'),
+                campaign, 'tiktok', platform_copy(campaign, 'tiktok'), tiktok_jpeg)
             if existing:
-                return result(existing)
+                return result(existing, campaign)
             if not configured() or not media_ready():
                 return Response(api_response(False, 'Falta configurar TikTok y verificar la URL pública de imágenes en el portal.'), status=503)
             caption = platform_copy(campaign, 'tiktok')
@@ -166,8 +168,11 @@ class TikTokUploadStatusView(APIView):
         campaign = get_object_or_404(Campaign, pk=campaign_id, marketero=request.user)
         account = owned_account(request.user, request.data.get('account_id'))
         with transaction.atomic():
-            upload = TikTokUpload.objects.select_for_update().filter(campaign=campaign,
-                open_id=account.open_id, campaign_version=campaign.version).first()
+            upload = existing_content(TikTokUpload.objects.select_for_update(of=('self',)).filter(campaign=campaign,
+                open_id=account.open_id).select_related('publication_link'), campaign, 'tiktok',
+                platform_copy(campaign, 'tiktok'), tiktok_jpeg)
+            if upload and upload.campaign_version != campaign.version:
+                return result(upload, campaign)
             if (not upload or not upload.publish_id or upload.status == 'failed'
                     or upload.status == 'published' and upload.public_post_ids):
                 return result(upload)

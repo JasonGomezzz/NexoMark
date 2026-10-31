@@ -25,6 +25,7 @@ from .social_metric_readers import (x_counters, tiktok_counters, MetricReadUnava
                                    PublicationNotFound, PublicationUnverifiable)
 from .tiktok_post_ids import effective_public_post_ids
 from .facebook_insights import optional_insight
+from .publication_guard import instagram_permalink
 
 MODELS = {'facebook': FacebookPublication, 'instagram': InstagramPublication,
           'twitter': XPublication, 'tiktok': TikTokUpload}
@@ -68,7 +69,7 @@ def read_counters(platform, publication):
     version = settings.FACEBOOK_GRAPH_VERSION if platform == 'facebook' else ''
     path = f'{version}/{identifier}' if version else identifier
     fields = ('reactions.type(LIKE).limit(0).summary(true),comments.limit(0).summary(true),shares'
-              if platform == 'facebook' else 'like_count,comments_count')
+              if platform == 'facebook' else 'like_count,comments_count,permalink')
     response = requests.get(f'https://{host}/{path}', params={'fields': fields},
                             headers={'Authorization': f'Bearer {token}'},
                             timeout=20, allow_redirects=False)
@@ -84,6 +85,8 @@ def read_counters(platform, publication):
     values = dict.fromkeys(METRICS)
     if platform == 'instagram':
         values.update(likes=count(data.get('like_count')), comments=count(data.get('comments_count')))
+        if instagram_permalink(data.get('permalink')):
+            values['_permalink'] = instagram_permalink(data['permalink'])
     else:
         for metric, field in [('likes', 'reactions'), ('comments', 'comments')]:
             edge = data.get(field)
@@ -97,7 +100,7 @@ def read_counters(platform, publication):
             activity = optional_insight(insights_url, token, 'post_activity_by_action_type')
             if isinstance(activity, dict):
                 values['shares'] = count(activity.get('share'))
-    if all(v is None for v in values.values()):
+    if all(values.get(k) is None for k in METRICS):
         raise ValueError('Meta no devolvió contadores disponibles.')
     return values
 
@@ -152,7 +155,7 @@ def publication_rows(campaigns):
                          'availability': check.state if check else 'unknown',
                          'availability_note': check.note if check else '',
                          'checked_at': check.checked_at.isoformat() if check else None,
-                         'included_in_totals': not check or check.state != 'unavailable',
+                         'included_in_totals': not check or check.state not in ('unavailable', 'removed'),
                          'can_refresh': available, 'refresh_note': reason if not available else '',
                          'refresh_cost_note': cost_note,
                          'metrics': {k: s.metrics.get(k) if s else None for k in METRICS},
@@ -268,9 +271,12 @@ class RefreshPublicationStatisticsView(APIView):
             values = read_counters(platform, p)
         except (PublicationNotFound, PublicationUnverifiable) as error:
             state = 'unavailable' if isinstance(error, PublicationNotFound) else 'unverified'
+            note = str(error)
+            if isinstance(error, PublicationUnverifiable) and check and check.state == 'removed':
+                state, note = check.state, check.note
             PublicationAvailability.objects.update_or_create(platform=platform, publication_id=p.pk,
-                defaults={'campaign': campaign, 'state': state, 'note': str(error), 'checked_at': timezone.now()})
-            return Response(api_response(True, str(error), {'availability': state}))
+                defaults={'campaign': campaign, 'state': state, 'note': note, 'checked_at': timezone.now()})
+            return Response(api_response(True, note, {'availability': state}))
         except MetricReadUnavailable as error:
             self.record_failure(campaign, platform, p.pk, check, str(error))
             return Response(api_response(False, str(error)), status=503)

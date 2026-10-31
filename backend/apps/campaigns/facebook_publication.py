@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .platform_content import platform_copy
+from .publication_guard import existing_content, publication_feedback
 
 from apps.authentication.facebook import configured
 from apps.authentication.instagram import cipher
@@ -63,14 +64,15 @@ def send_photo(publication, token):
     return photo_id, post_id
 
 
-def result(publication):
+def result(publication, campaign=None):
+    feedback = publication_feedback(publication, 'facebook', campaign)
     message = publication.message or 'Facebook está confirmando la publicación. No la reenvíes.'
-    return Response(api_response(True, message, {
-        'status': publication.status, 'page_name': publication.page_name,
+    return Response(api_response(True, feedback['publication_notice'] or message, {
+        **feedback, 'page_name': publication.page_name,
         'photo_id': publication.photo_id, 'post_id': publication.post_id,
         'publication_url': f'https://www.facebook.com/photo.php?fbid={publication.photo_id}'
-            if publication.status == 'published' else '',
-    }), status=202 if publication.status == 'publishing' else 200)
+            if feedback['status'] == 'published' else '',
+    }), status=202 if feedback['status'] == 'publishing' else 200)
 
 
 def owned_page(owner, value):
@@ -86,11 +88,12 @@ class FacebookPublishView(APIView):
     def get(self, request, campaign_id):
         campaign = get_object_or_404(Campaign, pk=campaign_id, marketero=request.user)
         page = owned_page(request.user, request.query_params.get('page_id'))
-        publication = FacebookPublication.objects.filter(campaign=campaign,
-            facebook_page_id=page.facebook_page_id, campaign_version=campaign.version).first()
+        records = FacebookPublication.objects.filter(campaign=campaign, facebook_page_id=page.facebook_page_id)
+        publication = existing_content(records, campaign, 'facebook', platform_copy(campaign, 'facebook'), jpeg_image)
         if publication:
-            return result(publication)
-        return Response(api_response(True, 'Todavía no se publicó en esta Página.', {'status': 'not_published'}))
+            return result(publication, campaign)
+        return Response(api_response(True, 'Todavía no se publicó este contenido en esta Página.',
+            {'status': 'not_published', 'has_previous_publication': records.filter(status='published').exists()}))
 
     def post(self, request, campaign_id):
         if request.data.get('confirm') is not True:
@@ -103,10 +106,10 @@ class FacebookPublishView(APIView):
             version = request.data.get('version')
             if isinstance(version, bool) or not isinstance(version, int) or version != campaign.version:
                 return Response(api_response(False, 'La campaña cambió. Recarga antes de publicar.'), status=409)
-            existing = FacebookPublication.objects.filter(campaign=campaign,
-                facebook_page_id=page.facebook_page_id, campaign_version=campaign.version).first()
+            existing = existing_content(FacebookPublication.objects.filter(campaign=campaign,
+                facebook_page_id=page.facebook_page_id), campaign, 'facebook', platform_copy(campaign, 'facebook'), jpeg_image)
             if existing:
-                return result(existing)
+                return result(existing, campaign)
             if page.expires_at <= timezone.now():
                 return Response(api_response(False, 'La autorización venció. Reconecta Facebook.'), status=400)
             if not configured():
