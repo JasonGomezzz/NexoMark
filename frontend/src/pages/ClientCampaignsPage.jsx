@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, AlertCircle, Inbox, Search, Star } from 'lucide-react'
 import { getMyCampaigns } from '../services/clientCampaigns'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,17 @@ import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import { campaignSentAt, relativeTimeFrom } from '../utils/date'
 import { getAuthItem } from '../services/session'
 
+// La estación de la línea fija el estado: Aprobar = pendientes, Publicar = aprobadas.
+const ESTADO_DE_ETAPA = { aprobar: 'pendiente_aprobacion', publicar: 'aprobado' }
+const TITULO_DE_ETAPA = {
+  aprobar: ['Por aprobar', 'Revisa cada pieza: lo que apruebes es exactamente lo que se publica.'],
+  publicar: ['Aprobadas', 'Las campañas que aprobaste y dónde se publicaron.'],
+}
+
 export default function ClientCampaignsPage() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const etapa = params.get('etapa') === 'publicar' ? 'publicar' : 'aprobar'
   const [page, setPage] = useState(0)
   const [revision, setRevision] = useState(0)
   const [data, setData] = useState(null)
@@ -17,11 +26,20 @@ export default function ClientCampaignsPage() {
   const [error, setError] = useState(false)
   const [filters, setFilters] = useState({
     q: '',
-    estado: '',
+    estado: ESTADO_DE_ETAPA[etapa],
     industria: '',
     plataforma: '',
     valoracion: '',
   })
+
+  // Al cambiar de estación en la banda se ajusta el estado (derivado en el render, sin efecto).
+  const [etapaPrevia, setEtapaPrevia] = useState(etapa)
+  if (etapaPrevia !== etapa) {
+    setEtapaPrevia(etapa)
+    setFilters((current) => ({ ...current, estado: ESTADO_DE_ETAPA[etapa] }))
+    setPage(0)
+    setLoading(true)
+  }
 
   function updateFilter(key, value) {
     setLoading(true)
@@ -95,103 +113,112 @@ export default function ClientCampaignsPage() {
   const totalPages = data?.totalPages ?? 1
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-on-surface">Campañas pendientes</h1>
-          <p className="mt-2 text-base text-on-surface-variant">
-            Busca, filtra y revisa las campañas enviadas a tu cuenta.
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft className="h-4 w-4" />
-          Dashboard
-        </Button>
+    <div className="space-y-8">
+      <header>
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="-ml-3 mb-2 inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Inicio
+        </button>
+        <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">{TITULO_DE_ETAPA[etapa][0]}</h1>
+        <p className="mt-2 text-[15px] text-on-surface-variant">{TITULO_DE_ETAPA[etapa][1]}</p>
       </header>
 
       <XPendientesCliente />
 
       {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
-          <AlertCircle className="h-4 w-4" />
-          No se pudieron cargar las campañas pendientes.
+        <div role="alert" className="flex items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
+          <AlertCircle className="h-4 w-4" aria-hidden="true" />
+          No se pudieron cargar tus campañas. Revisa tu conexión e intenta de nuevo.
         </div>
       )}
 
-      <section className="glass-soft grid gap-3 rounded-xl p-4 md:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]">
-        <label className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
+      <section aria-label="Buscar y filtrar" className="flex flex-wrap items-center gap-3">
+        <label className="relative min-w-0 flex-1 sm:max-w-sm">
+          <span className="sr-only">Buscar campaña, copy o marketero</span>
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" aria-hidden="true" />
           <input
+            type="search"
             value={filters.q}
             onChange={(e) => updateFilter('q', e.target.value)}
             placeholder="Buscar campaña, copy o marketero"
-            className="h-10 w-full rounded-lg border border-outline-variant bg-white pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+            className="h-11 w-full rounded-full border border-outline bg-surface-container-lowest pl-10 pr-4 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
           />
         </label>
-        <select
-          value={filters.estado}
-          onChange={(e) => updateFilter('estado', e.target.value)}
-          className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="">Todos los estados</option>
-          <option value="pendiente_aprobacion">Pendientes</option>
-          <option value="aprobado">Aprobadas</option>
-          <option value="rechazado">Rechazadas</option>
-        </select>
-        <select
-          value={filters.industria}
-          onChange={(e) => updateFilter('industria', e.target.value)}
-          className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="">Industria</option>
-          {['tecnologia', 'salud', 'educacion', 'retail', 'gastronomia', 'moda', 'finanzas', 'entretenimiento', 'otro'].map((item) => (
-            <option key={item} value={item}>{item}</option>
-          ))}
-        </select>
-        <select
-          value={filters.plataforma}
-          onChange={(e) => updateFilter('plataforma', e.target.value)}
-          className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="">Plataforma</option>
-          {['instagram', 'facebook', 'twitter', 'linkedin', 'google_ads', 'tiktok'].map((item) => (
-            <option key={item} value={item}>{item}</option>
-          ))}
-        </select>
-        <select
-          value={filters.valoracion}
-          onChange={(e) => updateFilter('valoracion', e.target.value)}
-          className="h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="">Valoración</option>
-          {[5, 4, 3, 2, 1].map((item) => (
-            <option key={item} value={item}>{item} estrellas</option>
-          ))}
-        </select>
+        <label>
+          <span className="sr-only">Estado</span>
+          <select value={filters.estado} onChange={(e) => updateFilter('estado', e.target.value)} className="h-11 rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+            <option value="">Todos los estados</option>
+            <option value="pendiente_aprobacion">Pendientes</option>
+            <option value="aprobado">Aprobadas</option>
+            <option value="rechazado">Rechazadas</option>
+          </select>
+        </label>
+        <details className="group w-full sm:w-auto">
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-full px-4 text-sm font-semibold text-primary hover:bg-surface-container-low">
+            Más filtros
+          </summary>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <label>
+              <span className="sr-only">Industria</span>
+              <select value={filters.industria} onChange={(e) => updateFilter('industria', e.target.value)} className="h-11 rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                <option value="">Toda industria</option>
+                {['tecnologia', 'salud', 'educacion', 'retail', 'gastronomia', 'moda', 'finanzas', 'entretenimiento', 'otro'].map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Plataforma</span>
+              <select value={filters.plataforma} onChange={(e) => updateFilter('plataforma', e.target.value)} className="h-11 rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                <option value="">Toda plataforma</option>
+                {['instagram', 'facebook', 'twitter', 'linkedin', 'google_ads', 'tiktok'].map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Valoración</span>
+              <select value={filters.valoracion} onChange={(e) => updateFilter('valoracion', e.target.value)} className="h-11 rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                <option value="">Cualquier valoración</option>
+                {[5, 4, 3, 2, 1].map((item) => (
+                  <option key={item} value={item}>{item} estrellas</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </details>
       </section>
 
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-24 animate-pulse rounded-xl border border-outline-variant bg-surface-container-low" />
+            <div key={item} className="h-24 animate-pulse rounded-[14px] bg-surface-container-high" />
           ))}
         </div>
       ) : campaigns.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
-          <Inbox className="h-10 w-10 text-outline" />
-          <h2 className="text-lg font-semibold text-on-surface">No hay campañas para mostrar</h2>
-          <p className="max-w-sm text-sm text-on-surface-variant">
-            Ajusta la búsqueda o espera nuevas solicitudes del marketero.
+        <div className="regla flex flex-col items-start gap-2 pt-6">
+          <Inbox className="h-8 w-8 text-outline" aria-hidden="true" />
+          <h2 className="text-xl font-extrabold text-on-surface">
+            {etapa === 'aprobar' && filters.estado === 'pendiente_aprobacion' && !filters.q ? 'Todo al día' : 'No hay campañas para mostrar'}
+          </h2>
+          <p className="max-w-md text-[15px] text-on-surface-variant">
+            {etapa === 'aprobar' && filters.estado === 'pendiente_aprobacion' && !filters.q
+              ? 'No tienes campañas por aprobar. Cuando tu agencia te envíe una, aparecerá aquí.'
+              : 'Prueba con otra búsqueda o quita los filtros.'}
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <ul className="divide-y divide-hairline border-y border-hairline">
           {campaigns.map((campaign) => (
-            <article
+            <li
               key={campaign.id}
-              className="glass-soft flex flex-col gap-4 rounded-xl p-4 shadow-sm md:flex-row md:items-center"
+              className="flex items-center gap-4 py-4"
             >
-              <div className="h-20 w-full shrink-0 overflow-hidden rounded-lg bg-surface-container-high md:w-24">
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[10px] bg-surface-container-high">
                 {campaign.imagenB64 ? (
                   <img
                     src={`data:image/png;base64,${campaign.imagenB64}`}
@@ -201,7 +228,7 @@ export default function ClientCampaignsPage() {
                 ) : null}
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="truncate font-semibold text-on-surface">{campaign.titulo}</h2>
+                <h2 className="line-clamp-2 font-semibold leading-snug text-on-surface">{campaign.titulo}</h2>
                 <p className="truncate text-sm text-on-surface-variant">
                   {campaign.clienteNombre || 'Cliente'} · {campaign.plataforma || '—'} · {campaign.industria || '—'}
                 </p>
@@ -209,19 +236,23 @@ export default function ClientCampaignsPage() {
                   Enviada {relativeTimeFrom(campaignSentAt(campaign))}
                 </p>
                 {campaign.clienteValoracion && (
-                  <p className="mt-1 inline-flex items-center gap-1 text-[13px] font-semibold text-amber-600">
-                    <Star className="h-3.5 w-3.5 fill-current" />
+                  <p className="mt-1 inline-flex items-center gap-1 text-[13px] font-semibold text-tertiary">
+                    <Star className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                     {campaign.clienteValoracion}/5
                   </p>
                 )}
               </div>
-              <Button onClick={() => navigate(`/review/${campaign.id}`)}>
-                {campaign.estado === 'pendiente_aprobacion' ? 'Revisar' : 'Ver detalle'}
-                <ArrowRight className="h-4 w-4" />
+              <Button
+                variant={campaign.estado === 'pendiente_aprobacion' ? 'default' : 'outline'}
+                onClick={() => navigate(`/review/${campaign.id}`)}
+                aria-label={`${campaign.estado === 'pendiente_aprobacion' ? 'Revisar' : 'Ver'} «${campaign.titulo}»`}
+              >
+                <span className="hidden sm:inline">{campaign.estado === 'pendiente_aprobacion' ? 'Revisar' : 'Ver'}</span>
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Button>
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       {totalPages > 1 && (
