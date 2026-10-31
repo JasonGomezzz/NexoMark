@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { AlertCircle, ArrowRight, ImageOff, Mic, Star } from 'lucide-react'
+import { AlertCircle, ArrowRight, CheckCheck, ImageOff, Mic, Send, Star, Wand2 } from 'lucide-react'
 import api from '../services/api'
 import { ButtonLink } from '@/components/ui/button'
 import { getAuthItem } from '../services/session'
 import { conteosDeLinea } from '@/components/linea/estaciones'
 
 /**
- * Inicio de MARKETERO / SUPERADMIN (dirección "Línea"): la línea entera de un
- * vistazo. Cuántas campañas esperan en cada estación, lo siguiente que hay que
+ * Inicio de MARKETERO / SUPERADMIN (dirección "Conforme"): la orden de trabajo
+ * de un vistazo. Cuántas campañas esperan en cada paso, lo siguiente que hay que
  * hacer (listas para enviar y cambios pedidos) y las últimas aprobadas.
  * El rol CLIENTE usa ClientDashboardPage. Datos: /api/campaigns/stats/,
  * /api/campaigns/ y /api/campaigns/recent-approved/ (se refrescan al navegar).
  */
 const ESTACIONES = [
-  { id: 'generar', nombre: 'Generar', desc: 'Por generar, listas para enviar o con cambios pedidos.' },
-  { id: 'aprobar', nombre: 'Aprobar', desc: 'Enviadas: el cliente las está revisando.' },
-  { id: 'publicar', nombre: 'Publicar', desc: 'Aprobadas: se publican en las cuentas elegidas.' },
+  { id: 'generar', nombre: 'Generar', icono: Wand2, desc: 'Por generar, listas para enviar o con cambios pedidos.' },
+  { id: 'aprobar', nombre: 'Aprobar', icono: CheckCheck, desc: 'Enviadas: el cliente las está revisando.' },
+  { id: 'publicar', nombre: 'Publicar', icono: Send, desc: 'Aprobadas: se publican en las cuentas elegidas.' },
 ]
 
 export default function DashboardPage() {
@@ -70,7 +70,7 @@ export default function DashboardPage() {
             Hola{nombre ? `, ${nombre.split(' ')[0]}` : ''}
           </h1>
           <p className="mt-2 text-[15px] text-on-surface-variant">
-            {role === 'superadmin' ? 'Así va la línea en toda la plataforma.' : 'Así va tu línea de campañas.'}
+            {role === 'superadmin' ? 'Así va el trabajo en toda la plataforma.' : 'Así va el trabajo con tus clientes.'}
           </p>
         </div>
         {role === 'marketero' && (
@@ -109,15 +109,16 @@ export default function DashboardPage() {
       )}
 
       {/* La línea de un vistazo */}
-      <section aria-labelledby="linea-titulo" className="regla pt-5">
-        <h2 id="linea-titulo" className="text-2xl font-extrabold text-on-surface">
-          En cada estación
+      <section aria-labelledby="orden-titulo" className="regla pt-5">
+        <h2 id="orden-titulo" className="text-2xl font-extrabold text-on-surface">
+          En cada paso de la orden
         </h2>
-        <ol className="relative mt-6 grid gap-8 md:grid-cols-3 md:gap-6">
-          <span aria-hidden="true" className="absolute left-[18px] right-[18px] top-[18px] hidden h-1.5 -translate-y-1/2 rounded-full bg-turquoise md:block" />
-          {ESTACIONES.map(({ id, nombre: n, desc }) => (
-            <li key={id} className="relative">
-              <span aria-hidden="true" className="relative z-10 block h-9 w-9 rounded-full border-[5px] border-turquoise bg-background" />
+        <ol className="mt-6 grid gap-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-hairline">
+          {ESTACIONES.map(({ id, nombre: n, desc, icono: Icono }) => (
+            <li key={id} className="md:px-6 md:first:pl-0">
+              <span aria-hidden="true" className="casilla casilla-pliego h-10 w-10 rounded-[9px]">
+                <Icono className="h-[18px] w-[18px]" />
+              </span>
               <Link
                 to={`/campaigns?etapa=${id}`}
                 className="group mt-4 block rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
@@ -210,7 +211,7 @@ export default function DashboardPage() {
 
       {!loading && !error && stats?.total === 0 && role === 'marketero' && (
         <div className="regla pt-6">
-          <h2 className="text-xl font-extrabold text-on-surface">Tu línea está vacía</h2>
+          <h2 className="text-xl font-extrabold text-on-surface">Todavía no hay órdenes</h2>
           <p className="mt-2 max-w-md text-[15px] text-on-surface-variant">Dicta la primera campaña: la IA propone los campos y crea el copy y la imagen.</p>
           <ButtonLink to="/campaigns/new" className="mt-4">
             <Mic className="h-4 w-4" aria-hidden="true" />

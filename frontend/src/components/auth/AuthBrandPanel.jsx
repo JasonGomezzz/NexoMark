@@ -3,9 +3,9 @@ import { ChartColumn, CheckCheck, Info, Mic, Send, Wand2 } from 'lucide-react'
 import NexoN from '@/components/NexoN'
 
 /**
- * Panel de marca compartido por Login y Register (dirección "Línea"): la N
- * encaja al entrar y debajo corre el recorrido real del producto como una
- * línea vertical de cinco estaciones, cada una con lo que hace de verdad.
+ * Panel de marca compartido por Login y Register (dirección "Conforme"): la
+ * N encaja al entrar y debajo va la orden de trabajo real del producto, cinco
+ * casillas, cada una con lo que hace de verdad.
  * El testimonio viene de /api/auth/brand-content/ y va rotulado como ejemplo
  * (no es un cliente real); sin foto, con iniciales.
  * `highlights` los provee cada pantalla; `demo: true` marca un dato de ejemplo.
@@ -34,7 +34,7 @@ export default function AuthBrandPanel({
   const ejemplos = highlights.filter((h) => h.demo)
 
   return (
-    <aside className="relative hidden min-h-screen w-[46%] max-w-[680px] shrink-0 flex-col gap-10 overflow-hidden bg-banda px-12 py-12 text-on-navy md:flex lg:px-16">
+    <aside className="relative hidden min-h-screen w-[46%] max-w-[680px] shrink-0 flex-col gap-10 overflow-hidden bg-cama px-12 py-12 text-on-navy md:flex lg:px-16">
       <div>
         <NexoN encajar retraso={0.15} className="h-14 w-14" titulo="NexoMark IA" />
         <motion.p
@@ -47,17 +47,12 @@ export default function AuthBrandPanel({
         </motion.p>
       </div>
 
-      <ol className="relative max-w-md" aria-label="Recorrido de una campaña">
-        <span className="absolute bottom-6 left-[15px] top-4 w-1.5 rounded-full bg-via" aria-hidden="true" />
+      <ol className="max-w-md divide-y divide-cama-line border-y border-cama-line" aria-label="Orden de trabajo de una campaña">
         {ESTACIONES.map(({ nombre, icono: Icono, desc }, index) => (
-          <li key={nombre} className="relative grid grid-cols-[36px_1fr] gap-4 pb-6 last:pb-0">
-            {index === 0 ? (
-              <span className="relative z-10 mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-turquoise text-navy-deep shadow-[0_0_0_4px_var(--color-banda),0_0_0_6px_var(--color-turquoise-soft)]">
-                <Icono className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden="true" />
-              </span>
-            ) : (
-              <span className="relative z-10 mx-auto mt-2 h-5 w-5 rounded-full border-4 border-on-navy-muted bg-banda" aria-hidden="true" />
-            )}
+          <li key={nombre} className="grid grid-cols-[36px_1fr] gap-4 py-4">
+            <span className={`casilla mt-0.5 h-9 w-9 ${index === 0 ? 'casilla-actual' : ''}`} aria-hidden="true">
+              <Icono className="h-[18px] w-[18px]" strokeWidth={index === 0 ? 2.25 : 1.75} />
+            </span>
             <div>
               <p className="font-display text-lg font-extrabold leading-tight">{nombre}</p>
               <p className="mt-1 text-[15px] leading-relaxed text-on-navy-muted">{desc}</p>
@@ -76,7 +71,7 @@ export default function AuthBrandPanel({
         ))}
       </ol>
 
-      <figure className="relative mt-auto max-w-md border-t border-via pt-6">
+      <figure className="relative mt-auto max-w-md pt-2">
         <span className="demo-tag demo-tag-on-navy">
           <Info className="h-3 w-3" aria-hidden="true" />
           Testimonio de ejemplo, no es un cliente real

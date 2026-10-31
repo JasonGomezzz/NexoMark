@@ -46,9 +46,7 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        <ol className="relative mt-16 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:mt-24 lg:grid-cols-5">
-          {/* La vía que une las cinco estaciones (escritorio) */}
-          <span aria-hidden="true" className="absolute left-[18px] right-[calc(20%-18px)] top-[18px] hidden h-1.5 -translate-y-1/2 rounded-full bg-turquoise lg:block" />
+        <ol className="mt-16 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:mt-24 lg:grid-cols-5">
           {STEPS.map((step, i) => (
             <motion.li
               key={step.verbo}
@@ -57,10 +55,9 @@ export default function HowItWorks() {
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.5, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
             >
-              <span
-                aria-hidden="true"
-                className={`relative z-10 block h-9 w-9 rounded-full ${i === 0 ? 'bg-turquoise shadow-[0_0_0_4px_var(--color-background),0_0_0_6px_var(--color-turquoise-soft)]' : 'border-[5px] border-turquoise bg-background'}`}
-              />
+              <span aria-hidden="true" className={`casilla h-10 w-10 font-display text-base font-extrabold ${i === 0 ? 'casilla-actual' : 'casilla-pliego'}`}>
+                {i + 1}
+              </span>
               <h3 className="mt-6 text-2xl font-extrabold tracking-[-0.02em] text-on-surface">{step.verbo}</h3>
               <p className="mt-3 text-base leading-relaxed text-on-surface-variant">{step.texto}</p>
             </motion.li>

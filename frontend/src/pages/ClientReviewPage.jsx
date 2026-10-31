@@ -246,7 +246,7 @@ export default function ClientReviewPage() {
         {/* ── La decisión ── */}
         <aside aria-label="Tu decisión" className="min-w-0 space-y-10">
           <section className="regla pt-5">
-            <p className="mb-2 text-sm font-semibold text-on-surface-variant">{puedeRevisar ? 'Estación Aprobar' : 'Publicación'}</p>
+            <p className="mb-2 text-sm font-semibold text-on-surface-variant">{puedeRevisar ? 'Paso Aprobar' : 'Publicación'}</p>
             <h2 className="text-2xl font-extrabold leading-tight text-on-surface">
               {puedeRevisar ? (destinos.length ? 'Al aprobar, se publica en' : 'Al aprobar') : 'Dónde se publicó'}
             </h2>

@@ -9,7 +9,7 @@ import { ESTADOS_DE_ETAPA, etapaDeEstado } from '@/components/linea/estaciones'
 import { cn } from '@/lib/utils'
 
 /**
- * Campañas por estación de la línea (Marketero/SuperAdmin). Consume Django con
+ * Campañas por paso de la orden de trabajo (Marketero/SuperAdmin). Consume Django con
  * paginación DRF. `?etapa=generar|aprobar|publicar` filtra por estación (lo usa
  * la banda de navegación); sin etapa, todas. El filtro y la búsqueda se aplican
  * sobre la página cargada (la API no filtra por estado).
@@ -21,24 +21,27 @@ const ETAPAS = {
 }
 const ORDEN = ['dictar', 'generar', 'aprobar', 'publicar', 'medir']
 
-/** Cinco puntos: en qué estación va la campaña. */
+/** Cinco casillas mínimas: en qué paso de la orden va la campaña. */
 function MiniRecorrido({ estado }) {
   const etapa = etapaDeEstado(estado)
   const indice = etapa ? ORDEN.indexOf(etapa) : 2
   const rechazo = estado === 'rechazado' || estado === 'fracaso'
   return (
-    <span className="flex items-center" aria-hidden="true">
+    <span className="flex items-center gap-1" aria-hidden="true">
       {ORDEN.map((id, i) => (
-        <span key={id} className="flex items-center">
-          {i > 0 && <span className={cn('h-0.5 w-2.5', i <= indice ? 'bg-turquoise' : 'bg-outline-variant')} />}
-          <span
-            className={cn(
-              'rounded-full',
-              i === indice ? 'h-3 w-3' : 'h-2 w-2',
-              rechazo && id === 'aprobar' ? 'bg-error' : i <= indice ? 'bg-turquoise' : 'border-2 border-outline-variant',
-            )}
-          />
-        </span>
+        <span
+          key={id}
+          className={cn(
+            'h-3 w-3 rounded-[3px]',
+            rechazo && id === 'aprobar'
+              ? 'bg-error'
+              : i < indice
+                ? 'bg-primary-fixed ring-1 ring-inset ring-primary/40'
+                : i === indice
+                  ? 'bg-turquoise'
+                  : 'border border-dashed border-outline-variant',
+          )}
+        />
       ))}
     </span>
   )
@@ -135,7 +138,7 @@ export default function CampaignListPage() {
       </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex max-w-full gap-1 overflow-x-auto rounded-[12px] border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por estación">
+        <div className="flex max-w-full gap-1 overflow-x-auto rounded-[12px] border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por paso">
           {[[null, 'Todas'], ['generar', 'Generar'], ['aprobar', 'Aprobar'], ['publicar', 'Publicar']].map(([id, texto]) => (
             <button
               key={texto}
@@ -198,7 +201,7 @@ export default function CampaignListPage() {
               ? 'Dicta la primera: la IA propone los campos y crea el copy y la imagen.'
               : busqueda
                 ? 'Prueba con otra palabra o quita la búsqueda.'
-                : 'Cuando una campaña llegue a esta estación, aparecerá aquí.'}
+                : 'Cuando una campaña llegue a este paso, aparecerá aquí.'}
           </p>
           {campaigns.length === 0 && role === 'marketero' && (
             <Button className="mt-1" onClick={() => navigate('/campaigns/new')}>
