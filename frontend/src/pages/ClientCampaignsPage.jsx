@@ -145,7 +145,7 @@ export default function ClientCampaignsPage() {
             value={filters.q}
             onChange={(e) => updateFilter('q', e.target.value)}
             placeholder="Buscar campaña, copy o marketero"
-            className="h-11 w-full rounded-full border border-outline bg-surface-container-lowest pl-10 pr-4 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+            className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest pl-10 pr-4 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
           />
         </label>
         <label>

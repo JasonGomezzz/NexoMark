@@ -2,25 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
 import toast from 'react-hot-toast'
-import { Link } from 'react-router-dom'
 import { AlertCircle, ChartColumnIncreasing, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import PlanoDelAnio from '../components/social/PlanoDelAnio'
+import { Planchas, PiezasSelladas } from '../components/social/PlanchasRedes'
 import PublicationBadge from '../components/social/PublicationBadge'
 import PublicationStatsDrawer from '../components/social/PublicationStatsDrawer'
 import RedIcon from '../components/social/RedIcon'
 import { useAuth } from '../hooks/useAuth'
 import {
   alcanceDelRol,
-  etiquetaRed,
   filtrarPublicaciones,
   formatoMetrica,
-  haceCuanto,
-  indiceMesActual,
   metricasDeRed,
   mostrarTikTok,
   mostrarX,
-  serieAnual,
 } from '../services/social'
 import { socialApi } from '../services/socialApi'
 
@@ -57,7 +52,6 @@ export default function PublicationsStatsPage() {
   const [anio, setAnio] = useState(() => new Date().getFullYear())
   const [xConfig, setXConfig] = useState(null)
   const [tiktokConfig, setTiktokConfig] = useState(null)
-  const [mesElegido, setMesElegido] = useState(null)
 
   const abierta = Number(params.get('publicacion')) || null
 
@@ -135,22 +129,13 @@ export default function PublicationsStatsPage() {
     ? [...FILTRO_ESTADO, { valor: 'en_buzon', texto: 'En el buzón de TikTok' }]
     : FILTRO_ESTADO
   const conMarketero = rol === 'superadmin'
-  // Mes del detalle: el elegido; si no, el actual (o el último con publicaciones en años pasados).
-  const mes = useMemo(() => {
-    if (mesElegido !== null) return mesElegido
-    const actual = indiceMesActual(anio)
-    if (actual !== -1) return actual
-    const filas = resumen?.anual?.publicaciones_por_mes ?? []
-    const conPubs = filas.map((f, i) => (redesPanel.some((r) => f[r] > 0) ? i : -1)).filter((i) => i !== -1)
-    return conPubs.length ? conPubs[conPubs.length - 1] : 11
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mesElegido, anio, resumen])
 
   return (
     <div className="space-y-12">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Métricas de {anio}</h1>
+          <p className="mb-1 text-[13px] text-on-surface-variant">Informe del año</p>
+          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.025em] text-on-surface sm:text-[40px]">Métricas de {anio}</h1>
           <p className="mt-2 max-w-2xl text-[15px] text-on-surface-variant">
             {alcanceDelRol(rol)} Las cifras vienen de Meta y pueden tardar hasta 48 horas en aparecer.
           </p>
@@ -163,7 +148,7 @@ export default function PublicationsStatsPage() {
               <select
                 value={anio}
                 onChange={(e) => setAnio(Number(e.target.value))}
-                className="h-11 appearance-none rounded-full border border-outline bg-surface-container-lowest pr-10 pl-4 text-sm font-semibold text-on-surface tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-11 appearance-none rounded-[10px] border border-outline bg-surface-container-lowest pr-10 pl-4 text-sm font-semibold text-on-surface tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {anios.map((a) => (
                   <option key={a} value={a}>
@@ -201,21 +186,15 @@ export default function PublicationsStatsPage() {
           aria-busy={cambiandoAnio}
           className={`space-y-8 transition-opacity duration-200 ${cambiandoAnio ? 'opacity-50' : ''}`}
         >
-          <section aria-labelledby="plano-titulo" className="regla pt-5">
-            <h2 id="plano-titulo" className="text-2xl font-extrabold text-on-surface">
-              El año en la línea
+          <section aria-labelledby="planchas-titulo">
+            <h2 id="planchas-titulo" className="text-2xl font-extrabold text-on-surface">
+              Una plancha por red
             </h2>
-            <p className="mb-5 mt-1 text-[15px] text-on-surface-variant">Elige un mes para ver su detalle.</p>
-            <PlanoDelAnio
-              redes={redesPanel}
-              anual={resumen.anual}
-              anio={resumen.anual.anio}
-              mesElegido={mes}
-              onElegirMes={setMesElegido}
-            />
+            <p className="mb-5 mt-1 text-[15px] text-on-surface-variant">Totales de {resumen.anual.anio} con la última lectura de cada publicación.</p>
+            <Planchas redes={redesPanel} resumen={resumen} puedeConectar={rol !== 'superadmin'} />
           </section>
 
-          <DetallePorRed redes={redesPanel} resumen={resumen} mes={mes} puedeConectar={rol !== 'superadmin'} />
+          <PiezasSelladas publicaciones={publicaciones} rol={rol} onAbrir={abrir} />
 
           <section aria-labelledby="publicaciones-titulo" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -223,13 +202,13 @@ export default function PublicationsStatsPage() {
                 Cada publicación de {resumen.anual.anio}
               </h2>
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por red">
+                <div className="flex max-w-full gap-1 overflow-x-auto rounded-[12px] border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por red">
                   {filtrosRed.map((f) => (
                     <button
                       key={f.valor}
                       onClick={() => setRed(f.valor)}
                       aria-pressed={red === f.valor}
-                      className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      className={`min-h-10 shrink-0 rounded-[8px] px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                         red === f.valor
                           ? 'bg-primary text-on-primary'
                           : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
@@ -244,7 +223,7 @@ export default function PublicationsStatsPage() {
                     value={estado}
                     onChange={(e) => setEstado(e.target.value)}
                     aria-label="Filtrar por estado"
-                    className="h-11 appearance-none rounded-full border border-outline bg-surface-container-lowest pr-10 pl-4 text-sm text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="h-11 appearance-none rounded-[10px] border border-outline bg-surface-container-lowest pr-10 pl-4 text-sm text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {filtrosEstado.map((f) => (
                       <option key={f.valor} value={f.valor}>
@@ -292,71 +271,6 @@ export default function PublicationsStatsPage() {
         )}
       </AnimatePresence>
     </div>
-  )
-}
-
-/** Por red: lo del mes elegido y los totales del año (última lectura de cada publicación). */
-function DetallePorRed({ redes, resumen, mes, puedeConectar }) {
-  const nombreMes = serieAnual(resumen.anual, redes[0], 'publicaciones')[mes]?.nombreMes ?? ''
-  return (
-    <section aria-labelledby="detalle-titulo" className="regla pt-5">
-      <h2 id="detalle-titulo" className="text-2xl font-extrabold text-on-surface">
-        <span className="capitalize">{nombreMes}</span> y el año, por red
-      </h2>
-      <div className="mt-5 grid gap-x-10 gap-y-8 md:grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
-        {redes.map((red) => {
-          const datos = resumen.redes[red] ?? {}
-          const { principales, secundarias, sinLectura, motivoSinLectura } = metricasDeRed(red)
-          const pubsMes = serieAnual(resumen.anual, red, 'publicaciones')[mes]?.total ?? 0
-          const likesMes = serieAnual(resumen.anual, red, 'me_gusta')[mes]?.total ?? null
-          const total = datos.publicaciones ?? 0
-          return (
-            <article key={red} className="min-w-0">
-              <h3 className="flex items-center gap-2.5 font-display text-lg font-extrabold text-on-surface">
-                <RedIcon red={red} className="h-6 w-6 rounded-md" />
-                {etiquetaRed(red)}
-              </h3>
-              <p className="mt-2 text-[15px] text-on-surface">
-                <span className="capitalize">{nombreMes}</span>:{' '}
-                <strong className="font-semibold tabular-nums">{pubsMes}</strong> {pubsMes === 1 ? 'publicación' : 'publicaciones'}
-                {!sinLectura && pubsMes > 0 && (
-                  <>
-                    {' · '}
-                    <strong className="font-semibold tabular-nums">{formatoMetrica(likesMes)}</strong> {principales[0]?.[1]?.toLowerCase()}
-                  </>
-                )}
-              </p>
-              {total === 0 ? (
-                <p className="mt-3 text-sm text-on-surface-variant">
-                  Aún no hay publicaciones en {etiquetaRed(red)} este año.{' '}
-                  {puedeConectar && (
-                    <Link to="/settings" className="inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
-                      Revisar redes conectadas
-                    </Link>
-                  )}
-                </p>
-              ) : sinLectura ? (
-                <p className="mt-3 text-sm text-on-surface-variant">{motivoSinLectura}</p>
-              ) : (
-                <dl className="mt-3 divide-y divide-hairline border-y border-hairline">
-                  {[...principales, ...secundarias].map(([campo, etiqueta]) => (
-                    <div key={campo} className="flex items-baseline justify-between gap-3 py-2 text-sm">
-                      <dt className="text-on-surface-variant">{etiqueta} en el año</dt>
-                      <dd className={datos[campo] == null ? 'text-on-surface-variant' : 'font-semibold tabular-nums text-on-surface'}>
-                        {formatoMetrica(datos[campo])}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-              {total > 0 && datos.metricas_al && (
-                <p className="mt-2 text-[13px] text-on-surface-variant">Leídas de Meta {haceCuanto(datos.metricas_al)}</p>
-              )}
-            </article>
-          )
-        })}
-      </div>
-    </section>
   )
 }
 

@@ -135,7 +135,7 @@ export default function CampaignListPage() {
       </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por estación">
+        <div className="flex max-w-full gap-1 overflow-x-auto rounded-[12px] border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por estación">
           {[[null, 'Todas'], ['generar', 'Generar'], ['aprobar', 'Aprobar'], ['publicar', 'Publicar']].map(([id, texto]) => (
             <button
               key={texto}
@@ -143,7 +143,7 @@ export default function CampaignListPage() {
               onClick={() => elegirEtapa(id)}
               aria-pressed={etapa === id}
               className={cn(
-                'inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                'inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[8px] px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 etapa === id ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
               )}
             >
@@ -160,7 +160,7 @@ export default function CampaignListPage() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar por título o cliente"
-            className="h-11 w-full rounded-full border border-outline bg-surface-container-lowest pl-10 pr-4 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+            className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest pl-10 pr-4 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
           />
         </label>
       </div>
