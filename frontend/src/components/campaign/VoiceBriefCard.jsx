@@ -81,7 +81,7 @@ export default function VoiceBriefCard({ brief, disabled }) {
                 </li>
               )}
               {paradas.map((parada, index) => (
-                <li key={`${index}-${parada.t}`} className="relative">
+                <li key={`${index}-${parada.t}`} className="entra relative">
                   <span aria-hidden="true" className="absolute -left-[37px] top-2.5 h-4 w-4 rounded-full border-4 border-turquoise bg-background sm:-left-[45px] sm:h-[18px] sm:w-[18px] sm:border-[5px]" />
                   {parada.t !== null && <p className="text-[13px] font-semibold tabular-nums text-outline">{reloj(parada.t)}</p>}
                   <p className="mt-1 font-display text-[25px] font-bold leading-[1.18] tracking-[-0.02em] text-on-surface sm:text-[34px]">

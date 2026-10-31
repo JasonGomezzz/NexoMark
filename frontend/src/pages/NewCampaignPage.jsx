@@ -307,7 +307,7 @@ export default function NewCampaignPage() {
   )
 
   const formulario = () => (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="regla pt-5">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="regla entra-lenta pt-5">
       <p className="flex items-center gap-2.5 font-display text-sm font-bold text-on-surface-variant">
         <span aria-hidden="true" className="h-5 w-5 rounded-full border-4 border-regla bg-background" />
         Próxima estación: Generar

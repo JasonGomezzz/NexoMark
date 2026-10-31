@@ -469,6 +469,37 @@ html[data-theme='dark'] select option {
   }
 }
 
+/* Entradas que evitan un cambio brusco (sin JavaScript, con @starting-style):
+   una parada nueva del dictado, el formulario que propone la IA y las hojas
+   modales. Salida rápida, nada desde escala 0; "reducir movimiento" las anula. */
+.entra {
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.entra-lenta {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.entra-hoja {
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
 /* Filete grueso que abre una sección (la "regla" de la línea). */
 .regla {
   border-top: 6px solid var(--color-regla);

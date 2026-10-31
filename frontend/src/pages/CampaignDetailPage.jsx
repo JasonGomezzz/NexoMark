@@ -671,7 +671,7 @@ function SubmitModal({ preview, clienteEmail, onConfirm, onCancel }) {
       aria-labelledby="submit-title"
       className="fixed inset-0 z-50 flex items-end justify-center bg-navy-deep/60 p-0 sm:items-center sm:p-4"
     >
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-[22px] border border-outline-variant bg-surface-container-lowest p-6 shadow-xl sm:rounded-[22px] sm:p-8">
+      <div className="entra-hoja max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-[22px] border border-outline-variant bg-surface-container-lowest p-6 shadow-xl sm:rounded-[22px] sm:p-8">
         <h3 id="submit-title" className="mb-1 font-display text-2xl font-extrabold text-on-surface">Enviar al cliente</h3>
         <p className="mb-4 text-sm text-on-surface-variant">
           El cliente aprobará exactamente este copy y la imagen de la campaña:
