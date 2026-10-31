@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/campaign_widgets.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/nexo_mark_logo.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../marketero/providers.dart' show xConfigProvider;
 import '../marketero/x_variant_block.dart' show xVariantsProvider;
@@ -30,7 +32,6 @@ class ReviewScreen extends ConsumerStatefulWidget {
 class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   int _valoracion = 0;
   bool _ocupado = false;
-  bool _aprobada = false;
 
   Future<void> _decidir(Campaign c, {required bool aprobar, String? feedback}) async {
     setState(() => _ocupado = true);
@@ -46,10 +47,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
       ref.invalidate(decididasProvider);
       if (!mounted) return;
       if (aprobar) {
-        HapticFeedback.heavyImpact();
-        final pausa = Motion.reduced(context) ? const Duration(milliseconds: 500) : const Duration(milliseconds: 1400);
-        setState(() => _aprobada = true);
-        await Future<void>.delayed(pausa);
+        await mostrarAprobada(context, c);
       } else {
         HapticFeedback.mediumImpact();
       }
@@ -73,20 +71,16 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
 
   Future<void> _aprobar(Campaign c) async {
     final redes = c.destinos.map((d) => '${etiquetaRed[d.red] ?? d.red} (${d.cuentaNombre})').join(', ');
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(c.destinos.isEmpty ? '¿Aprobar la campaña?' : '¿Aprobar y publicar?'),
-        content: Text(c.destinos.isEmpty
-            ? 'Se aprueba la campaña. No tiene destinos de publicación automática.'
-            : 'Se publicará exactamente este texto y esta imagen en: $redes.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Seguir revisando')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Aprobar')),
-        ],
-      ),
+    final ok = await confirmarAccion(
+      context,
+      titulo: c.destinos.isEmpty ? '¿Aprobar la campaña?' : '¿Aprobar y publicar?',
+      mensaje: c.destinos.isEmpty
+          ? 'Se aprueba la campaña. No tiene destinos de publicación automática.'
+          : 'Se publicará exactamente este texto y esta imagen en: $redes.',
+      accion: 'Aprobar',
+      cancelar: 'Seguir revisando',
     );
-    if (ok ?? false) await _decidir(c, aprobar: true);
+    if (ok) await _decidir(c, aprobar: true);
   }
 
   Future<void> _rechazar(Campaign c) async {
@@ -104,26 +98,32 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     final campana = ref.watch(_reviewProvider(widget.id));
     return Scaffold(
       appBar: AppBar(title: const Text('Revisar campaña')),
-      body: Stack(
-        children: [
-          campana.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Padding(
-              padding: const EdgeInsets.all(16),
-              child: ErrorBanner(message: toApiException(e).message, onRetry: () => ref.invalidate(_reviewProvider(widget.id))),
-            ),
-            data: (c) => _contenido(context, c),
-          ),
-          _Aprobada(visible: _aprobada),
-        ],
+      body: campana.when(
+        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
+        error: (e, _) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: ErrorBanner(message: toApiException(e).message, onRetry: () => ref.invalidate(_reviewProvider(widget.id))),
+        ),
+        data: (c) => _contenido(context, c),
       ),
+      // Decidir queda fijo en la zona del pulgar mientras se lee la campaña.
+      bottomNavigationBar: switch (campana.value) {
+        final c? when c.estado == EstadoCampana.pendienteAprobacion => _BarraDecision(
+            valoracion: _valoracion,
+            ocupado: _ocupado,
+            onValorar: (v) => setState(() => _valoracion = v),
+            onPedirCambios: () => _rechazar(c),
+            onAprobar: () => _aprobar(c),
+          ),
+        _ => null,
+      },
     );
   }
 
   Widget _contenido(BuildContext context, Campaign c) {
     final pendiente = c.estado == EstadoCampana.pendienteAprobacion;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+      padding: const EdgeInsets.fromLTRB(Nexo.gutter, 4, Nexo.gutter, 32),
       children: [
         AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c, radius: Nexo.radiusSurface)),
         const SizedBox(height: 16),
@@ -134,7 +134,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
         Text('Preparada por ${c.marketeroNombre ?? 'tu agencia'}', style: context.text.bodySmall),
         const SizedBox(height: 16),
         if (c.destinos.isNotEmpty) ...[
-          Text(pendiente ? 'Se publicará en' : 'Destinos', style: context.text.labelLarge),
+          Text(pendiente ? 'Se publicará en' : 'Destinos', style: context.text.titleSmall),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -149,31 +149,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
         NexoCard(child: SelectableText(c.textoGenerado ?? 'Sin texto.', style: context.text.bodyLarge)),
         _VarianteXCliente(campaignId: c.id),
         if (pendiente) ...[
-          const SizedBox(height: 24),
-          Text('¿Qué te parece?', style: context.text.titleMedium),
-          const SizedBox(height: 4),
-          Text('Valórala de 1 a 5 para poder aprobar o rechazar.', style: context.text.bodySmall),
-          const SizedBox(height: 10),
-          _EstrellasInput(valor: _valoracion, onChanged: (v) => setState(() => _valoracion = v)),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _ocupado || _valoracion == 0 ? null : () => _rechazar(c),
-                  child: const Text('Pedir cambios'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: _ocupado || _valoracion == 0 ? null : () => _aprobar(c),
-                  icon: const Icon(Icons.check_rounded),
-                  label: const Text('Aprobar'),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 8),
         ] else if (c.estado == EstadoCampana.rechazado && (c.feedbackRechazo?.isNotEmpty ?? false)) ...[
           const SizedBox(height: 16),
           InfoBanner(message: 'Pediste: «${c.feedbackRechazo}»', tone: InfoTone.warning),
@@ -195,6 +171,7 @@ class _EstrellasInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 1; i <= 5; i++)
           Semantics(
@@ -206,7 +183,7 @@ class _EstrellasInput extends StatelessWidget {
               scale: 0.9,
               onTap: () => onChanged(i),
               child: Padding(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(5),
                 child: TweenAnimationBuilder<double>(
                   key: ValueKey('$i-${i <= valor}'),
                   tween: Tween(begin: i <= valor && !Motion.reduced(context) ? 0.8 : 1, end: 1),
@@ -215,15 +192,13 @@ class _EstrellasInput extends StatelessWidget {
                   builder: (context, s, child) => Transform.scale(scale: s, child: child),
                   child: Icon(
                     i <= valor ? Icons.star_rounded : Icons.star_outline_rounded,
-                    size: 42,
+                    size: 34,
                     color: i <= valor ? context.nexo.warning : context.colors.outline,
                   ),
                 ),
               ),
             ),
           ),
-        const SizedBox(width: 8),
-        Text(valor == 0 ? '' : '$valor/5', style: context.text.titleMedium),
       ],
     );
   }
@@ -285,68 +260,175 @@ class _RechazoSheetState extends State<_RechazoSheet> {
   }
 }
 
-/// Celebración de aprobar: un check que se dibuja sobre marino. Es el momento
-/// más importante para el cliente y ocurre pocas veces, así que se permite.
-class _Aprobada extends StatelessWidget {
-  const _Aprobada({required this.visible});
-  final bool visible;
+/// Barra de decisión: valoración y las dos salidas, siempre a mano.
+class _BarraDecision extends StatelessWidget {
+  const _BarraDecision({
+    required this.valoracion,
+    required this.ocupado,
+    required this.onValorar,
+    required this.onPedirCambios,
+    required this.onAprobar,
+  });
+
+  final int valoracion;
+  final bool ocupado;
+  final ValueChanged<int> onValorar;
+  final VoidCallback onPedirCambios;
+  final VoidCallback onAprobar;
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: !visible,
-      child: AnimatedOpacity(
-        opacity: visible ? 1 : 0,
-        duration: Motion.of(context, Motion.base),
-        child: Container(
-          color: Nexo.navy.withValues(alpha: 0.94),
-          alignment: Alignment.center,
-          child: visible
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: Motion.reduced(context) ? 1 : 0, end: 1),
-                      duration: const Duration(milliseconds: 600),
-                      curve: Motion.easeOut,
-                      builder: (context, t, _) => CustomPaint(size: const Size(96, 96), painter: _CheckPainter(t)),
+    final listo = valoracion > 0 && !ocupado;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border(top: BorderSide(color: context.nexo.hairline)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(Nexo.gutter, 8, Nexo.gutter, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      valoracion == 0 ? 'Valórala para decidir' : 'Tu valoración: $valoracion de 5',
+                      style: context.text.titleSmall,
                     ),
-                    const SizedBox(height: 18),
-                    Text('¡Aprobada!', style: context.text.headlineSmall?.copyWith(color: Nexo.onNavy)),
-                  ],
-                )
-              : null,
+                  ),
+                  _EstrellasInput(valor: valoracion, onChanged: onValorar),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(onPressed: listo ? onPedirCambios : null, child: const Text('Pedir cambios')),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: listo ? onAprobar : null,
+                      icon: const Icon(LucideIcons.check, size: 18),
+                      label: const Text('Aprobar'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _CheckPainter extends CustomPainter {
-  _CheckPainter(this.t);
-  final double t;
+/// Momento firma del cliente: las dos piezas de la N encajan. La clara
+/// (quien creó la campaña) ya está en su sitio; la turquesa (quien aprueba)
+/// entra por la diagonal y encaja en 420 ms. El háptico suena al encajar, en
+/// el mismo cuadro. Con "reducir movimiento" la N ya está encajada y solo
+/// se funde. Cubre toda la pantalla: es la confirmación, no un adorno.
+Future<void> mostrarAprobada(BuildContext context, Campaign c) {
+  final destino = c.destinos.isEmpty
+      ? 'Sin publicación automática.'
+      : 'Se publica en ${c.destinos.map((d) => d.cuentaNombre).join(', ')}.';
+  return showGeneralDialog<void>(
+    context: context,
+    useRootNavigator: true,
+    barrierDismissible: false,
+    barrierColor: Colors.transparent,
+    transitionDuration: Motion.of(context, Motion.base),
+    pageBuilder: (_, _, _) => _Aprobada(destino: destino),
+    transitionBuilder: (_, a, _, child) => FadeTransition(opacity: CurvedAnimation(parent: a, curve: Motion.easeOut), child: child),
+  );
+}
+
+class _Aprobada extends StatefulWidget {
+  const _Aprobada({required this.destino});
+  final String destino;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final circulo = Paint()
-      ..color = Nexo.turquoise
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
-      ..strokeCap = StrokeCap.round;
-    final rect = Offset.zero & size;
-    canvas.drawArc(rect.deflate(4), -1.5708, 6.2832 * (t * 1.4).clamp(0.0, 1.0), false, circulo);
-    final path = Path()
-      ..moveTo(size.width * 0.28, size.height * 0.52)
-      ..lineTo(size.width * 0.44, size.height * 0.68)
-      ..lineTo(size.width * 0.74, size.height * 0.36);
-    final avance = ((t - 0.45) / 0.55).clamp(0.0, 1.0);
-    for (final metric in path.computeMetrics()) {
-      canvas.drawPath(metric.extractPath(0, metric.length * avance), circulo..color = Nexo.onNavy);
-    }
+  State<_Aprobada> createState() => _AprobadaState();
+}
+
+class _AprobadaState extends State<_Aprobada> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: Motion.signature);
+  late final Animation<double> _teal = Tween(begin: 1.0, end: 0.0).animate(CurvedAnimation(parent: _c, curve: Motion.easeOut));
+  late final Animation<double> _texto = CurvedAnimation(parent: _c, curve: const Interval(0.5, 1, curve: Motion.easeOut));
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final reducido = Motion.reduced(context);
+      // Empieza tras el fundido de entrada, para que el encaje se vea entero.
+      await Future<void>.delayed(reducido ? Duration.zero : Motion.base);
+      if (!mounted) return;
+      if (reducido) {
+        _c.value = 1;
+      } else {
+        await _c.forward();
+      }
+      HapticFeedback.heavyImpact();
+      await Future<void>.delayed(const Duration(milliseconds: 900));
+      if (mounted) Navigator.of(context).pop();
+    });
   }
 
   @override
-  bool shouldRepaint(covariant _CheckPainter old) => old.t != t;
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Material(
+        color: Nexo.banda,
+        child: Semantics(
+          liveRegion: true,
+          label: 'Campaña aprobada. ${widget.destino}',
+          excludeSemantics: true,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                NexoMarkLogo(size: 168, teal: _teal),
+                const SizedBox(height: 8),
+                FadeTransition(
+                  opacity: _texto,
+                  child: SlideTransition(
+                    position: Tween(begin: const Offset(0, 0.15), end: Offset.zero).animate(_texto),
+                    child: Column(
+                      children: [
+                        Text('Aprobada', style: context.text.displaySmall?.copyWith(color: Nexo.onNavy)),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            widget.destino,
+                            textAlign: TextAlign.center,
+                            style: context.text.bodyLarge?.copyWith(color: Nexo.onNavyMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Si la agencia preparó una versión corta para X, el cliente la aprueba aquí.
