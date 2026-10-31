@@ -235,7 +235,7 @@ export default function UsersAdminPage() {
                               className={`inline-flex min-h-10 items-center gap-1 rounded-full border px-3 text-[13px] font-medium transition-colors ${
                                 isSelf
                                   ? 'cursor-not-allowed border-outline-variant/50 bg-surface-container-high text-outline'
-                                  : 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'
+                                  : 'border-outline-variant text-primary hover:bg-primary-fixed hover:text-on-primary-fixed'
                               }`}
                             >
                               <RotateCcw className="h-3.5 w-3.5" />

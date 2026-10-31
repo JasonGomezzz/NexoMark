@@ -46,14 +46,14 @@ export default function LandingFooter() {
             </p>
             <nav aria-label="Pie de página" className="grid grid-cols-2 gap-x-10 gap-y-3 text-[15px] sm:grid-cols-3">
               {LINKS.map((link) => (
-                <a key={link.href} href={link.href} className="text-on-navy-muted transition-colors hover:text-on-navy">
+                <a key={link.href} href={link.href} className="inline-flex min-h-11 items-center text-on-navy-muted transition-colors hover:text-on-navy">
                   {link.label}
                 </a>
               ))}
-              <Link to="/login" className="text-on-navy-muted transition-colors hover:text-on-navy">
+              <Link to="/login" className="inline-flex min-h-11 items-center text-on-navy-muted transition-colors hover:text-on-navy">
                 Iniciar sesión
               </Link>
-              <Link to="/register" className="text-on-navy-muted transition-colors hover:text-on-navy">
+              <Link to="/register" className="inline-flex min-h-11 items-center text-on-navy-muted transition-colors hover:text-on-navy">
                 Crear cuenta
               </Link>
             </nav>

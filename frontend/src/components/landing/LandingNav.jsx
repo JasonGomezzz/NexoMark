@@ -22,7 +22,7 @@ export default function LandingNav() {
           <ul className="hidden items-center gap-7 lg:flex">
             {LINKS.map((link) => (
               <li key={link.href}>
-                <a href={link.href} className="text-[15px] font-medium text-on-surface-variant transition-colors hover:text-on-surface">
+                <a href={link.href} className="inline-flex min-h-11 items-center text-[15px] font-medium text-on-surface-variant transition-colors hover:text-on-surface">
                   {link.label}
                 </a>
               </li>
