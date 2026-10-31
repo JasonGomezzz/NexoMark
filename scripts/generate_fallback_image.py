@@ -13,7 +13,6 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "backend" / "services" / "assets" / "nexomark-image-unavailable.png"
 WORKFLOWS = (
     ROOT / "n8n" / "marketmind_ia_workflow.json",
-    ROOT / "n8n" / "marketmind_ia_workflow.backup.json",
 )
 
 
