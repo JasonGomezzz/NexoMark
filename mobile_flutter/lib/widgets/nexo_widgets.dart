@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart' show CupertinoDialogAction;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -300,6 +301,48 @@ class NetworkChip extends StatelessWidget {
   }
 }
 
+// ── Diálogos ───────────────────────────────────────────────
+
+/// Confirmación nativa: alerta de iOS en iPhone y diálogo Material en Android.
+/// Solo para decisiones que de verdad deben interrumpir.
+Future<bool> confirmarAccion(
+  BuildContext context, {
+  required String titulo,
+  required String mensaje,
+  required String accion,
+  String cancelar = 'Cancelar',
+  bool destructivo = false,
+}) async {
+  final ios = Theme.of(context).platform == TargetPlatform.iOS;
+  Widget boton(BuildContext ctx, String texto, bool valor, {bool principal = false}) {
+    void cerrar() => Navigator.pop(ctx, valor);
+    if (ios) {
+      return CupertinoDialogAction(
+        isDefaultAction: principal && !destructivo,
+        isDestructiveAction: principal && destructivo,
+        onPressed: cerrar,
+        child: Text(texto),
+      );
+    }
+    if (!principal) return TextButton(onPressed: cerrar, child: Text(texto));
+    return FilledButton(
+      onPressed: cerrar,
+      style: destructivo ? FilledButton.styleFrom(backgroundColor: ctx.colors.error, foregroundColor: ctx.colors.onError) : null,
+      child: Text(texto),
+    );
+  }
+
+  final r = await showAdaptiveDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog.adaptive(
+      title: Text(titulo),
+      content: Text(mensaje),
+      actions: [boton(ctx, cancelar, false), boton(ctx, accion, true, principal: true)],
+    ),
+  );
+  return r ?? false;
+}
+
 // ── Superficies ────────────────────────────────────────────
 
 /// Tarjeta NexoMark: tono + borde fino, sin sombra en reposo.
@@ -570,7 +613,7 @@ class CreditsMeter extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.bolt_rounded, color: Nexo.turquoiseSoft, size: 20),
+              const Icon(LucideIcons.zap, color: Nexo.turquoiseSoft, size: 20),
               const SizedBox(width: 6),
               Text('Créditos', style: context.text.titleSmall?.copyWith(color: Nexo.onNavyMuted)),
               const Spacer(),
@@ -610,7 +653,7 @@ class CreditsMeter extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRequest,
               style: FilledButton.styleFrom(backgroundColor: Nexo.turquoise, foregroundColor: Nexo.navyDeep),
-              icon: const Icon(Icons.add_rounded),
+              icon: const Icon(LucideIcons.plus),
               label: const Text('Solicitar créditos'),
             ),
           ],

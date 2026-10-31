@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +15,7 @@ import '../../widgets/campaign_widgets.dart';
 import '../../widgets/motion_widgets.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../../widgets/publication_widgets.dart';
-import 'lab_screen.dart' show tonos;
+import 'lab_screen.dart' show industrias, tonos;
 import 'providers.dart';
 import 'tiktok_block.dart';
 import 'x_variant_block.dart';
@@ -93,7 +94,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           if (c != null && c.estado == EstadoCampana.borrador)
             IconButton(
               tooltip: 'Eliminar borrador',
-              icon: const Icon(Icons.delete_outline_rounded),
+              icon: const Icon(LucideIcons.trash2),
               onPressed: () => _eliminar(c),
             ),
         ],
@@ -109,6 +110,26 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         ),
         data: (c) => _cuerpo(context, c, pubs),
       ),
+      // La acción principal va fija abajo, en la zona del pulgar.
+      bottomNavigationBar: c != null && c.estado == EstadoCampana.generado
+          ? DecoratedBox(
+              decoration: BoxDecoration(
+                color: context.colors.surface,
+                border: Border(top: BorderSide(color: context.nexo.hairline)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Nexo.gutter, 12, Nexo.gutter, 12),
+                  child: FilledButton.icon(
+                    onPressed: _ocupado ? null : () => _enviar(c),
+                    icon: const Icon(LucideIcons.send, size: 18),
+                    label: const Text('Enviar al cliente'),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -137,8 +158,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 runSpacing: 8,
                 children: [
                   if (c.plataforma.isNotEmpty) NetworkChip(red: c.plataforma),
-                  if (c.tono.isNotEmpty) _Dato(Icons.record_voice_over_outlined, tonos[c.tono] ?? c.tono),
-                  if (c.industria.isNotEmpty) _Dato(Icons.storefront_outlined, c.industria),
+                  if (c.tono.isNotEmpty) _Dato(LucideIcons.audioLines, tonos[c.tono] ?? c.tono),
+                  if (c.industria.isNotEmpty) _Dato(LucideIcons.store, industrias[c.industria] ?? c.industria),
                 ],
               ),
               if (c.estado == EstadoCampana.rechazado && (c.feedbackRechazo?.isNotEmpty ?? false)) ...[
@@ -151,24 +172,16 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 const SizedBox(height: 8),
                 FilledButton.icon(
                   onPressed: _ocupado ? null : () => _regenerar(c),
-                  icon: const Icon(Icons.refresh_rounded),
+                  icon: const Icon(LucideIcons.refreshCw),
                   label: const Text('Regenerar · 1 crédito'),
                 ),
               ],
               const SizedBox(height: 20),
               _Copy(campana: c, ocupado: _ocupado, onAccion: _accion),
-              if (c.estado == EstadoCampana.generado) ...[
-                const SizedBox(height: 20),
-                FilledButton.icon(
-                  onPressed: _ocupado ? null : () => _enviar(c),
-                  icon: const Icon(Icons.send_rounded),
-                  label: const Text('Enviar al cliente'),
-                ),
-              ],
               if (c.estado == EstadoCampana.pendienteAprobacion) ...[
                 const SizedBox(height: 16),
                 InfoBanner(
-                  icon: Icons.hourglass_top_rounded,
+                  icon: LucideIcons.hourglass,
                   message: (pubs.value ?? const []).isEmpty
                       ? 'Enviada a ${c.clienteNombre}. No tiene publicación automática: aprobarla no la publica.'
                       : 'Enviada a ${c.clienteNombre}. Cuando la apruebe se publicará en '
@@ -304,24 +317,8 @@ Future<bool> confirmar(
   required String mensaje,
   required String accion,
   bool destructivo = false,
-}) async {
-  final r = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(titulo),
-      content: Text(mensaje),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-        FilledButton(
-          style: destructivo ? FilledButton.styleFrom(backgroundColor: context.colors.error, foregroundColor: context.colors.onError) : null,
-          onPressed: () => Navigator.pop(context, true),
-          child: Text(accion),
-        ),
-      ],
-    ),
-  );
-  return r ?? false;
-}
+}) =>
+    confirmarAccion(context, titulo: titulo, mensaje: mensaje, accion: accion, destructivo: destructivo);
 
 class _Dato extends StatelessWidget {
   const _Dato(this.icon, this.texto);
@@ -366,7 +363,7 @@ class _Rechazo extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.feedback_outlined, color: context.colors.onErrorContainer, size: 20),
+              Icon(LucideIcons.messageSquare, color: context.colors.onErrorContainer, size: 20),
               const SizedBox(width: 8),
               Text('Lo que pidió el cliente', style: context.text.titleSmall?.copyWith(color: context.colors.onErrorContainer)),
               const Spacer(),
@@ -383,7 +380,7 @@ class _Rechazo extends StatelessWidget {
           const SizedBox(height: 10),
           FilledButton.icon(
             onPressed: ocupado ? null : onRegenerar,
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(LucideIcons.refreshCw),
             label: const Text('Ajustar instrucciones y regenerar'),
           ),
         ],
@@ -455,7 +452,7 @@ class _CopyState extends ConsumerState<_Copy> {
           trailing: editable && texto != null && !_editando
               ? TextButton.icon(
                   onPressed: () => setState(() => _editando = true),
-                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  icon: const Icon(LucideIcons.pencilLine, size: 18),
                   label: const Text('Editar'),
                 )
               : null,
@@ -521,7 +518,7 @@ class _CopyState extends ConsumerState<_Copy> {
                       await ref.read(campaignRepositoryProvider).improveText(c.id);
                       return 'Texto mejorado. La versión anterior quedó en el historial.';
                     }),
-            icon: const Icon(Icons.auto_fix_high_rounded),
+            icon: const Icon(LucideIcons.wandSparkles),
             label: const Text('Mejorar texto con IA · gratis'),
           ),
         ],
@@ -548,7 +545,7 @@ class _Versiones extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.history_rounded, color: context.colors.primary),
+          Icon(LucideIcons.history, color: context.colors.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -559,7 +556,7 @@ class _Versiones extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: context.colors.onSurfaceVariant),
+          Icon(LucideIcons.chevronRight, color: context.colors.onSurfaceVariant),
         ],
       ),
     );
@@ -612,7 +609,7 @@ class _VersionesSheet extends ConsumerWidget {
                               width: 64,
                               height: 64,
                               decoration: BoxDecoration(color: context.colors.surfaceContainerHigh, borderRadius: BorderRadius.circular(8)),
-                              child: const Icon(Icons.notes_rounded),
+                              child: const Icon(LucideIcons.fileText),
                             ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -706,20 +703,20 @@ class _DestinosSheetState extends ConsumerState<_DestinosSheet> {
                 tone: InfoTone.warning,
               )
             else
-              for (final d in destinos)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Pressable(
-                    onTap: () => setState(() => _elegidos.contains(d.id) ? _elegidos.remove(d.id) : _elegidos.add(d.id)),
-                    haptic: true,
-                    child: AnimatedContainer(
-                      duration: Motion.of(context, Motion.fast),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: _elegidos.contains(d.id) ? context.colors.primaryFixed : context.colors.surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(Nexo.radiusSurface),
-                        border: Border.all(color: _elegidos.contains(d.id) ? context.colors.primary : context.colors.outlineVariant),
-                      ),
+              for (final (i, d) in destinos.indexed) ...[
+                if (i > 0) const Divider(),
+                Semantics(
+                  checked: _elegidos.contains(d.id),
+                  label: '${d.cuentaNombre}, ${etiquetaRed[d.red] ?? d.red}',
+                  excludeSemantics: true,
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _elegidos.contains(d.id) ? _elegidos.remove(d.id) : _elegidos.add(d.id));
+                    },
+                    borderRadius: BorderRadius.circular(Nexo.radiusField),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Row(
                         children: [
                           NetworkIcon(d.red, size: 28),
@@ -733,24 +730,25 @@ class _DestinosSheetState extends ConsumerState<_DestinosSheet> {
                               ],
                             ),
                           ),
-                          AnimatedSwitcher(
-                            duration: Motion.of(context, Motion.fast),
-                            child: Icon(
-                              _elegidos.contains(d.id) ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-                              key: ValueKey(_elegidos.contains(d.id)),
-                              color: _elegidos.contains(d.id) ? context.colors.primary : context.colors.outline,
-                            ),
+                          Checkbox.adaptive(
+                            value: _elegidos.contains(d.id),
+                            onChanged: (v) => setState(() => v == true ? _elegidos.add(d.id) : _elegidos.remove(d.id)),
                           ),
                         ],
                       ),
                     ),
                   ),
                 ),
+              ],
             const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: destinos == null && _error == null ? null : () => Navigator.pop(context, _elegidos.toList()),
-              icon: const Icon(Icons.send_rounded),
-              label: Text(_elegidos.isEmpty ? 'Enviar sin publicación automática' : 'Enviar · se publicará en ${_elegidos.length}'),
+              icon: const Icon(LucideIcons.send),
+              label: Text(_elegidos.isEmpty
+                  ? 'Enviar sin publicación automática'
+                  : _elegidos.length == 1
+                      ? 'Enviar · publicar en 1 cuenta al aprobar'
+                      : 'Enviar · publicar en ${_elegidos.length} cuentas al aprobar'),
             ),
           ],
         ),
@@ -818,7 +816,7 @@ class _AjustarSheetState extends State<_AjustarSheet> {
           const SizedBox(height: 14),
           FilledButton.icon(
             onPressed: () => Navigator.pop(context, _prompt.text.trim()),
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(LucideIcons.refreshCw),
             label: const Text('Guardar y regenerar · 1 crédito'),
           ),
         ],
