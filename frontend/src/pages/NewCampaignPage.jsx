@@ -269,54 +269,51 @@ export default function NewCampaignPage() {
   const ocupado = submitting || brief.interpretando
   const listo = brief.texto.trim().length > 0 && !brief.voz.listening
   const proxima = () => (
-    <div className="regla pt-5">
-      <p className="flex items-center gap-2.5 font-display text-sm font-bold text-on-surface-variant">
-        <span aria-hidden="true" className="h-5 w-5 rounded-full border-4 border-regla bg-background" />
-        Próxima estación: Generar
-      </p>
-      <h2 className="mt-3 text-2xl font-extrabold leading-tight text-on-surface">La IA completa 7 campos</h2>
+    <div>
+      <h2 className="text-2xl font-extrabold leading-tight text-on-surface">Ficha técnica</h2>
       <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant">
-        Cuando termines, propone cada campo con lo que dijiste. Lo que no reconozca queda vacío y te avisa.
+        Al terminar, la IA la llena con lo que dijiste. Lo que no reconozca queda vacío y te avisa.
       </p>
-      <ol className="relative mt-5 grid pl-7" aria-label="Campos que completará la IA">
-        <span aria-hidden="true" className="absolute bottom-3 left-[7px] top-3 w-0.5 bg-outline-variant" />
-        {CAMPOS.map(({ campo, label }) => (
-          <li key={campo} className="relative flex items-baseline justify-between gap-3 py-2 text-[15px]">
-            <span aria-hidden="true" className="absolute -left-[25px] top-[13px] h-3 w-3 rounded-full border-2 border-outline-variant bg-background" />
-            <span className="text-on-surface">{label}</span>
-            <span className="text-[13px] text-outline">por completar</span>
-          </li>
-        ))}
-      </ol>
+      <table className="mt-5 w-full text-[15px]">
+        <caption className="sr-only">Campos que completará la IA</caption>
+        <tbody>
+          {CAMPOS.map(({ campo, label }) => (
+            <tr key={campo} className="border-t border-hairline">
+              <th scope="row" className="py-2.5 text-left font-medium text-on-surface">
+                {label}
+              </th>
+              <td className="py-2.5 text-right text-[13px] text-outline">por completar</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <div className="mt-6 grid gap-3">
         <Button type="button" size="lg" onClick={brief.interpretar} disabled={!listo || ocupado}>
           {brief.interpretando ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <Wand2 className="h-5 w-5" aria-hidden="true" />}
-          {brief.interpretando ? 'Completando campos…' : 'Completar campos'}
+          {brief.interpretando ? 'Completando la ficha…' : 'Completar ficha'}
         </Button>
-        <p className="text-[13px] text-on-surface-variant">Completar los campos no usa créditos. Generar la campaña usa 1.</p>
+        <p className="text-[13px] text-on-surface-variant">Completar la ficha no usa créditos. Generar la campaña usa 1.</p>
         <button
           type="button"
           onClick={() => setVista('formulario')}
           disabled={ocupado}
           className="-my-1 inline-flex min-h-11 items-center justify-start text-sm font-semibold text-primary underline-offset-2 hover:underline disabled:opacity-50"
         >
-          Prefiero llenar el formulario a mano
+          Prefiero llenar la ficha a mano
         </button>
       </div>
     </div>
   )
 
   const formulario = () => (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="regla entra-lenta pt-5">
-      <p className="flex items-center gap-2.5 font-display text-sm font-bold text-on-surface-variant">
-        <span aria-hidden="true" className="h-5 w-5 rounded-full border-4 border-regla bg-background" />
-        Próxima estación: Generar
-      </p>
-      <h2 className="mt-3 text-2xl font-extrabold leading-tight text-on-surface">
-        {resumenIntent ? `La IA completó ${resumenIntent.completados.length} de 7 campos` : 'Completa los campos'}
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="entra-lenta">
+      <h2 className="text-2xl font-extrabold leading-tight text-on-surface">
+        Ficha técnica
       </h2>
       <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant">
-        {resumenIntent ? 'Revísalos y corrige lo que haga falta antes de generar.' : 'Generar la campaña usa 1 crédito.'}
+        {resumenIntent
+          ? `La IA completó ${resumenIntent.completados.length} de 7 campos. Revísalos y corrige lo que falte antes de generar.`
+          : 'Llénala a mano. Generar la campaña usa 1 crédito.'}
       </p>
 
       {resumenIntent?.advertencias?.length > 0 && (
@@ -470,7 +467,8 @@ export default function NewCampaignPage() {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Todas las campañas
         </button>
-        <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Dicta la campaña</h1>
+        <p className="mb-1 text-[13px] text-on-surface-variant">Orden nueva · paso 1 de 5</p>
+        <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.025em] text-on-surface sm:text-[40px]">Dicta la campaña</h1>
         <p className="mt-2 max-w-2xl text-[15px] text-on-surface-variant">
           Habla como si se la contaras a tu diseñador. La IA propone los campos y tú los corriges antes de generar.{' '}
           <Link to="/prompt-guide" className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-2 hover:underline">
@@ -480,9 +478,11 @@ export default function NewCampaignPage() {
         </p>
       </div>
 
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-14">
-        <VoiceBriefCard brief={brief} disabled={submitting} />
-        <aside aria-label="Siguiente estación" className="min-w-0">
+      <div className="grid gap-12 border-t border-outline-variant pt-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-0">
+        <div className="min-w-0 lg:pr-10">
+          <VoiceBriefCard brief={brief} disabled={submitting} />
+        </div>
+        <aside aria-label="Ficha técnica" className="min-w-0 lg:border-l lg:border-outline-variant lg:pl-8">
           {vista === 'formulario' ? formulario() : proxima()}
         </aside>
       </div>

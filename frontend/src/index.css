@@ -514,6 +514,17 @@ html[data-theme='dark'] select option {
   }
 }
 
+/* El sello del micrófono: su aro gira despacio mientras escucha (lineal,
+   movimiento continuo). Quieto con "reducir movimiento". */
+.sello-gira {
+  animation: sello-gira 24s linear infinite;
+}
+@keyframes sello-gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Regla de imprenta: filete fino que abre una sección del pliego. */
 .regla {
   border-top: 1px solid var(--color-outline-variant);
