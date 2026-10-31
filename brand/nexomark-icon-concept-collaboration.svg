@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
-  <title id="title">NexoMark — propuesta colaboración</title>
-  <desc id="desc">Dos piezas geométricas, blanca y turquesa, encajan para formar una N. Representan al negocio y al creador colaborando en una campaña.</desc>
-  <rect x="32" y="32" width="960" height="960" rx="220" fill="#14283F"/>
-  <path d="M240 760V264h136l240 320V264h168v496H648L408 440v320Z" fill="#FFFFFF"/>
-  <path d="M472.5 526l16-12 18 24 32-24-18-24 16-12L616 584V264h168v496H648Z" fill="#17B8AD"/>
-  <path d="M472.5 526l16-12 18 24 32-24-18-24 16-12" fill="none" stroke="#14283F" stroke-width="14" stroke-linejoin="round"/>
-</svg>

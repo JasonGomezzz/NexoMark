@@ -39,7 +39,8 @@ La tipografía recomendada es **Inter**, con peso 800 para el nombre y pesos
 - Se retiraron `nexomark-mark.svg`, `nexomark-logo.svg` y
   `nexomark-logo-preview.png`, correspondientes al diseño anterior.
   Sus versiones previas siguen disponibles en el historial de Git.
-- Los archivos de concepto son propuestas, no sustitutos del maestro aprobado.
+- Se retiraron también la propuesta de colaboración y la vista previa web que
+  no utiliza ninguna aplicación; el historial de Git conserva esas propuestas.
 
 El estado del icono en Figma debe comprobarse en el archivo de diseño; estos
 recursos del repositorio no actualizan automáticamente ese prototipo.
