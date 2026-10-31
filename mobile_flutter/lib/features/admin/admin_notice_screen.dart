@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
@@ -14,7 +15,7 @@ class AdminNoticeScreen extends ConsumerWidget {
       body: SafeArea(
         child: Center(
           child: EmptyState(
-            icon: Icons.desktop_windows_outlined,
+            icon: LucideIcons.monitor,
             title: 'El panel de administración está en la web',
             message: 'La app es para marketeros y clientes. Entra a NexoMark desde el navegador para administrar usuarios y créditos.',
             action: OutlinedButton(

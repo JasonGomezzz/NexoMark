@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -128,7 +129,7 @@ class _ProfilePhotoScreenState extends ConsumerState<ProfilePhotoScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _ocupado ? null : () => _elegir(ImageSource.gallery),
-                    icon: const Icon(Icons.photo_library_outlined),
+                    icon: const Icon(LucideIcons.images),
                     label: const Text('Galería'),
                   ),
                 ),
@@ -136,7 +137,7 @@ class _ProfilePhotoScreenState extends ConsumerState<ProfilePhotoScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _ocupado ? null : () => _elegir(ImageSource.camera),
-                    icon: const Icon(Icons.photo_camera_outlined),
+                    icon: const Icon(LucideIcons.camera),
                     label: const Text('Cámara'),
                   ),
                 ),
@@ -154,7 +155,7 @@ class _ProfilePhotoScreenState extends ConsumerState<ProfilePhotoScreen> {
             else if (user?.hasAvatar ?? false)
               TextButton.icon(
                 onPressed: _ocupado ? null : _quitar,
-                icon: Icon(Icons.delete_outline_rounded, color: context.colors.error),
+                icon: Icon(LucideIcons.trash2, color: context.colors.error),
                 label: Text('Quitar foto', style: TextStyle(color: context.colors.error)),
               ),
           ],

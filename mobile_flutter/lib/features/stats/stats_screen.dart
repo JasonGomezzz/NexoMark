@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -61,7 +62,7 @@ class StatsScreen extends ConsumerWidget {
           if (user?.rol == Rol.marketero)
             IconButton(
               tooltip: 'Actualizar métricas',
-              icon: const Icon(Icons.sync_rounded),
+              icon: const Icon(LucideIcons.refreshCw),
               onPressed: () async {
                 try {
                   final m = await ref.read(socialRepositoryProvider).refreshMetrics();
@@ -111,19 +112,19 @@ class StatsScreen extends ConsumerWidget {
                       child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(child: MetricCard(label: 'Publicadas en $anio', value: s.totalPublicaciones, icon: Icons.public_rounded)),
+                        Expanded(child: MetricCard(label: 'Publicadas en $anio', value: s.totalPublicaciones, icon: LucideIcons.globe)),
                         const SizedBox(width: 10),
                         Expanded(
                           child: MetricCard(
                             label: 'Esperando aprobación',
                             value: s.pendientes,
-                            icon: Icons.hourglass_top_rounded,
+                            icon: LucideIcons.hourglass,
                             accent: context.nexo.warning,
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: MetricCard(label: 'Fallidas', value: s.fallidas, icon: Icons.error_outline_rounded, accent: context.colors.error),
+                          child: MetricCard(label: 'Fallidas', value: s.fallidas, icon: LucideIcons.circleAlert, accent: context.colors.error),
                         ),
                       ],
                     ),
@@ -143,7 +144,7 @@ class StatsScreen extends ConsumerWidget {
                       if (visibles.isEmpty) {
                         return [
                           EmptyState(
-                            icon: Icons.insights_rounded,
+                            icon: LucideIcons.chartColumn,
                             title: 'Sin publicaciones en $anio',
                             message: user?.rol == Rol.cliente
                                 ? 'Cuando apruebes una campaña con destinos, verás aquí cómo le va.'
@@ -551,7 +552,7 @@ class _DetallePublicacion extends ConsumerWidget {
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       onPressed: () => launchUrl(Uri.parse(publicacion.permalink!), mode: LaunchMode.externalApplication),
-                      icon: const Icon(Icons.open_in_new_rounded),
+                      icon: const Icon(LucideIcons.externalLink),
                       label: Text('Ver en ${etiquetaRed[publicacion.red]}'),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
@@ -79,7 +80,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 suffixIcon: IconButton(
                   tooltip: _ver ? 'Ocultar' : 'Mostrar',
                   onPressed: () => setState(() => _ver = !_ver),
-                  icon: Icon(_ver ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                  icon: Icon(_ver ? LucideIcons.eyeOff : LucideIcons.eye),
                 ),
               ),
             ),

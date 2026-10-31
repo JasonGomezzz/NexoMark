@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -170,7 +171,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (aviso != null) ...[
-                  InfoBanner(message: aviso, tone: InfoTone.warning, icon: Icons.lock_clock_outlined),
+                  InfoBanner(message: aviso, tone: InfoTone.warning, icon: LucideIcons.lockKeyhole),
                   const SizedBox(height: 12),
                 ],
                 Entrance(index: 2, child: _formulario(context)),
@@ -229,7 +230,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 suffixIcon: IconButton(
                   tooltip: _verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña',
                   onPressed: () => setState(() => _verPassword = !_verPassword),
-                  icon: Icon(_verPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                  icon: Icon(_verPassword ? LucideIcons.eyeOff : LucideIcons.eye),
                 ),
               ),
               validator: (v) {
@@ -398,9 +399,9 @@ class _RolSelector extends StatelessWidget {
       label: 'Cómo usarás NexoMark',
       child: Row(
         children: [
-          opcion(Rol.marketero, Icons.campaign_outlined, 'Marketero', 'Creas campañas para tus clientes'),
+          opcion(Rol.marketero, LucideIcons.megaphone, 'Marketero', 'Creas campañas para tus clientes'),
           const SizedBox(width: 10),
-          opcion(Rol.cliente, Icons.verified_outlined, 'Cliente', 'Revisas y apruebas lo que se publica'),
+          opcion(Rol.cliente, LucideIcons.badgeCheck, 'Cliente', 'Revisas y apruebas lo que se publica'),
         ],
       ),
     );

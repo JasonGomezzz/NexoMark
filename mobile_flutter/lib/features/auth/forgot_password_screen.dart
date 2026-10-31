@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
@@ -78,7 +79,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          InfoBanner(message: _listo!, tone: InfoTone.success, icon: Icons.mark_email_read_outlined),
+                          InfoBanner(message: _listo!, tone: InfoTone.success, icon: LucideIcons.mailCheck),
                           const SizedBox(height: 12),
                           Text(
                             'Abre el enlace desde el correo: se abre en la web de NexoMark. Después vuelve aquí e inicia sesión.',

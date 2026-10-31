@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -110,7 +111,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                   NexoCard(
                     child: Row(
                       children: [
-                        Icon(Icons.alternate_email_rounded, color: context.colors.primary),
+                        Icon(LucideIcons.atSign, color: context.colors.primary),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -211,7 +212,7 @@ class _Pendiente extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: hecho ? context.nexo.success : context.colors.surfaceContainerHigh,
                 ),
-                child: Icon(hecho ? Icons.check_rounded : Icons.schedule_rounded, size: 16, color: hecho ? context.nexo.onSuccess : context.colors.onSurfaceVariant),
+                child: Icon(hecho ? LucideIcons.check : LucideIcons.clock, size: 16, color: hecho ? context.nexo.onSuccess : context.colors.onSurfaceVariant),
               ),
               const SizedBox(width: 12),
               Expanded(

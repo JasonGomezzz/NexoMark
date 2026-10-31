@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/theme/motion.dart';
@@ -62,7 +63,7 @@ class PublicationTile extends StatelessWidget {
                 IconButton(
                   tooltip: 'Ver en ${etiquetaRed[p.red] ?? p.red}',
                   onPressed: () => launchUrl(Uri.parse(p.permalink!), mode: LaunchMode.externalApplication),
-                  icon: const Icon(Icons.open_in_new_rounded),
+                  icon: const Icon(LucideIcons.externalLink),
                 ),
             ],
           ),
@@ -96,7 +97,7 @@ class PublicationTile extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: onConsultar,
-                icon: const Icon(Icons.sync_rounded, size: 18),
+                icon: const Icon(LucideIcons.refreshCw, size: 18),
                 label: const Text('Consultar estado en TikTok'),
               ),
             ),
@@ -107,7 +108,7 @@ class PublicationTile extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: onReintentar,
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                icon: const Icon(LucideIcons.refreshCw, size: 18),
                 label: const Text('Reintentar'),
               ),
             ),
@@ -156,8 +157,8 @@ class _Linea extends StatelessWidget {
                   border: Border.all(color: hecho ? Colors.transparent : context.colors.outline),
                 ),
                 child: hecho
-                    ? Icon(Icons.check_rounded, size: 12, color: context.colors.onPrimary)
-                    : (error && i == 1 ? Icon(Icons.close_rounded, size: 12, color: context.colors.onError) : null),
+                    ? Icon(LucideIcons.check, size: 12, color: context.colors.onPrimary)
+                    : (error && i == 1 ? Icon(LucideIcons.x, size: 12, color: context.colors.onError) : null),
               ),
               const SizedBox(height: 4),
               Text(label, style: context.text.labelSmall?.copyWith(color: hecho ? null : context.colors.onSurfaceVariant)),
@@ -187,10 +188,10 @@ class _MetricasMini extends StatelessWidget {
       );
     }
     final items = [
-      (Icons.favorite_border_rounded, red == 'facebook' ? 'Reacciones' : 'Me gusta', m.meGusta),
-      (Icons.mode_comment_outlined, 'Comentarios', m.comentarios),
-      (Icons.repeat_rounded, 'Compartidos', m.compartidos),
-      (Icons.visibility_outlined, 'Alcance', m.alcance),
+      (LucideIcons.heart, red == 'facebook' ? 'Reacciones' : 'Me gusta', m.meGusta),
+      (LucideIcons.messageCircle, 'Comentarios', m.comentarios),
+      (LucideIcons.repeat2, 'Compartidos', m.compartidos),
+      (LucideIcons.eye, 'Alcance', m.alcance),
     ];
     return Row(
       children: [

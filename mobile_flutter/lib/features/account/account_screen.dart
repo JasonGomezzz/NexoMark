@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,7 +39,7 @@ class AccountScreen extends ConsumerWidget {
                 Entrance(
                   index: 1,
                   child: _Opcion(
-                    icon: Icons.hub_outlined,
+                    icon: LucideIcons.network,
                     titulo: 'Redes conectadas',
                     detalle: 'Autoriza tus cuentas de Instagram y Facebook para que se publique lo que apruebes.',
                     destacado: true,
@@ -49,13 +50,13 @@ class AccountScreen extends ConsumerWidget {
               ],
               _Grupo(titulo: 'Seguridad', children: [
                 _Opcion(
-                  icon: Icons.alternate_email_rounded,
+                  icon: LucideIcons.atSign,
                   titulo: 'Cambiar correo',
                   detalle: user.email,
                   onTap: () => context.push('$base/correo'),
                 ),
                 _Opcion(
-                  icon: Icons.password_rounded,
+                  icon: LucideIcons.keyRound,
                   titulo: user.hasPassword ? 'Cambiar contraseña' : 'Crear contraseña',
                   detalle: user.hasPassword ? 'Te pedimos la actual' : 'Tu cuenta entra con Google y aún no tiene contraseña',
                   onTap: () => context.push('$base/contrasena'),
@@ -66,13 +67,13 @@ class AccountScreen extends ConsumerWidget {
               if (esMarketero) ...[
                 _Grupo(titulo: 'Trabajo', children: [
                   _Opcion(
-                    icon: Icons.bolt_rounded,
+                    icon: LucideIcons.zap,
                     titulo: 'Créditos',
                     detalle: user.tokensDisponibles == null ? 'sin dato' : '${user.tokensDisponibles} disponibles',
                     onTap: () => context.push('$base/creditos'),
                   ),
                   _Opcion(
-                    icon: Icons.hub_outlined,
+                    icon: LucideIcons.network,
                     titulo: 'Redes conectadas',
                     detalle: 'Cuentas que administras para tus clientes',
                     onTap: () => context.push('$base/redes'),
@@ -84,7 +85,7 @@ class AccountScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               _Grupo(titulo: 'Ayuda', children: [
                 _Opcion(
-                  icon: Icons.tips_and_updates_outlined,
+                  icon: LucideIcons.lightbulb,
                   titulo: esMarketero ? 'Guía para dictar buenos briefs' : 'Cómo revisar una campaña',
                   detalle: esMarketero ? 'Qué decir para que la IA acierte' : 'Qué pasa al aprobar o pedir cambios',
                   onTap: () => showModalBottomSheet<void>(
@@ -98,7 +99,7 @@ class AccountScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               OutlinedButton.icon(
                 onPressed: () => ref.read(sessionProvider.notifier).logout(),
-                icon: Icon(Icons.logout_rounded, color: context.colors.error),
+                icon: Icon(LucideIcons.logOut, color: context.colors.error),
                 label: Text('Cerrar sesión', style: TextStyle(color: context.colors.error)),
                 style: OutlinedButton.styleFrom(side: BorderSide(color: context.colors.error.withValues(alpha: 0.5))),
               ),
@@ -159,7 +160,7 @@ class _Perfil extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     decoration: const BoxDecoration(color: Nexo.turquoise, shape: BoxShape.circle),
-                    child: const Icon(Icons.photo_camera_rounded, size: 14, color: Nexo.navyDeep),
+                    child: const Icon(LucideIcons.camera, size: 14, color: Nexo.navyDeep),
                   ),
                 ),
               ],
@@ -182,7 +183,7 @@ class _Perfil extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.edit_rounded, size: 16, color: Nexo.onNavyMuted),
+                      const Icon(LucideIcons.pencil, size: 16, color: Nexo.onNavyMuted),
                     ],
                   ),
                 ),
@@ -259,7 +260,7 @@ class _Opcion extends StatelessWidget {
       leading: Icon(icon, color: context.colors.primary),
       title: Text(titulo, style: context.text.titleSmall),
       subtitle: Text(detalle, style: context.text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: trailing ?? (onTap != null ? Icon(Icons.chevron_right_rounded, color: context.colors.onSurfaceVariant) : null),
+      trailing: trailing ?? (onTap != null ? Icon(LucideIcons.chevronRight, color: context.colors.onSurfaceVariant) : null),
     );
     if (!destacado) return tile;
     return Container(
@@ -318,7 +319,7 @@ class _GoogleOpcion extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (!user.googleConnected && !GoogleAuth.disponibleEnEsteTelefono) return const SizedBox.shrink();
     return _Opcion(
-      icon: Icons.account_circle_outlined,
+      icon: LucideIcons.circleUser,
       titulo: 'Google',
       detalle: user.googleConnected
           ? 'Vinculado: puedes entrar con «Continuar con Google»'
@@ -337,9 +338,9 @@ class _Tema extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final modo = ref.watch(themeModeProvider);
     const opciones = [
-      (ThemeMode.light, Icons.light_mode_outlined, 'Claro'),
-      (ThemeMode.dark, Icons.dark_mode_outlined, 'Oscuro'),
-      (ThemeMode.system, Icons.phone_iphone_rounded, 'Sistema'),
+      (ThemeMode.light, LucideIcons.sun, 'Claro'),
+      (ThemeMode.dark, LucideIcons.moon, 'Oscuro'),
+      (ThemeMode.system, LucideIcons.smartphone, 'Sistema'),
     ];
     final indice = opciones.indexWhere((o) => o.$1 == modo);
     return Padding(

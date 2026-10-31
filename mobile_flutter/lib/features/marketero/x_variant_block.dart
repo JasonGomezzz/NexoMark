@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
@@ -92,7 +93,7 @@ class _XVariantBlockState extends ConsumerState<XVariantBlock> {
                 onPressed: _ocupado
                     ? null
                     : () => _hacer(() => repo.createXVariant(widget.campana.id), 'Versión para X preparada.'),
-                icon: const Icon(Icons.auto_awesome_rounded),
+                icon: const Icon(LucideIcons.sparkles),
                 label: const Text('Preparar con IA'),
               ),
             ] else ...[

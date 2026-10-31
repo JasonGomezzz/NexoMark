@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
@@ -64,7 +65,7 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
                 data: (d) => [
                   if (d.pendiente != null)
                     InfoBanner(
-                      icon: Icons.hourglass_top_rounded,
+                      icon: LucideIcons.hourglass,
                       message: 'Tienes una solicitud pendiente del ${fechaCorta(d.pendiente!.fecha)}. El administrador la revisará.',
                     )
                   else ...[
@@ -101,9 +102,9 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
                               children: [
                                 Icon(
                                   switch (s.estado) {
-                                    'aprobada' => Icons.check_circle_rounded,
-                                    'rechazada' => Icons.cancel_rounded,
-                                    _ => Icons.hourglass_top_rounded,
+                                    'aprobada' => LucideIcons.circleCheck,
+                                    'rechazada' => LucideIcons.circleX,
+                                    _ => LucideIcons.hourglass,
                                   },
                                   color: switch (s.estado) {
                                     'aprobada' => context.nexo.success,

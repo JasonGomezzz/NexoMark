@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -154,7 +155,7 @@ class _NetworksScreenState extends ConsumerState<NetworksScreen> {
                   if (visibles.isEmpty) {
                     return [
                       const EmptyState(
-                        icon: Icons.hub_outlined,
+                        icon: LucideIcons.network,
                         title: 'Aún no hay cuentas conectadas',
                         message: 'Conecta Instagram y Facebook con el botón de arriba.',
                       ),
@@ -222,7 +223,7 @@ class _Conectar extends StatelessWidget {
           ),
           cargando
               ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
-              : Icon(Icons.open_in_new_rounded, color: context.colors.primary),
+              : Icon(LucideIcons.externalLink, color: context.colors.primary),
         ],
       ),
     );
