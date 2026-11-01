@@ -138,7 +138,7 @@ export default function CampaignListPage() {
       </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex max-w-full gap-1 overflow-x-auto rounded-[12px] border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por paso">
+        <div className="flex max-w-full flex-wrap gap-1 rounded-[12px] border border-outline-variant p-1" role="group" aria-label="Filtrar por paso">
           {[[null, 'Todas'], ['generar', 'Generar'], ['aprobar', 'Aprobar'], ['publicar', 'Publicar']].map(([id, texto]) => (
             <button
               key={texto}

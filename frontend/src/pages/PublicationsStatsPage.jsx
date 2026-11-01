@@ -202,7 +202,7 @@ export default function PublicationsStatsPage() {
                 Cada publicación de {resumen.anual.anio}
               </h2>
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex max-w-full gap-1 overflow-x-auto rounded-[12px] border border-outline-variant p-1 [scrollbar-width:none]" role="group" aria-label="Filtrar por red">
+                <div className="flex max-w-full flex-wrap gap-1 rounded-[12px] border border-outline-variant p-1" role="group" aria-label="Filtrar por red">
                   {filtrosRed.map((f) => (
                     <button
                       key={f.valor}
@@ -328,7 +328,7 @@ function TablaPublicaciones({ publicaciones, red, conCliente, conMarketero, conX
           )
         })}
       </ul>
-      <div className="hidden overflow-x-auto rounded-[14px] border border-outline-variant md:block">
+      <div className="hidden overflow-x-auto border-y border-outline-variant md:block">
         <table className="w-full min-w-[760px] text-sm">
           <thead className="bg-surface-container-low text-left text-[13px] font-semibold whitespace-nowrap text-on-surface-variant">
             <tr>
