@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
  * a lado. Cifras grandes del año, filas finas con el resto de métricas y barras
  * de 12 meses (me gusta o reacciones; en TikTok y X, publicaciones).
  * - Lo que la red no informó dice «sin dato», nunca 0.
- * - Mes sin publicaciones: raya en la base. Mes que aún no llega: nada.
+ * - Mes con publicaciones y 0 (o sin dato): raya en la base. Mes sin publicaciones o que aún no llega: nada.
  * - Red sin publicaciones en el año: no se dibujan barras vacías.
  * Las barras son CSS (alto en %) y llevan su tabla para lector de pantalla.
  */
@@ -23,7 +23,7 @@ const COLOR = {
 }
 const COMPACTO = new Intl.NumberFormat('es-PE', { notation: 'compact', maximumFractionDigits: 1 })
 
-function BarrasMes({ serie, anio, color, titulo }) {
+function BarrasMes({ serie, publicaciones, anio, color, titulo }) {
   const mesActual = indiceMesActual(anio)
   const valores = serie.map((m) => m.total)
   const max = Math.max(1, ...valores.filter((v) => typeof v === 'number'))
@@ -46,7 +46,7 @@ function BarrasMes({ serie, anio, color, titulo }) {
                   )}
                   <span className="w-[62%] max-w-3 rounded-t-[3px]" style={{ height: `${Math.max(4, (v / max) * 100)}%`, background: color }} />
                 </>
-              ) : !futuro ? (
+              ) : !futuro && (publicaciones[i]?.total ?? 0) > 0 ? (
                 <span className="mb-0.5 h-[2px] w-[62%] max-w-3 rounded-full bg-outline" />
               ) : null}
             </div>
@@ -85,7 +85,10 @@ export function Planchas({ redes, resumen, puedeConectar }) {
         const total = datos.publicaciones ?? 0
         const [campoGrande, etiquetaGrande] = principales[0] ?? []
         const filas = [...principales.slice(1), ...secundarias]
-        const serie = sinLectura ? serieAnual(resumen.anual, red, 'publicaciones') : serieAnual(resumen.anual, red, 'me_gusta')
+        const porMes = serieAnual(resumen.anual, red, 'publicaciones')
+        const serie = sinLectura ? porMes : serieAnual(resumen.anual, red, 'me_gusta')
+        const sumaAnio = serie.reduce((acc, m) => acc + (typeof m.total === 'number' ? m.total : 0), 0)
+        const tituloBarras = sinLectura ? (red === 'tiktok' ? 'Enviadas por mes' : 'Publicaciones por mes') : `${etiquetaGrande} por mes`
         return (
           <section
             key={red}
@@ -131,15 +134,15 @@ export function Planchas({ redes, resumen, puedeConectar }) {
                 ))}
               </dl>
             )}
-            {total > 0 && (
-            <div className="mt-5">
-              <BarrasMes
-                serie={serie}
-                anio={anio}
-                color={COLOR[red]}
-                titulo={sinLectura ? (red === 'tiktok' ? 'Enviadas por mes' : 'Publicaciones por mes') : `${etiquetaGrande} por mes`}
-              />
-            </div>
+            {total > 0 && sumaAnio > 0 && (
+              <div className="mt-5">
+                <BarrasMes serie={serie} publicaciones={porMes} anio={anio} color={COLOR[red]} titulo={tituloBarras} />
+              </div>
+            )}
+            {total > 0 && sumaAnio === 0 && !sinLectura && (
+              <p className="mt-5 text-sm text-on-surface-variant">
+                Todavía no se registran {etiquetaGrande?.toLowerCase() ?? 'me gusta'} en {anio}.
+              </p>
             )}
             {total > 0 && datos.metricas_al && <p className="mt-3 text-[13px] text-on-surface-variant">Leídas de Meta {haceCuanto(datos.metricas_al)}</p>}
           </section>
