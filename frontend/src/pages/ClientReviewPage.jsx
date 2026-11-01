@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
-import { AlertCircle, ArrowLeft, Check, CircleX, ImageOff, Loader2, Send, Star } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Check, CircleX, ImageOff, Loader2, Send, Star, ChartColumn } from 'lucide-react'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import { getCampaignById, approveCampaign, rejectCampaign } from '../services/clientCampaigns'
 import { Button } from '@/components/ui/button'
@@ -335,7 +335,7 @@ function Aprobada({ campaign, destinos, onInicio }) {
   const cuenta = destinos[0]
   return (
     <section role="status" aria-live="polite" className="mx-auto max-w-2xl py-8 sm:py-14">
-      <div className="flex items-center gap-5">
+      <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:gap-12">
         <span className="relative shrink-0">
           {campaign.imagenB64 ? (
             <img src={`data:image/png;base64,${campaign.imagenB64}`} alt="" className="h-28 w-28 rounded-[12px] object-cover" />
@@ -363,19 +363,20 @@ function Aprobada({ campaign, destinos, onInicio }) {
           : 'Tu agencia la publicará; no tiene cuentas de destino.'}
       </motion.p>
 
-      <ol className="mt-12 flex flex-wrap items-center gap-3" aria-label="Orden de trabajo">
+      <ol className="mt-12 flex items-center gap-4 sm:gap-3" aria-label="Orden de trabajo">
         {[
           { label: 'Aprobar', hecha: true },
           { label: 'Publicar', actual: true },
           { label: 'Medir' },
         ].map(({ label, hecha, actual }, i) => (
-          <li key={label} className="flex items-center gap-3">
-            {i > 0 && <span aria-hidden="true" className={cn('h-px w-8', hecha || actual ? 'bg-primary' : 'bg-outline-variant')} />}
-            <span className={cn('casilla h-10 w-10', hecha && 'border-0 bg-primary-fixed text-primary', actual && 'casilla-actual', !hecha && !actual && 'casilla-pliego')} aria-hidden="true">
+          <li key={label} className="flex items-center gap-1.5 sm:gap-3">
+            {i > 0 && <span aria-hidden="true" className={cn('hidden h-px w-8 sm:block', hecha || actual ? 'bg-primary' : 'bg-outline-variant')} />}
+            <span className={cn('casilla h-9 w-9 sm:h-10 sm:w-10', hecha && 'border-0 bg-primary-fixed text-primary', actual && 'casilla-actual', !hecha && !actual && 'casilla-pliego')} aria-hidden="true">
               {hecha && <Check className="h-4 w-4" strokeWidth={2.75} />}
               {actual && <Send className="h-[18px] w-[18px]" strokeWidth={2.25} />}
+              {!hecha && !actual && <ChartColumn className="h-[18px] w-[18px]" strokeWidth={1.75} />}
             </span>
-            <span className={cn('font-display text-[15px]', actual ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
+            <span className={cn('font-display text-[14px] sm:text-[15px]', actual ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
               {label}
               <span className="sr-only">{hecha ? ': hecho' : actual ? ': en curso' : ': pendiente'}</span>
             </span>
