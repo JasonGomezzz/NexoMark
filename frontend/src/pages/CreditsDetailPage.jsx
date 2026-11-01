@@ -78,15 +78,15 @@ export default function CreditsDetailPage() {
     return (
       <div className="space-y-6">
         <div className="h-10 w-64 animate-pulse rounded bg-surface-container-high" />
-        <div className="h-40 animate-pulse rounded-xl border border-outline-variant bg-white" />
-        <div className="h-64 animate-pulse rounded-xl border border-outline-variant bg-white" />
+        <div className="h-40 animate-pulse rounded-[10px] bg-surface-container-high" />
+        <div className="h-64 animate-pulse rounded-[10px] bg-surface-container-high" />
       </div>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
+      <div className="flex items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
         <AlertCircle className="h-4 w-4" />
         No se pudo cargar el detalle de créditos.
         <button
@@ -119,8 +119,8 @@ export default function CreditsDetailPage() {
         </p>
       </header>
 
-      {/* Bento hero: saldo + donut de uso, y KPIs apilados a la derecha */}
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      {/* Saldo y uso de la cuota; a la derecha, el mes en filas finas */}
+      <section className="grid grid-cols-1 gap-x-10 gap-y-6 lg:grid-cols-3">
         <div className="regla relative pt-6 lg:col-span-2">
           <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
             <div className="flex-1 space-y-4">
@@ -139,9 +139,9 @@ export default function CreditsDetailPage() {
               </p>
               <button
                 onClick={() => setShowPlanes(true)}
-                className="mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-outline-variant px-6 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low active:scale-[0.97]"
+                className="mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-outline-variant px-6 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container-low active:scale-[0.97]"
               >
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCart className="h-4 w-4" aria-hidden="true" />
                 Ver planes
               </button>
               <CreditRequestButton className="mt-2" />
@@ -161,7 +161,7 @@ export default function CreditsDetailPage() {
         </div>
 
         {/* KPIs del mes — todos calculados del historial real */}
-        <div className="flex flex-col gap-4">
+        <dl className="regla divide-y divide-hairline pt-2" aria-label="Este mes">
           <MetricCard
             icon={Coins}
             label="Consumidos este mes"
@@ -178,28 +178,44 @@ export default function CreditsDetailPage() {
             value={data.promedio_por_campana_mes}
             suffix="cr"
           />
-        </div>
+        </dl>
       </section>
 
       {/* Historial de consumo — por campaña, el evento de consumo real del producto */}
-      <section className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm">
-        <div className="border-b border-outline-variant px-6 py-4">
-          <h2 className="text-lg font-semibold text-on-surface">Historial de consumo</h2>
-        </div>
+      <section className="regla pt-6" aria-labelledby="historial-titulo">
+        <h2 id="historial-titulo" className="text-2xl font-extrabold text-on-surface">Historial de consumo</h2>
 
         {data.historial.length === 0 ? (
-          <p className="px-6 py-10 text-center text-sm text-on-surface-variant">
+          <p className="py-6 text-sm text-on-surface-variant">
             Aún no has generado campañas. Tu historial de consumo aparecerá aquí.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Móvil: una fila por campaña con todo a la vista, sin desplazar la tabla */}
+          <ul className="mt-4 divide-y divide-hairline border-y border-hairline sm:hidden">
+            {data.historial.map((c) => (
+              <li key={c.id} className="py-3">
+                <p className="line-clamp-2 font-medium text-on-surface">{c.titulo}</p>
+                <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-on-surface-variant">
+                  <span className="tabular-nums">
+                    {new Date(c.fecha_creacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                  <span className="font-semibold tabular-nums text-on-surface">
+                    {c.tokens_consumidos === 0 ? 'sin costo' : `−${c.tokens_consumidos} ${c.tokens_consumidos === 1 ? 'crédito' : 'créditos'}`}
+                  </span>
+                  <StatusBadge estado={c.estado} />
+                </p>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 hidden overflow-x-auto sm:block">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-outline-variant text-[13px] text-on-surface-variant">
-                  <th className="px-6 py-3 font-semibold">Nombre de campaña</th>
-                  <th className="px-6 py-3 font-semibold">Fecha</th>
-                  <th className="px-6 py-3 font-semibold">Créditos</th>
-                  <th className="px-6 py-3 font-semibold">Estado</th>
+                  <th className="py-3 pr-4 font-semibold">Campaña</th>
+                  <th className="px-4 py-3 font-semibold">Fecha</th>
+                  <th className="px-4 py-3 text-right font-semibold">Créditos</th>
+                  <th className="py-3 pl-4 font-semibold">Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,28 +223,26 @@ export default function CreditsDetailPage() {
                   const Icon = ESTADO_ICON[c.estado] ?? Megaphone
                   const sinCosto = c.tokens_consumidos === 0
                   return (
-                    <tr key={c.id} className="border-b border-outline-variant/60 last:border-0">
-                      <td className="px-6 py-3">
+                    <tr key={c.id} className="border-b border-hairline last:border-0">
+                      <td className="py-3 pr-4">
                         <div className="flex items-center gap-3">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <Icon className="h-4 w-4" />
-                          </span>
+                          <Icon className="h-4 w-4 shrink-0 text-outline" aria-hidden="true" />
                           <span className="max-w-xs truncate font-medium text-on-surface">
                             {c.titulo}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-3 text-on-surface-variant">
+                      <td className="whitespace-nowrap px-4 py-3 tabular-nums text-on-surface-variant">
                         {new Date(c.fecha_creacion).toLocaleDateString('es-PE', {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric',
                         })}
                       </td>
-                      <td className="px-6 py-3 text-right tabular-nums text-on-surface">
+                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-on-surface">
                         {sinCosto ? '0' : `-${c.tokens_consumidos}`}
                       </td>
-                      <td className="px-6 py-3">
+                      <td className="py-3 pl-4">
                         <StatusBadge estado={c.estado} />
                       </td>
                     </tr>
@@ -237,11 +251,12 @@ export default function CreditsDetailPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
 
       <p className="flex items-center gap-2 text-sm text-on-surface-variant">
-        <ShieldQuestion className="h-4 w-4 text-primary" />
+        <ShieldQuestion className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
         ¿Necesitas más créditos? Pídelos al administrador: el SuperAdmin revisa la solicitud desde el
         panel de Usuarios. No hay renovación automática por ciclo de facturación.
       </p>
@@ -250,16 +265,17 @@ export default function CreditsDetailPage() {
 }
 
 function MetricCard({ icon: Icon, label, value, suffix }) {
+  const sinDato = value == null
   return (
-    <div className="flex flex-1 items-center justify-between rounded-2xl border border-outline-variant bg-white p-6 shadow-sm">
-      <div>
-        <p className="text-[13px] font-medium text-outline">{label}</p>
-        <p className="mt-1 text-3xl font-bold tabular-nums text-on-surface">
-          {value ?? '—'}
-          {suffix && <span className="ml-1 text-base font-normal text-outline">{suffix}</span>}
-        </p>
-      </div>
-      <Icon className="h-5 w-5 text-secondary" />
+    <div className="flex items-baseline justify-between gap-4 py-4">
+      <dt className="flex items-center gap-2 text-sm text-on-surface-variant">
+        <Icon className="h-4 w-4 text-outline" aria-hidden="true" />
+        {label}
+      </dt>
+      <dd className={sinDato ? 'text-sm text-on-surface-variant' : 'cifra text-[32px] tabular-nums text-on-surface'}>
+        {sinDato ? 'sin dato' : value}
+        {!sinDato && suffix && <span className="ml-1 font-sans text-base font-normal text-outline">{suffix}</span>}
+      </dd>
     </div>
   )
 }

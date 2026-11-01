@@ -80,10 +80,10 @@ export default function MedicionVozFormulario() {
   const hayCorrecciones = correcciones.some((f) => (f.voz ?? 0) > 0 || (f.formulario ?? 0) > 0)
 
   return (
-    <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm" aria-labelledby="medicion-titulo">
+    <section className="regla pt-6" aria-labelledby="medicion-titulo">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 id="medicion-titulo" className="text-xl font-semibold text-on-surface">
+          <h2 id="medicion-titulo" className="text-2xl font-extrabold text-on-surface">
             Voz contra formulario
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-on-surface-variant">
@@ -92,7 +92,7 @@ export default function MedicionVozFormulario() {
           </p>
         </div>
         <Button type="button" variant="outline" onClick={descargar} disabled={descargando || !datos}>
-          <Download className="h-4 w-4" />
+          <Download className="h-4 w-4" aria-hidden="true" />
           {descargando ? 'Descargando…' : 'Descargar CSV'}
         </Button>
       </div>

@@ -148,18 +148,18 @@ export default function UsersAdminPage() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
-          <AlertCircle className="h-4 w-4" />
+        <div className="flex items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
+          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm">
+        <div className="border-y border-outline-variant">
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 border-b border-outline-variant/40 px-4 py-4 last:border-0"
+              className="flex items-center gap-4 border-b border-hairline py-4 last:border-0"
             >
               <div className="h-4 flex-1 animate-pulse rounded bg-surface-container-high" />
               <div className="h-6 w-20 animate-pulse rounded-full bg-surface-container-high" />
@@ -168,24 +168,24 @@ export default function UsersAdminPage() {
         </div>
       ) : !error ? (
         <>
-          <div className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm">
+          <div className="border-y border-outline-variant">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-surface-container-low">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Nombre</th>
+                <thead>
+                  <tr className="border-b border-outline-variant">
+                    <th className="py-3 pl-2 pr-4 text-left text-[13px] font-semibold text-on-surface-variant">Nombre</th>
                     <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Email</th>
                     <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Rol</th>
                     <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Estado</th>
                     <th className="px-4 py-3 text-right text-[13px] font-semibold text-on-surface-variant">Créditos</th>
-                    <th className="px-4 py-3 text-right text-[13px] font-semibold text-on-surface-variant">Acciones</th>
+                    <th className="py-3 pl-4 pr-2 text-right text-[13px] font-semibold text-on-surface-variant">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.length === 0 && (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-on-surface-variant">
-                        <Users className="mx-auto mb-2 h-8 w-8 text-outline" />
+                        <Users className="mx-auto mb-2 h-8 w-8 text-outline" aria-hidden="true" />
                         No hay usuarios en esta página.
                       </td>
                     </tr>
@@ -195,29 +195,29 @@ export default function UsersAdminPage() {
                     return (
                       <tr
                         key={u.id}
-                        className="border-b border-outline-variant/40 transition-colors last:border-0 hover:bg-surface-container-low"
+                        className="border-b border-hairline transition-colors last:border-0 hover:bg-surface-container-low"
                       >
-                        <td className="px-4 py-4 font-medium text-on-surface">
+                        <td className="py-3 pl-2 pr-4 font-medium text-on-surface">
                           {u.nombre}
                           {isSelf && <span className="ml-2 text-[13px] text-on-surface-variant">(tú)</span>}
                         </td>
-                        <td className="px-4 py-4 text-on-surface-variant">{u.email}</td>
-                        <td className="px-4 py-4">
+                        <td className="max-w-[260px] truncate px-4 py-3 text-on-surface-variant" title={u.email}>{u.email}</td>
+                        <td className="px-4 py-3">
                           <RolBadge rol={u.rol} />
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="px-4 py-3">
                           <EstadoChip activo={u.is_active} />
                         </td>
-                        <td className="px-4 py-4 text-right font-semibold tabular-nums text-on-surface">
+                        <td className="px-4 py-3 text-right font-semibold tabular-nums text-on-surface">
                           {u.tokens_disponibles}
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="py-3 pl-4 pr-2">
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => handleToggleActive(u)}
                               disabled={isSelf}
                               title={isSelf ? 'No puedes modificar tu propia cuenta' : ''}
-                              className={`inline-flex min-h-10 items-center gap-1 rounded-full border px-3 text-[13px] font-medium transition-colors ${
+                              className={`inline-flex min-h-11 items-center gap-1.5 rounded-[10px] border px-3 text-[13px] font-medium transition-colors ${
                                 isSelf
                                   ? 'cursor-not-allowed border-outline-variant/50 bg-surface-container-high text-outline'
                                   : u.is_active
@@ -225,20 +225,20 @@ export default function UsersAdminPage() {
                                     : 'border-success/40 text-success hover:bg-success-container'
                               }`}
                             >
-                              {u.is_active ? <Ban className="h-3.5 w-3.5" /> : <CircleCheck className="h-3.5 w-3.5" />}
+                              {u.is_active ? <Ban className="h-3.5 w-3.5" aria-hidden="true" /> : <CircleCheck className="h-3.5 w-3.5" aria-hidden="true" />}
                               {u.is_active ? 'Suspender' : 'Activar'}
                             </button>
                             <button
                               onClick={() => handleResetQuota(u)}
                               disabled={isSelf}
                               title={isSelf ? 'No puedes modificar tu propia cuenta' : ''}
-                              className={`inline-flex min-h-10 items-center gap-1 rounded-full border px-3 text-[13px] font-medium transition-colors ${
+                              className={`inline-flex min-h-11 items-center gap-1.5 rounded-[10px] border px-3 text-[13px] font-medium transition-colors ${
                                 isSelf
                                   ? 'cursor-not-allowed border-outline-variant/50 bg-surface-container-high text-outline'
                                   : 'border-outline-variant text-primary hover:bg-primary-fixed hover:text-on-primary-fixed'
                               }`}
                             >
-                              <RotateCcw className="h-3.5 w-3.5" />
+                              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                               Resetear cuota
                             </button>
                           </div>
@@ -317,8 +317,8 @@ function ConfirmModal({ title, message, confirmLabel, onConfirm, onCancel, busy,
       aria-labelledby="confirm-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/60 p-4"
     >
-      <div className="glass-liquid w-full max-w-md rounded-3xl p-8">
-        <h3 id="confirm-title" className="mb-2 text-lg font-semibold text-on-surface">{title}</h3>
+      <div className="entra-hoja w-full max-w-md rounded-[22px] border border-outline-variant bg-surface-container-lowest p-8 shadow-xl">
+        <h3 id="confirm-title" className="mb-2 text-xl font-extrabold text-on-surface">{title}</h3>
         <p className="mb-6 text-sm text-on-surface-variant">{message}</p>
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={onCancel} disabled={busy}>

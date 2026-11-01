@@ -1,18 +1,6 @@
 import { useEffect, useState } from 'react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { Megaphone, CircleCheck, Clock, AlertCircle } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { AlertCircle } from 'lucide-react'
 import api from '../services/api'
 import MedicionVozFormulario from '@/components/analytics/MedicionVozFormulario'
 import { STATES } from '@/lib/campaignStates'
@@ -94,15 +82,17 @@ export default function AnalyticsPage() {
             Métricas globales de la plataforma.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1 rounded-[12px] border border-outline-variant p-1" role="group" aria-label="Periodo">
           {PERIODS.map(({ value, label }) => (
             <button
               key={value}
+              type="button"
+              aria-pressed={period === value}
               onClick={() => handlePeriodChange(value)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              className={`inline-flex min-h-10 items-center rounded-[8px] px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 period === value
                   ? 'bg-primary text-on-primary'
-                  : 'border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
+                  : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
               }`}
             >
               {label}
@@ -115,14 +105,14 @@ export default function AnalyticsPage() {
       {loading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl border border-outline-variant bg-white" />
+            <div key={i} className="h-28 animate-pulse rounded-[10px] bg-surface-container-high" />
           ))}
         </div>
       )}
 
       {error && (
         <div className="flex items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
           {error}
         </div>
       )}
@@ -132,22 +122,16 @@ export default function AnalyticsPage() {
           {/* Stat cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard
-              icon={Megaphone}
-              tint="bg-primary/10 text-primary"
               label="Total campañas"
               value={data.kpi.total_campanas}
               sub={`Últimos ${periodLabel}`}
             />
             <StatCard
-              icon={CircleCheck}
-              tint="bg-success-container text-success"
               label="Tasa de aprobación"
               value={`${data.kpi.tasa_aprobacion}%`}
               sub="Aprobadas / total"
             />
             <StatCard
-              icon={Clock}
-              tint="bg-tertiary-container text-tertiary"
               label="Tiempo prom. aprobación"
               value={
                 data.kpi.tiempo_promedio_aprobacion_dias == null
@@ -168,7 +152,7 @@ export default function AnalyticsPage() {
                 Campañas por marketero
               </h3>
               {data.campanas_por_marketero.length === 0 ? (
-                <p className="py-8 text-center text-sm text-on-surface-variant">
+                <p className="py-8 text-sm text-on-surface-variant">
                   Sin datos en este periodo
                 </p>
               ) : (
@@ -193,7 +177,7 @@ export default function AnalyticsPage() {
                     <Tooltip
                       cursor={{ fill: 'rgb(23 184 173 / 0.1)' }}
                       contentStyle={{
-                        borderRadius: 12,
+                        borderRadius: 10,
                         border: '1px solid var(--color-outline-variant)',
                         backgroundColor: 'var(--color-surface-container-lowest)',
                         color: 'var(--color-on-surface)',
@@ -212,48 +196,20 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            {/* Dona — distribución de estados FSM */}
+            {/* Distribución por estado: barras horizontales (se comparan largos, no ángulos) */}
             <div className="regla pt-5">
-              <h3 className="mb-4 text-sm font-semibold text-on-surface">
+              <h3 className="mb-5 text-sm font-semibold text-on-surface">
                 Distribución por estado
               </h3>
               {pieData.length === 0 ? (
-                <p className="py-8 text-center text-sm text-on-surface-variant">
+                <p className="py-8 text-sm text-on-surface-variant">
                   Sin datos en este periodo
                 </p>
               ) : (
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={90}
-                      paddingAngle={2}
-                      dataKey="value"
-                      nameKey="name"
-                      label={({ name, percent }) =>
-                        percent >= 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : null
-                      }
-                      labelLine={false}
-                    >
-                      {pieData.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} stroke="var(--color-surface-container-lowest)" strokeWidth={2} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: 12,
-                        border: '1px solid var(--color-outline-variant)',
-                        backgroundColor: 'var(--color-surface-container-lowest)',
-                        color: 'var(--color-on-surface)',
-                        fontSize: 13,
-                      }}
-                    />
-                    <Legend iconType="circle" iconSize={10} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <Barras
+                  rows={pieData.map((e) => ({ clave: e.name, etiqueta: e.name, total: e.value, color: e.color }))}
+                  conPorcentaje
+                />
               )}
             </div>
           </div>
@@ -264,7 +220,13 @@ export default function AnalyticsPage() {
               <h3 className="mb-5 text-sm font-semibold text-on-surface">
                 Campañas por plataforma
               </h3>
-              <PlatformBars rows={data.campanas_por_plataforma} />
+              <Barras
+                rows={data.campanas_por_plataforma.map((r) => ({
+                  clave: r.plataforma,
+                  etiqueta: PLATAFORMA_LABELS[r.plataforma] ?? r.plataforma,
+                  total: r.total,
+                }))}
+              />
             </div>
           )}
         </>
@@ -275,23 +237,25 @@ export default function AnalyticsPage() {
   )
 }
 
-/** Barras horizontales de conteo por plataforma, relativas al máximo. */
-function PlatformBars({ rows }) {
+/** Barras horizontales de conteo, relativas al máximo; el número va escrito al lado. */
+function Barras({ rows, conPorcentaje = false }) {
   const max = Math.max(...rows.map((r) => r.total), 1)
+  const suma = rows.reduce((acc, r) => acc + r.total, 0) || 1
   return (
     <ul className="space-y-4">
       {rows.map((r) => (
-        <li key={r.plataforma}>
-          <div className="mb-1.5 flex items-center justify-between text-sm">
-            <span className="font-medium text-on-surface">
-              {PLATAFORMA_LABELS[r.plataforma] ?? r.plataforma}
+        <li key={r.clave}>
+          <div className="mb-1.5 flex items-baseline justify-between gap-3 text-sm">
+            <span className="font-medium text-on-surface">{r.etiqueta}</span>
+            <span className="tabular-nums text-on-surface-variant">
+              <span className="font-semibold text-on-surface">{r.total}</span>
+              {conPorcentaje && ` · ${Math.round((r.total / suma) * 100)} %`}
             </span>
-            <span className="tabular-nums text-on-surface-variant">{r.total}</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-surface-container-high">
             <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${Math.round((r.total / max) * 100)}%` }}
+              className="h-full rounded-full"
+              style={{ width: `${Math.max(2, Math.round((r.total / max) * 100))}%`, background: r.color ?? 'var(--color-primary)' }}
             />
           </div>
         </li>
@@ -300,7 +264,7 @@ function PlatformBars({ rows }) {
   )
 }
 
-/** Cifra de la plataforma (sistema "Línea"): regla, rótulo y número; sin ícono decorativo. */
+/** Cifra de la plataforma: regla, rótulo y número grande; sin ícono decorativo. */
 function StatCard({ label, value, sub }) {
   return (
     <div className="regla pt-5">

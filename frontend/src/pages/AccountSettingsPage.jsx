@@ -109,8 +109,8 @@ export default function AccountSettingsPage() {
     return (
       <div className="max-w-3xl space-y-4">
         <div className="h-10 w-64 animate-pulse rounded bg-surface-container-high" />
-        <div className="h-72 animate-pulse rounded-xl border border-outline-variant bg-white" />
-        <div className="h-96 animate-pulse rounded-xl border border-outline-variant bg-white" />
+        <div className="h-72 animate-pulse rounded-[10px] bg-surface-container-high" />
+        <div className="h-96 animate-pulse rounded-[10px] bg-surface-container-high" />
       </div>
     )
   }
@@ -300,10 +300,10 @@ export default function AccountSettingsPage() {
 
         {/* Créditos de IA — solo roles que generan */}
         {usaCreditos && (
-          <section className="glass-soft rounded-xl p-6">
+          <section className="regla pt-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-on-surface">
-                <Coins className="h-5 w-5 text-primary" />
+                <Coins className="h-5 w-5 text-primary" aria-hidden="true" />
                 Créditos de IA
               </h2>
               <span className="text-sm font-bold tabular-nums text-primary">
@@ -320,7 +320,7 @@ export default function AccountSettingsPage() {
               className="h-2.5 w-full overflow-hidden rounded-full bg-surface-container-high"
             >
               <div
-                className={`h-full rounded-full transition-all ${tokens === 0 ? 'bg-error' : 'bg-primary'}`}
+                className={`h-full rounded-full ${tokens === 0 ? 'bg-error' : 'bg-primary'}`}
                 style={{ width: `${pct}%` }}
               />
             </div>

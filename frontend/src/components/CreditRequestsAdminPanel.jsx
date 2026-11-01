@@ -86,12 +86,12 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
   return (
     <section
       aria-labelledby="solicitudes-creditos"
-      className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm"
+      className="regla pt-6"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant px-6 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <HandCoins className="h-5 w-5 text-primary" />
-          <h2 id="solicitudes-creditos" className="text-lg font-semibold text-on-surface">
+          <HandCoins className="h-5 w-5 text-primary" aria-hidden="true" />
+          <h2 id="solicitudes-creditos" className="text-2xl font-extrabold text-on-surface">
             Solicitudes de créditos
           </h2>
           {pendientes > 0 && (
@@ -100,7 +100,7 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
             </span>
           )}
         </div>
-        <div className="flex gap-1 rounded-lg bg-surface-container-low p-1" role="group" aria-label="Filtrar solicitudes">
+        <div className="flex gap-1 rounded-[12px] border border-outline-variant p-1" role="group" aria-label="Filtrar solicitudes">
           {FILTROS.map((f) => (
             <button
               key={f.texto}
@@ -110,8 +110,8 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
                 setCargando(true)
                 setFiltro(f.valor)
               }}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-                filtro === f.valor ? 'bg-white text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
+              className={`inline-flex min-h-10 items-center rounded-[8px] px-4 text-sm font-medium transition-colors ${
+                filtro === f.valor ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
               }`}
             >
               {f.texto}
@@ -120,31 +120,31 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
         </div>
       </div>
 
-      <p className="px-6 pt-3 text-[13px] text-on-surface-variant">
+      <p className="mt-2 text-sm text-on-surface-variant">
         Aprobar suma los créditos al saldo actual; rechazar no lo modifica. Queda registrado quién decidió y cuándo.
       </p>
 
       {cargando ? (
-        <div className="space-y-2 px-6 py-4">
+        <div className="mt-4 space-y-2">
           <div className="h-14 animate-pulse rounded-lg bg-surface-container-high" />
           <div className="h-14 animate-pulse rounded-lg bg-surface-container-high" />
         </div>
       ) : error ? (
-        <div className="m-6 flex items-center gap-2 rounded-lg border border-error/20 bg-error-container px-4 py-3 text-sm text-on-error-container">
-          <AlertCircle className="h-4 w-4" />
+        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
+          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
           {error}
-          <button type="button" className="font-semibold underline" onClick={() => { setCargando(true); cargar() }}>
+          <button type="button" className="inline-flex min-h-11 items-center font-semibold underline" onClick={() => { setCargando(true); cargar() }}>
             Reintentar
           </button>
         </div>
       ) : solicitudes.length === 0 ? (
-        <p className="px-6 py-8 text-center text-sm text-on-surface-variant">
+        <p className="mt-4 border-t border-hairline py-6 text-sm text-on-surface-variant">
           {filtro === 'pendiente' ? 'No hay solicitudes pendientes.' : 'Aún no hay solicitudes.'}
         </p>
       ) : (
-        <ul className="divide-y divide-outline-variant/60">
+        <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
           {solicitudes.map((s) => (
-            <li key={s.id} className="flex flex-col gap-3 px-6 py-4 lg:flex-row lg:items-start lg:justify-between">
+            <li key={s.id} className="flex flex-col gap-3 py-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0 space-y-1">
                 <p className="truncate font-medium text-on-surface">
                   {s.solicitante_nombre}{' '}
@@ -179,7 +179,7 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
                       step="1"
                       value={montos[s.id] ?? String(CREDITOS_SUGERIDOS)}
                       onChange={(e) => setMontos({ ...montos, [s.id]: e.target.value })}
-                      className="mt-1 block w-24 rounded-lg border border-outline-variant px-2 py-1.5 text-sm tabular-nums outline-none focus:ring-2 focus:ring-primary"
+                      className="mt-1 block h-11 w-24 rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-sm tabular-nums text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
                     />
                   </label>
                   <label className="text-[13px] font-medium text-on-surface-variant">
@@ -189,15 +189,15 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
                       maxLength={300}
                       value={notas[s.id] ?? ''}
                       onChange={(e) => setNotas({ ...notas, [s.id]: e.target.value })}
-                      className="mt-1 block w-44 rounded-lg border border-outline-variant px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary"
+                      className="mt-1 block h-11 w-44 rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
                     />
                   </label>
                   <Button size="sm" disabled={ocupado !== null} onClick={() => resolver(s, 'aprobada')}>
-                    <Check className="h-4 w-4" />
+                    <Check className="h-4 w-4" aria-hidden="true" />
                     {ocupado === s.id ? 'Guardando…' : 'Aprobar'}
                   </Button>
                   <Button size="sm" variant="outline" disabled={ocupado !== null} onClick={() => resolver(s, 'rechazada')}>
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4" aria-hidden="true" />
                     Rechazar
                   </Button>
                 </div>
