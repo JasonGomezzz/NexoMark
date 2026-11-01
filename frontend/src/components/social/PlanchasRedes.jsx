@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
  * de 12 meses (me gusta o reacciones; en TikTok y X, publicaciones).
  * - Lo que la red no informó dice «sin dato», nunca 0.
  * - Mes sin publicaciones: raya en la base. Mes que aún no llega: nada.
+ * - Red sin publicaciones en el año: no se dibujan barras vacías.
  * Las barras son CSS (alto en %) y llevan su tabla para lector de pantalla.
  */
 const COLOR = {
@@ -130,6 +131,7 @@ export function Planchas({ redes, resumen, puedeConectar }) {
                 ))}
               </dl>
             )}
+            {total > 0 && (
             <div className="mt-5">
               <BarrasMes
                 serie={serie}
@@ -138,6 +140,7 @@ export function Planchas({ redes, resumen, puedeConectar }) {
                 titulo={sinLectura ? (red === 'tiktok' ? 'Enviadas por mes' : 'Publicaciones por mes') : `${etiquetaGrande} por mes`}
               />
             </div>
+            )}
             {total > 0 && datos.metricas_al && <p className="mt-3 text-[13px] text-on-surface-variant">Leídas de Meta {haceCuanto(datos.metricas_al)}</p>}
           </section>
         )

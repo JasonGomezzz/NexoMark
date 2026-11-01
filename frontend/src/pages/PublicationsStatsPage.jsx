@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
 import toast from 'react-hot-toast'
-import { AlertCircle, ChartColumnIncreasing, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react'
+import { AlertCircle, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Planchas, PiezasSelladas } from '../components/social/PlanchasRedes'
 import PublicationBadge from '../components/social/PublicationBadge'
@@ -242,7 +242,7 @@ export default function PublicationsStatsPage() {
             {publicaciones.length === 0 ? (
               <SinPublicaciones rol={rol} anio={resumen.anual.anio} />
             ) : visibles.length === 0 ? (
-              <p className="rounded-[14px] border border-dashed border-outline-variant px-6 py-10 text-center text-sm text-on-surface-variant">
+              <p className="border-y border-hairline py-6 text-[15px] text-on-surface-variant">
                 Ninguna publicación coincide con estos filtros. Prueba con «Todas».
               </p>
             ) : (
@@ -435,14 +435,11 @@ const VACIO = {
 function SinPublicaciones({ rol, anio }) {
   const esteAnio = Number(anio) === new Date().getFullYear()
   return (
-    <div className="flex flex-col items-start gap-3 rounded-[14px] border border-dashed border-outline-variant p-8">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-outline">
-        <ChartColumnIncreasing className="h-7 w-7" />
-      </div>
-      <h3 className="text-lg font-semibold text-on-surface">
+    <div className="border-y border-hairline py-6">
+      <h3 className="text-lg font-extrabold text-on-surface">
         {esteAnio ? 'Aún no hay publicaciones' : `No hubo publicaciones en ${anio}`}
       </h3>
-      {esteAnio && <p className="max-w-sm text-sm text-on-surface-variant">{VACIO[rol] ?? VACIO.cliente}</p>}
+      {esteAnio && <p className="mt-1 max-w-md text-[15px] text-on-surface-variant">{VACIO[rol] ?? VACIO.cliente}</p>}
     </div>
   )
 }
