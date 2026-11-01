@@ -9,7 +9,7 @@ import { formatoEspera, mensajeDeError, segundosDeEspera } from '../services/pas
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const INPUT_CLASS =
-  'w-full rounded-xl border px-4 py-3 text-base outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary'
+  'h-11 w-full rounded-[10px] border bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:ring-2 focus:ring-primary/30'
 
 /**
  * "¿Olvidaste tu contraseña?" — POST /api/auth/password-reset/.
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
             onChange={(e) => setEmail(e.target.value)}
             aria-invalid={Boolean(error)}
             aria-describedby={error ? 'email-error' : undefined}
-            className={`${INPUT_CLASS} ${error ? 'border-error' : 'border-outline-variant'}`}
+            className={`${INPUT_CLASS} ${error ? 'border-error' : 'border-outline'}`}
           />
           {error && (
             <p id="email-error" role="alert" className="px-1 text-[13px] text-error">

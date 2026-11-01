@@ -15,7 +15,7 @@ import {
 } from '../services/passwordReset'
 
 const INPUT_CLASS =
-  'w-full rounded-xl border px-4 py-3 text-base outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary'
+  'h-11 w-full rounded-[10px] border bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-[border-color,box-shadow] duration-150 focus:border-primary focus:ring-2 focus:ring-primary/30'
 const ENLACE_INVALIDO = 'El enlace no es válido o ya venció. Solicita uno nuevo.'
 
 /**
@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
               maxLength={128}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`${INPUT_CLASS} pr-12 ${error ? 'border-error' : 'border-outline-variant'}`}
+              className={`${INPUT_CLASS} pr-12 ${error ? 'border-error' : 'border-outline'}`}
             />
             <button
               type="button"
@@ -141,7 +141,7 @@ export default function ResetPasswordPage() {
             maxLength={128}
             value={confirmacion}
             onChange={(e) => setConfirmacion(e.target.value)}
-            className={`${INPUT_CLASS} ${error ? 'border-error' : 'border-outline-variant'}`}
+            className={`${INPUT_CLASS} ${error ? 'border-error' : 'border-outline'}`}
           />
         </div>
         {error && (
