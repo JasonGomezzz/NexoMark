@@ -81,7 +81,7 @@ export default function ImageLightbox({ src, alt, downloadName, variante = 'norm
             href={src}
             download={downloadName}
             onClick={(e) => e.stopPropagation()}
-            className="glass-liquid-dark absolute bottom-6 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
+            className="absolute bottom-6 border border-white/15 bg-navy-deep/90 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
           >
             <Download className="h-4 w-4" />
             Descargar PNG

@@ -283,53 +283,11 @@ html[data-theme='dark'] select option {
   color: #f3fafb;
 }
 
-/* ---------- Superficies compartidas ----------
-   Los nombres glass-* / liquid-* se conservan por compatibilidad con las
-   páginas existentes, pero ya no son vidrio: superficies sólidas del tema,
-   separadas por tono y por un borde fino de color de tema. */
+/* ---------- Mesa ---------- */
 
 .app-shell {
   position: relative;
   isolation: isolate;
-}
-
-.glass-card {
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-}
-
-/* Superficies flotantes: modales, drawer de historial, tarjeta del login. */
-.glass-liquid {
-  background: var(--color-surface-container-lowest);
-  border: 1px solid color-mix(in srgb, var(--color-outline-variant) 70%, transparent);
-  box-shadow: var(--shadow-xl);
-}
-
-/* Elementos sobre el panel marino de marca o sobre fotos. */
-.glass-liquid-dark {
-  background: color-mix(in srgb, var(--color-navy) 82%, transparent);
-  border: 1px solid rgb(255 255 255 / 0.14);
-  color: var(--color-on-navy);
-}
-
-/* Avisos y bloques secundarios sobre el fondo: legibilidad primero. */
-.glass-soft {
-  background: var(--color-surface-container-low);
-  border: 1px solid color-mix(in srgb, var(--color-outline-variant) 70%, transparent);
-}
-
-/* Respuesta al puntero en bloques clicables: solo el borde, sin saltos. */
-.glass-float {
-  transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out);
-}
-@media (hover: hover) and (pointer: fine) {
-  .glass-float:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
-  }
-}
-
-.step-gradient {
-  background: var(--color-primary);
 }
 
 /* Componentes propios en su capa: las utilidades de Tailwind pueden sobrescribirlos. */
@@ -466,6 +424,7 @@ html[data-theme='dark'] select option {
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 }

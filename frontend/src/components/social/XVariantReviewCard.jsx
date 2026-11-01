@@ -70,7 +70,7 @@ export default function XVariantReviewCard({ campaignId, imagenB64, titulo }) {
   return (
     <section
       aria-labelledby={`variante-x-${variante.id}`}
-      className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm"
+      className="regla pt-6"
     >
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <RedIcon red="x" className="h-4 w-4 text-on-surface" />

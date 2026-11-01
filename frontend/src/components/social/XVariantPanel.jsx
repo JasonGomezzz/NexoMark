@@ -142,7 +142,7 @@ export default function XVariantPanel({ campaign }) {
   return (
     <section
       aria-labelledby={`${id}-titulo`}
-      className="mt-4 rounded-xl border border-outline-variant bg-white p-5 shadow-sm"
+      className="regla mt-8 pt-6"
     >
       <div className="mb-1 flex flex-wrap items-center gap-3">
         <RedIcon red="x" className="h-4 w-4" />

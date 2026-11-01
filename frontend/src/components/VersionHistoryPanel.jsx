@@ -111,12 +111,12 @@ export default function VersionHistoryPanel({
             aria-label="Historial de versiones"
           >
             <motion.aside
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ transform: 'translateX(100%)' }}
+              animate={{ transform: 'translateX(0%)' }}
+              exit={{ transform: 'translateX(100%)' }}
+              transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
               className={cn(
-                'glass-liquid flex h-full w-full flex-col overflow-hidden',
+                'flex h-full w-full flex-col overflow-hidden border-l border-outline-variant bg-background shadow-2xl',
                 compared ? 'max-w-3xl' : 'max-w-md',
               )}
               onClick={(e) => e.stopPropagation()}
@@ -148,11 +148,11 @@ export default function VersionHistoryPanel({
                     restoring={restoringId === compared.id}
                   />
                 ) : (
-                  <ul className="space-y-3">
+                  <ul className="divide-y divide-hairline border-y border-hairline">
                     {versions.map((v, i) => (
                       <li
                         key={v.id}
-                        className="flex gap-4 rounded-xl border border-outline-variant bg-white p-4 shadow-sm"
+                        className="flex gap-4 py-4"
                       >
                         <VersionThumb version={v} size="h-20 w-20" />
                         <div className="min-w-0 flex-1">
@@ -161,7 +161,7 @@ export default function VersionHistoryPanel({
                               Versión {v.version_number}
                             </span>
                             {i === 0 && (
-                              <span className="rounded-full bg-primary-fixed px-2 py-0.5 text-[13px] font-bold text-on-primary-fixed">
+                              <span className="rounded-[6px] bg-primary-fixed px-2 py-0.5 text-[13px] font-bold text-on-primary-fixed">
                                 Actual
                               </span>
                             )}
@@ -256,7 +256,7 @@ function CompareView({ left, right, onClose, onRestore, restoring }) {
               </span>
             </p>
             <VersionThumb version={v} size="h-36 w-full" className="mb-3" />
-            <div className="rounded-xl border border-outline-variant bg-white p-4 text-[13px] leading-relaxed text-on-surface">
+            <div className="border-t border-hairline pt-3 text-[13px] leading-relaxed text-on-surface">
               <p className="mb-1 text-[13px] font-bold text-on-surface-variant">
                 Copy del anuncio
               </p>

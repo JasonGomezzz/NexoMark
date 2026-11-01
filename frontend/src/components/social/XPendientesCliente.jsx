@@ -31,7 +31,7 @@ export default function XPendientesCliente() {
   if (!pendientes.length) return null
 
   return (
-    <section aria-labelledby="x-pendientes" className="rounded-xl border border-outline-variant bg-white p-5 shadow-sm">
+    <section aria-labelledby="x-pendientes" className="regla pt-6">
       <h2 id="x-pendientes" className="mb-1 flex items-center gap-2 text-base font-semibold text-on-surface">
         <RedIcon red="x" className="h-4 w-4 text-on-surface" />
         {pendientes.length === 1 ? 'Una versión para X espera tu aprobación' : `${pendientes.length} versiones para X esperan tu aprobación`}

@@ -114,7 +114,7 @@ export default function TikTokPanel({ campaign }) {
   return (
     <section
       aria-labelledby={`${id}-titulo`}
-      className="mt-4 rounded-xl border border-outline-variant bg-white p-5 shadow-sm"
+      className="regla mt-8 pt-6"
     >
       <div className="mb-1 flex items-center gap-2.5">
         <RedIcon red="tiktok" className="h-4 w-4 text-on-surface" />
@@ -320,7 +320,7 @@ function ConfirmarEnvio({ campaign, cuenta, maximo, enviando, onEnviar, onCerrar
         initial={{ opacity: 0, y: 12, scale: 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-        className="glass-liquid max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl overflow-y-auto rounded-3xl p-6 sm:p-8"
+        className="entra-hoja max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl overflow-y-auto rounded-[22px] border border-outline-variant bg-surface-container-lowest p-6 shadow-xl sm:p-8"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">

@@ -66,10 +66,10 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
         role="dialog"
         aria-modal="true"
         aria-labelledby="detalle-publicacion-titulo"
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '100%' }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ transform: 'translateX(100%)' }}
+        animate={{ transform: 'translateX(0%)' }}
+        exit={{ transform: 'translateX(100%)' }}
+        transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
         className="flex h-full w-full max-w-xl flex-col overflow-hidden bg-surface-container-lowest shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
