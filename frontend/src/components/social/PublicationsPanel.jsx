@@ -44,7 +44,9 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
           Publicación
         </h2>
         <p className="mt-2 text-[15px] text-on-surface-variant">
-          Sin cuentas de destino: esta campaña no se publica sola. Se eligen al enviarla al cliente.
+          {estadoCampana === 'aprobado'
+            ? 'Se aprobó sin cuentas de destino: no se publicará sola. Publícala desde la cuenta del cliente.'
+            : 'Se envió sin cuentas de destino: cuando el cliente la apruebe, no se publicará sola.'}
         </p>
       </section>
     )
