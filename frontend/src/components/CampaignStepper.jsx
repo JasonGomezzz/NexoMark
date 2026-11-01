@@ -71,7 +71,7 @@ export default function CampaignStepper({ estado, publicada = false }) {
                 <span aria-hidden="true" className={cn('hidden h-px flex-1 sm:block', hecha ? 'bg-primary' : 'bg-outline-variant')} />
               )}
             </div>
-            <span className={cn('truncate font-display text-[15px] leading-tight', esActual || rechazada ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
+            <span className={cn('truncate font-display text-[13px] leading-tight sm:text-[15px]', esActual || rechazada ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
               {label}
             </span>
             {(esActual || (rechazada && rechazo)) && (

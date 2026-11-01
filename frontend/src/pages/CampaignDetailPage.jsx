@@ -528,7 +528,7 @@ function SiguientePaso({
         <>
           <Titulo>Enviar al cliente</Titulo>
           <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant">
-            Lo revisará <strong className="font-semibold text-on-surface">{campaign.cliente_email || 'el cliente'}</strong>. Al enviarla eliges dónde se publica cuando la apruebe.
+            Lo revisará <strong className="font-semibold text-on-surface [overflow-wrap:anywhere]">{campaign.cliente_email || 'el cliente'}</strong>. Al enviarla eliges dónde se publica cuando la apruebe.
           </p>
         </>
       )}
@@ -547,7 +547,7 @@ function SiguientePaso({
       {estado === 'pendiente_aprobacion' && (
         <>
           <Titulo>Esperando al cliente</Titulo>
-          <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant">
+          <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant [overflow-wrap:anywhere]">
             {campaign.cliente_email || 'El cliente'} está revisando esta versión. No se puede editar hasta que decida.
           </p>
         </>
