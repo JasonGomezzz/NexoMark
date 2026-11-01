@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { AlertTriangle, X, Coins, Loader2, CircleCheck, CreditCard } from 'lucide-react'
+import { Info, X, Coins, Loader2, CircleCheck, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '../../services/api'
 import CreditRequestButton from '@/components/campaign/CreditRequestButton'
@@ -73,95 +73,82 @@ export default function PlanesModal({ open, onClose }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="glass-liquid relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-3xl px-6 py-10 text-center sm:px-12"
+        className="entra-hoja relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[22px] border border-outline-variant bg-surface-container-lowest px-6 py-10 shadow-xl sm:px-12"
       >
         <button
           onClick={handleClose}
           aria-label="Cerrar planes"
-          className="absolute right-4 top-4 rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <X className="h-5 w-5" />
+          <X className="h-5 w-5" aria-hidden="true" />
         </button>
 
         {!checkoutPlan ? (
           <>
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-error-container px-4 py-1.5 text-[13px] font-bold text-error">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              Créditos agotados
+            <span className="demo-tag">
+              <Info className="h-3 w-3" aria-hidden="true" />
+              Precios de ejemplo · pasarela simulada
             </span>
-
             <h2
               id="planes-title"
-              className="mx-auto mb-4 max-w-2xl text-3xl font-bold leading-tight tracking-tight text-on-surface sm:text-4xl text-balance"
+              className="mt-4 max-w-2xl text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[36px]"
             >
-              Tu potencial no tiene límites, pero tus <span className="text-primary">créditos</span> sí.
+              Planes de créditos
             </h2>
-            <p className="mx-auto mb-10 max-w-xl text-base text-on-surface-variant">
-              Has alcanzado el límite de tu plan actual. Recarga{' '}
-              <strong className="text-on-surface">Créditos de IA</strong> para continuar
-              transformando tus ideas en campañas de alto impacto.
+            <p className="mt-2 max-w-xl text-[15px] text-on-surface-variant">
+              Cada crédito es una generación de copy e imagen. Completar la ficha y restaurar versiones no gastan.
             </p>
 
-            {/* Cards de precio */}
-            <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-stretch">
-              {PLANS.map((plan) => (
+            {/* Planes en una plancha: columnas separadas por un hilo, sin tarjetas */}
+            <div className="mt-8 grid grid-cols-1 border-y border-outline-variant sm:grid-cols-3">
+              {PLANS.map((plan, i) => (
                 <div
                   key={plan.nombre}
-                  className={`relative flex flex-col items-center rounded-2xl p-8 ${
-                    plan.popular
-                      ? 'border-2 border-primary bg-white shadow-xl'
-                      : 'border border-outline-variant/60 bg-surface-container-low shadow-sm'
-                  }`}
+                  className={`flex flex-col py-6 sm:px-6 ${i > 0 ? 'border-t border-hairline sm:border-l sm:border-t-0' : 'sm:pl-0'} ${i === PLANS.length - 1 ? 'sm:pr-0' : ''}`}
                 >
-                  {plan.popular && (
-                    <span className="absolute -top-4 rounded-full bg-primary px-4 py-1.5 text-[13px] font-bold text-on-primary shadow-lg">
-                      Más popular
-                    </span>
-                  )}
-                  <p className="mb-4 text-sm font-bold text-on-surface">
+                  <p className="flex items-center gap-2 font-display text-lg font-extrabold text-on-surface">
                     {plan.nombre}
+                    {plan.popular && (
+                      <span className="rounded-[6px] bg-primary-fixed px-2 py-0.5 font-sans text-[12px] font-semibold text-on-primary-fixed">
+                        Sugerido
+                      </span>
+                    )}
                   </p>
-                  <p className="mb-1 text-4xl font-extrabold tabular-nums text-on-surface">
-                    <span className="mr-1 align-top text-base font-semibold">S/</span>
+                  <p className="cifra mt-3 text-[44px] tabular-nums text-on-surface">
+                    <span className="mr-1 align-top font-sans text-base font-semibold">S/</span>
                     {plan.precio}
                   </p>
-                  <p className="mb-6 text-sm font-medium text-primary">
-                    {plan.creditos} Créditos de IA
-                  </p>
+                  <p className="mt-1 text-sm text-on-surface-variant">{plan.creditos} créditos de IA</p>
                   <Button
-                    variant={plan.popular ? 'default' : 'secondary'}
-                    className="mt-auto w-full"
+                    variant={plan.popular ? 'default' : 'outline'}
+                    className="mt-5 w-full"
                     onClick={() => setCheckoutPlan(plan)}
                   >
-                    {plan.popular ? 'Seleccionar Plan' : 'Seleccionar'}
+                    Elegir {plan.nombre}
                   </Button>
                 </div>
               ))}
             </div>
 
             {/* Acciones secundarias */}
-            <div className="mb-6 flex flex-col items-center justify-center gap-3 border-t border-outline-variant/50 pt-6 sm:flex-row sm:gap-8">
+            <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-6">
               <CreditRequestButton />
               <button
                 onClick={() => {
                   handleClose()
-                  navigate('/settings')
+                  navigate('/credits')
                 }}
-                className="inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface"
+                className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface"
               >
-                <Coins className="h-4 w-4" />
+                <Coins className="h-4 w-4" aria-hidden="true" />
                 Ver mis créditos
               </button>
             </div>
-
-            <p className="text-[13px] font-medium text-on-surface-variant/70">
-              Seguridad garantizada mediante pasarelas de pago locales
-            </p>
           </>
         ) : step === 'exito' ? (
           <div className="flex flex-col items-center gap-4 py-10">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success-container text-success">
-              <CircleCheck className="h-9 w-9" />
+              <CircleCheck className="h-9 w-9" aria-hidden="true" />
             </div>
             <h2 className="text-2xl font-semibold text-on-surface">Pago aprobado</h2>
             <p className="max-w-sm text-sm text-on-surface-variant">
@@ -174,12 +161,12 @@ export default function PlanesModal({ open, onClose }) {
             <button
               onClick={() => setCheckoutPlan(null)}
               disabled={step === 'procesando'}
-              className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface disabled:opacity-50"
+              className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface disabled:opacity-50"
             >
               ← Volver a los planes
             </button>
 
-            <div className="mb-6 flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container-low px-5 py-4">
+            <div className="mb-6 flex items-center justify-between border-y border-outline-variant py-4">
               <div>
                 <p className="text-sm font-semibold text-on-surface">Plan {checkoutPlan.nombre}</p>
                 <p className="text-sm text-on-surface-variant">{checkoutPlan.creditos} Créditos de IA</p>
@@ -191,7 +178,7 @@ export default function PlanesModal({ open, onClose }) {
             </div>
 
             <div className="mb-6 flex items-center gap-2 text-sm font-semibold text-on-surface">
-              <CreditCard className="h-4 w-4 text-primary" />
+              <CreditCard className="h-4 w-4 text-primary" aria-hidden="true" />
               Datos de la tarjeta
             </div>
 
@@ -206,7 +193,7 @@ export default function PlanesModal({ open, onClose }) {
                   placeholder="Como aparece en la tarjeta"
                   value={card.nombre}
                   onChange={(e) => setCard((c) => ({ ...c, nombre: e.target.value }))}
-                  className="w-full rounded-lg border border-outline-variant px-4 py-3 text-base outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary"
+                  className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               <div>
@@ -230,7 +217,7 @@ export default function PlanesModal({ open, onClose }) {
                         .trim(),
                     }))
                   }
-                  className="w-full rounded-lg border border-outline-variant px-4 py-3 text-base outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary"
+                  className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               <div className="flex gap-4">
@@ -250,7 +237,7 @@ export default function PlanesModal({ open, onClose }) {
                       const formatted = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits
                       setCard((c) => ({ ...c, vencimiento: formatted }))
                     }}
-                    className="w-full rounded-lg border border-outline-variant px-4 py-3 text-base outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary"
+                    className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
                 <div className="flex-1">
@@ -265,7 +252,7 @@ export default function PlanesModal({ open, onClose }) {
                     maxLength={3}
                     value={card.cvc}
                     onChange={(e) => setCard((c) => ({ ...c, cvc: e.target.value.replace(/[^\d]/g, '').slice(0, 3) }))}
-                    className="w-full rounded-lg border border-outline-variant px-4 py-3 text-base outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary"
+                    className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest px-4 text-base text-on-surface outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
               </div>
@@ -286,7 +273,7 @@ export default function PlanesModal({ open, onClose }) {
               )}
             </Button>
 
-            <p className="mt-4 text-center text-[13px] font-medium text-on-surface-variant/70">
+            <p className="mt-4 text-center text-[13px] font-medium text-on-surface-variant">
               Pasarela de pago simulada — no se procesa ningún cargo real
             </p>
           </div>

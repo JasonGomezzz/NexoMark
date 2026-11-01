@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import AppToaster from '@/components/ui/AppToaster'
 import PlanesModal from '@/components/campaign/PlanesModal'
 import CreditRequestButton from '@/components/campaign/CreditRequestButton'
-import { PLANS } from '@/lib/credits'
 
 /**
  * Estado "Créditos agotados" (portado de Stitch: ai_generation_credits_notice).
@@ -18,74 +17,36 @@ export default function CreditsExhausted({ onClose }) {
   const [showPlanes, setShowPlanes] = useState(false)
 
   return (
-    <div className="glass-soft glass-float rounded-xl p-6 shadow-sm">
+    <section className="regla pt-6" aria-labelledby="sin-creditos">
       <AppToaster />
       <PlanesModal open={showPlanes} onClose={() => setShowPlanes(false)} />
-      <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-error-container px-3 py-1 text-[13px] font-bold text-error">
-        <AlertTriangle className="h-3.5 w-3.5" />
-        Créditos agotados
-      </span>
-
-      <h2 className="mb-2 text-2xl font-bold leading-tight tracking-tight text-on-surface text-balance">
-        Tu potencial no tiene límites, <span className="text-primary">pero tus créditos sí.</span>
+      <p className="flex items-center gap-2 text-sm font-semibold text-error">
+        <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+        Saldo en 0
+      </p>
+      <h2 id="sin-creditos" className="mt-2 text-[26px] font-extrabold leading-tight text-on-surface">
+        Te quedaste sin créditos
       </h2>
-      <p className="mb-6 text-sm text-on-surface-variant">
-        Alcanzaste el límite de tu plan. Recarga créditos para seguir generando campañas
-        sin interrupciones.
+      <p className="mt-2 max-w-md text-[15px] text-on-surface-variant">
+        Cada generación usa 1 crédito. Pide más al administrador: cuando apruebe la solicitud, podrás generar de nuevo.
       </p>
 
-      <div className="mb-6 space-y-3">
-        {PLANS.map((plan) => (
-          <div
-            key={plan.nombre}
-            className={`flex items-center justify-between rounded-xl border p-4 ${
-              plan.popular
-                ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                : 'border-outline-variant'
-            }`}
-          >
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-on-surface">
-                  {plan.nombre}
-                </span>
-                {plan.popular && (
-                  <span className="rounded-full bg-primary px-2 py-0.5 text-[13px] font-bold text-on-primary">
-                    Más popular
-                  </span>
-                )}
-              </div>
-              <p className="text-[13px] text-on-surface-variant">{plan.creditos} créditos</p>
-            </div>
-            <div className="text-right">
-              <p className="text-lg font-bold tabular-nums text-on-surface">
-                S/ {plan.precio}
-              </p>
-              <Button
-                size="sm"
-                variant={plan.popular ? 'default' : 'outline'}
-                className="mt-1"
-                onClick={() => setShowPlanes(true)}
-              >
-                Elegir plan
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex justify-center border-t border-outline-variant pt-4 text-center">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
         <CreditRequestButton />
+        <Button variant="outline" onClick={() => setShowPlanes(true)}>
+          Ver planes
+        </Button>
       </div>
 
       {onClose && (
         <button
+          type="button"
           onClick={onClose}
-          className="mt-4 w-full text-center text-sm text-on-surface-variant transition-colors hover:text-on-surface"
+          className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface"
         >
-          Volver al formulario
+          Volver a la ficha
         </button>
       )}
-    </div>
+    </section>
   )
 }

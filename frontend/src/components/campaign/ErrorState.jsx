@@ -8,50 +8,39 @@ import { Button } from '@/components/ui/button'
  */
 export default function ErrorState({ message, attempt = 1, maxAttempts = 3, onRetry, onEditBrief }) {
   return (
-    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-xl border border-outline-variant bg-white p-8 text-center shadow-sm">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-error-container">
-        <AlertCircle className="h-8 w-8 text-error" />
-      </div>
-
-      <h2 className="mb-3 text-2xl font-bold tracking-tight text-on-surface text-balance">
+    <section className="regla pt-6" aria-labelledby="error-generacion" role="alert">
+      <p className="flex items-center gap-2 text-sm font-semibold text-error">
+        <AlertCircle className="h-4 w-4" aria-hidden="true" />
+        Intento {attempt} de {maxAttempts}
+      </p>
+      <h2 id="error-generacion" className="mt-2 text-[26px] font-extrabold leading-tight text-on-surface">
         No pudimos generar tu campaña
       </h2>
-      <p className="mb-6 max-w-sm text-base text-on-surface-variant">
-        {message || 'El servicio de IA está saturado. Se te devolvió tu crédito automáticamente.'}
+      <p className="mt-2 max-w-md text-[15px] text-on-surface-variant">
+        {message || 'El servicio de IA no respondió a tiempo.'}
+      </p>
+      <p className="mt-3 flex items-center gap-2 text-sm text-on-surface-variant">
+        <Info className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+        Se te devolvió el crédito de este intento.
       </p>
 
-      <div className="mb-6 flex items-center gap-2 rounded-full bg-surface-container-low px-4 py-2 text-sm text-on-surface-variant">
-        <Info className="h-4 w-4" />
-        No se te descontaron créditos por este intento.
+      {/* Intentos como casillas: las usadas en rojo */}
+      <div className="mt-5 flex gap-1.5" aria-hidden="true">
+        {Array.from({ length: maxAttempts }).map((_, i) => (
+          <span key={i} className={`h-3 w-8 rounded-[3px] ${i < attempt ? 'bg-error' : 'border border-dashed border-outline-variant'}`} />
+        ))}
       </div>
 
-      {/* Contador de intentos */}
-      <div className="mb-6">
-        <p className="mb-2 text-sm font-semibold text-on-surface">
-          Intento {attempt} de {maxAttempts}
-        </p>
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: maxAttempts }).map((_, i) => (
-            <span
-              key={i}
-              className={`h-1.5 w-10 rounded-full ${
-                i < attempt ? 'bg-error' : 'bg-surface-container-high'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="flex w-full max-w-xs flex-col gap-3">
+      <div className="mt-6 flex flex-wrap gap-3">
         <Button onClick={onRetry} disabled={attempt >= maxAttempts}>
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4" aria-hidden="true" />
           Reintentar generación
         </Button>
         <Button variant="outline" onClick={onEditBrief}>
-          <Pencil className="h-4 w-4" />
-          Editar brief
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+          Editar la ficha
         </Button>
       </div>
-    </div>
+    </section>
   )
 }
