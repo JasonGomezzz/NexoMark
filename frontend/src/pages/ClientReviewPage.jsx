@@ -198,7 +198,12 @@ export default function ClientReviewPage() {
             {puedeRevisar ? 'Lo que apruebes es exactamente lo que sale en tu cuenta.' : 'La versión que revisaste.'}
           </p>
 
-          <article className="max-w-xl overflow-hidden rounded-[14px] border border-outline-variant bg-surface-container-lowest">
+          <div className="relative max-w-xl">
+          {/* Pieza ya aprobada: lleva el sello, igual que en «Lo publicado, con su sello» */}
+          {campaign.estado === 'aprobado' && (
+            <SelloConforme tamano={68} className="absolute -right-3 -top-4 z-10 sm:-right-6" />
+          )}
+          <article className="overflow-hidden rounded-[14px] border border-outline-variant bg-surface-container-lowest">
             <header className="flex items-center gap-3 px-4 py-3">
               {principal ? (
                 <RedIcon red={principal.red} className="h-7 w-7" />
@@ -227,6 +232,7 @@ export default function ClientReviewPage() {
               {campaign.textoGenerado || 'Sin copy generado.'}
             </p>
           </article>
+          </div>
 
           {/* X opcional: versión corta de la campaña aprobada, que el cliente aprueba aparte */}
           {campaign.estado === 'aprobado' && (
