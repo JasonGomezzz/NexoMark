@@ -122,6 +122,10 @@ Estrategia **restringida**:
   - Una **plancha** por red: cifras grandes, filas finas y barras CSS de 12 meses con su tabla `sr-only`.
   - Debajo, **«Lo publicado, con su sello»**, con la miniatura (`/api/campaigns/{id}/miniatura/`, solo para el personal) y el sello de la versión aprobada.
 - **Listas:** filas finas cuyo título es un enlace que cubre la fila, pestañas por paso, búsqueda y mini casillas en escritorio.
+- **Tablas del personal** (usuarios, créditos, analítica): sin tarjeta; un filete fuerte arriba y abajo, hilos entre filas. En móvil, una tabla que no cabe se vuelve lista (créditos).
+- **Gráficos de conteo:** barras horizontales con el número escrito al lado; no se usan donas.
+- **Vacíos y errores:** filete, título y una frase que dice qué hacer. Sin íconos dentro de círculos ni recuadros punteados.
+- **Hojas modales:** `bg-surface-container-lowest`, borde `outline-variant`, radio 22 y `shadow-xl`, con entrada `.entra-hoja`. El fondo se oscurece con `navy-deep/60`, sin desenfoque.
 
 ## Movimiento
 
@@ -150,7 +154,7 @@ Estrategia **restringida**:
 ## Datos (reglas)
 
 - Un dato que no existe se escribe **«sin dato»**, nunca 0. Un 0 contado sí es 0.
-- Lo inventado se rotula «ejemplo» (`.demo-tag`): el testimonio del acceso, el «10× más rápida», los precios S/ 99 y S/ 299 y las métricas de ejemplo de la portada.
+- Lo inventado se rotula «ejemplo» (`.demo-tag`): el testimonio del acceso, el «10× más rápida», los precios de la portada, los planes del modal (pasarela simulada) y las métricas de ejemplo de la portada.
 - X y TikTok solo aparecen si el servidor los activa o si ya hay publicaciones. TikTok no entrega métricas: se dice.
 
 ## Idioma
