@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils'
 export default function SelloConforme({ version, tamano = 58, className = '', estampar = false, retraso = 0, etiqueta = 'conforme' }) {
   const texto = version ? `v${version}` : etiqueta
   const n = Math.round(tamano * 0.36)
+  // «v3» cabe a 0.16 del tamaño; la palabra «conforme» necesita menos para no salirse del aro interior.
+  const letra = version ? Math.max(8, Math.round(tamano * 0.16)) : Math.max(7, Math.round(tamano * 0.11))
   return (
     <motion.span
       role="img"
@@ -30,7 +32,7 @@ export default function SelloConforme({ version, tamano = 58, className = '', es
         <span style={{ width: n, height: n }} className="block">
           <NexoN encajar={estampar} retraso={retraso + 0.12} claro="var(--color-primary)" className="h-full w-full" />
         </span>
-        <span className="mt-0.5 font-display font-extrabold" style={{ fontSize: Math.max(8, Math.round(tamano * 0.16)) }}>
+        <span className="mt-0.5 font-display font-extrabold" style={{ fontSize: letra }}>
           {texto}
         </span>
       </span>

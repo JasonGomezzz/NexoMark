@@ -18,6 +18,7 @@ export default function VersionHistoryPanel({
   campaignId,
   canRestore = false,
   onRestored,
+  onVersiones,
   refreshKey = 0,
 }) {
   const [versions, setVersions] = useState([])
@@ -34,6 +35,7 @@ export default function VersionHistoryPanel({
       .get(`/api/campaigns/${campaignId}/versions/`)
       .then(({ data }) => {
         setVersions(data.data ?? [])
+        onVersiones?.(data.data ?? [])
         setError(false)
       })
       .catch(() => setError(true))
