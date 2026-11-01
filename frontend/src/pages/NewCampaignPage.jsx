@@ -471,8 +471,8 @@ export default function NewCampaignPage() {
         <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.025em] text-on-surface sm:text-[40px]">Dicta la campaña</h1>
         <p className="mt-2 max-w-2xl text-[15px] text-on-surface-variant">
           Habla como si se la contaras a tu diseñador. La IA propone los campos y tú los corriges antes de generar.{' '}
-          <Link to="/prompt-guide" className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-2 hover:underline">
-            <Lightbulb className="h-4 w-4" aria-hidden="true" />
+          <Link to="/prompt-guide" className="font-semibold text-primary underline underline-offset-2 hover:decoration-2">
+            <Lightbulb className="mr-1 inline h-4 w-4 align-[-3px]" aria-hidden="true" />
             Ver la guía
           </Link>
         </p>
