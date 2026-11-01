@@ -5,7 +5,6 @@ import {
   Mail,
   FileText,
   Lightbulb,
-  Sparkles,
   ArrowRight,
   ClipboardCopy,
   Check,
@@ -26,63 +25,54 @@ import { Button } from '@/components/ui/button'
 const TEMPLATE_POOL = [
   {
     icon: Share2,
-    tint: 'bg-primary/10 text-primary',
     titulo: 'Redes Sociales',
     texto:
       'Crea un caption de alta energía para Instagram sobre el lanzamiento de nuestro producto. Incluye un llamado a la acción claro y 3 hashtags relevantes al rubro.',
   },
   {
     icon: Mail,
-    tint: 'bg-tertiary-container text-tertiary',
     titulo: 'Email',
     texto:
       'Redacta un email personalizado de re-enganche para clientes que abandonaron su carrito, con tono cercano, un beneficio concreto y un solo botón de acción.',
   },
   {
     icon: FileText,
-    tint: 'bg-secondary-container text-primary',
     titulo: 'Anuncio pagado',
     texto:
       'Escribe 3 variantes de un anuncio de búsqueda de Google para un servicio B2B: titular de máximo 30 caracteres, descripción de máximo 90 y enfoque en el dolor del cliente.',
   },
   {
     icon: Share2,
-    tint: 'bg-primary/10 text-primary',
     titulo: 'LinkedIn B2B',
     texto:
       'Escribe un post de LinkedIn con tono profesional que nos posicione como líderes del sector: un dato duro de apertura, 3 aprendizajes accionables y una pregunta final para generar conversación.',
   },
   {
     icon: Mail,
-    tint: 'bg-tertiary-container text-tertiary',
     titulo: 'Lanzamiento',
     texto:
       'Anuncia el lanzamiento de una nueva línea de productos a clientes existentes: acceso anticipado de 48 horas, 2 beneficios exclusivos y un solo llamado a la acción.',
   },
   {
     icon: FileText,
-    tint: 'bg-secondary-container text-primary',
     titulo: 'Oferta flash',
     texto:
       'Copy urgente para una promoción de 24 horas: descuento del 30%, tono directo y enérgico, sensación de escasez real (stock limitado) y llamado a la acción imposible de ignorar.',
   },
   {
     icon: Share2,
-    tint: 'bg-primary/10 text-primary',
     titulo: 'Storytelling de marca',
     texto:
       'Cuenta la historia de origen de la marca en carrusel de Instagram (5 slides): problema que vimos, por qué nos importó, cómo lo resolvemos, prueba social y cierre con invitación a la comunidad.',
   },
   {
     icon: Mail,
-    tint: 'bg-tertiary-container text-tertiary',
     titulo: 'Reactivación',
     texto:
       'Email para clientes inactivos hace 90 días, tono cercano y sin culpas: recuérdales el valor que obtuvieron, muestra una novedad relevante y ofrece un incentivo simple para volver.',
   },
   {
     icon: FileText,
-    tint: 'bg-secondary-container text-primary',
     titulo: 'Testimonio en anuncio',
     texto:
       'Convierte un testimonio real de cliente en anuncio de Facebook: cita corta como gancho, el problema resuelto en 2 líneas y llamado a la acción hacia la prueba gratuita.',
@@ -161,19 +151,19 @@ export default function PromptGuidePage() {
       <AppToaster />
       <div className="space-y-8">
         <header className="max-w-2xl">
-          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Guía de prompts IA</h1>
+          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Guía de prompts</h1>
           <p className="mt-2 text-base text-on-surface-variant">
-            Un buen brief produce mejor copy e imagen. Usa los templates o arma tu brief
-            estructurado y llévalo directo al formulario de nueva campaña.
+            Un buen brief produce mejor copy e imagen. Usa un ejemplo o arma tu brief y
+            llévalo directo a una campaña nueva.
           </p>
         </header>
 
         <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
           <div className="min-w-0 flex-1 space-y-8">
             {/* Templates */}
-            <section>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-on-surface">Templates de ejemplo</h2>
+            <section className="regla pt-6">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-2xl font-extrabold text-on-surface">Briefs de ejemplo</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -182,29 +172,29 @@ export default function PromptGuidePage() {
                     setCopiedIdx(null)
                   }}
                 >
-                  <RefreshCw className="h-3.5 w-3.5" />
+                  <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                   Ver otros ejemplos
                 </Button>
               </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="grid grid-cols-1 md:grid-cols-3">
                 {templates.map((t, idx) => {
                   const Icon = t.icon
                   return (
                     <article
                       key={t.titulo}
-                      className="flex flex-col rounded-xl border border-outline-variant bg-white p-5 shadow-sm transition-shadow hover:shadow-lg"
+                      className={`flex flex-col py-5 md:pr-6 ${idx > 0 ? 'border-t border-hairline md:border-l md:border-t-0 md:pl-6' : ''}`}
                     >
-                      <span className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg ${t.tint}`}>
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <h3 className="mb-1 text-sm font-bold text-on-surface">{t.titulo}</h3>
-                      <p className="mb-4 flex-1 text-[13px] italic leading-relaxed text-on-surface-variant">
+                      <h3 className="mb-2 flex items-center gap-2 text-base font-extrabold text-on-surface">
+                        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                        {t.titulo}
+                      </h3>
+                      <p className="mb-4 flex-1 font-display text-[17px] font-medium leading-snug text-on-surface">
                         «{t.texto}»
                       </p>
                       <div className="flex flex-col gap-2">
                         <Button size="sm" onClick={() => usarEnNuevaCampana(t.texto)}>
                           Usar en nueva campaña
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -212,9 +202,9 @@ export default function PromptGuidePage() {
                           onClick={() => copiarTemplate(t.texto, idx)}
                         >
                           {copiedIdx === idx ? (
-                            <Check className="h-3.5 w-3.5" />
+                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
                           ) : (
-                            <ClipboardCopy className="h-3.5 w-3.5" />
+                            <ClipboardCopy className="h-3.5 w-3.5" aria-hidden="true" />
                           )}
                           {copiedIdx === idx ? 'Copiado' : 'Copiar'}
                         </Button>
@@ -226,9 +216,8 @@ export default function PromptGuidePage() {
             </section>
 
             {/* Builder estructurado */}
-            <section className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm">
-              <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold text-on-surface">
-                <Sparkles className="h-5 w-5 text-primary" />
+            <section className="regla pt-6">
+              <h2 className="mb-1 flex items-center gap-2 text-2xl font-extrabold text-on-surface">
                 Constructor de brief
               </h2>
               <p className="mb-6 text-sm text-on-surface-variant">
@@ -243,7 +232,7 @@ export default function PromptGuidePage() {
                   <select
                     value={objetivo}
                     onChange={(e) => setObjetivo(e.target.value)}
-                    className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-sm text-on-surface outline-none transition focus:border-transparent focus:ring-2 focus:ring-primary"
+                    className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
                   >
                     {OBJETIVOS.map((o) => (
                       <option key={o}>{o}</option>
@@ -260,7 +249,7 @@ export default function PromptGuidePage() {
                     value={audiencia}
                     onChange={(e) => setAudiencia(e.target.value)}
                     placeholder="p. ej., profesionales tech, 25-40 años"
-                    className="w-full rounded-lg border border-outline-variant px-3 py-2.5 text-sm text-on-surface outline-none transition placeholder:text-outline focus:border-transparent focus:ring-2 focus:ring-primary"
+                    className="h-11 w-full rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none transition placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
                 </label>
               </div>
@@ -274,7 +263,7 @@ export default function PromptGuidePage() {
                   value={beneficios}
                   onChange={(e) => setBeneficios(e.target.value)}
                   placeholder="¿Qué hace único a tu producto? Lista los 3 beneficios principales…"
-                  className="w-full resize-y rounded-lg border border-outline-variant px-3 py-2.5 text-sm text-on-surface outline-none transition placeholder:text-outline focus:border-transparent focus:ring-2 focus:ring-primary"
+                  className="w-full resize-y rounded-[10px] border border-outline bg-surface-container-lowest px-3 py-2.5 text-[15px] text-on-surface outline-none transition placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/30"
                 />
               </label>
 
@@ -287,10 +276,10 @@ export default function PromptGuidePage() {
                       type="button"
                       onClick={() => setTono(t)}
                       aria-pressed={tono === t}
-                      className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                      className={`inline-flex min-h-11 items-center rounded-[10px] px-4 text-sm font-medium capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                         tono === t
                           ? 'bg-primary text-on-primary'
-                          : 'border border-outline-variant bg-white text-on-surface-variant hover:bg-surface-container-low'
+                          : 'border border-outline-variant text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
                       }`}
                     >
                       {t}
@@ -300,11 +289,11 @@ export default function PromptGuidePage() {
               </div>
 
               {/* Vista previa del brief */}
-              <div className="mt-5 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3">
-                <p className="mb-1 text-[13px] font-bold text-on-surface-variant">
-                  Vista previa del brief
+              <div className="mt-6 border-l-2 border-turquoise pl-4">
+                <p className="mb-1 text-[13px] font-semibold text-on-surface-variant">
+                  Así queda el brief
                 </p>
-                <p className="text-sm leading-relaxed text-on-surface">{promptListo}</p>
+                <p className="font-display text-[19px] font-medium leading-snug text-on-surface">{promptListo}</p>
               </div>
 
               <Button
@@ -312,9 +301,8 @@ export default function PromptGuidePage() {
                 disabled={!builderValido}
                 onClick={() => usarEnNuevaCampana(promptListo, tono)}
               >
-                <Sparkles className="h-4 w-4" />
                 Usar en nueva campaña
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Button>
               {!builderValido && (
                 <p className="mt-2 text-[13px] text-on-surface-variant">
@@ -326,20 +314,20 @@ export default function PromptGuidePage() {
 
           {/* Pro tips */}
           <aside className="w-full shrink-0 xl:sticky xl:top-6 xl:w-80">
-            <div className="glass-soft glass-float rounded-xl p-6">
-              <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold text-on-surface">
-                <Lightbulb className="h-5 w-5 text-tertiary" />
-                Pro tips
+            <div className="regla pt-6 xl:border-t-0 xl:border-l xl:border-outline-variant xl:pl-8 xl:pt-0">
+              <h2 className="mb-5 flex items-center gap-2 text-xl font-extrabold text-on-surface">
+                <Lightbulb className="h-5 w-5 text-primary" aria-hidden="true" />
+                Consejos
               </h2>
               <ol className="space-y-5">
                 {TIPS.map((tip, i) => (
                   <li key={tip.titulo} className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-tertiary-container text-[13px] font-bold text-tertiary">
+                    <span className="casilla casilla-pliego h-7 w-7 shrink-0 text-[13px] font-bold text-on-surface" aria-hidden="true">
                       {i + 1}
                     </span>
                     <div>
-                      <h3 className="text-sm font-bold text-on-surface">{tip.titulo}</h3>
-                      <p className="mt-0.5 text-[13px] leading-relaxed text-on-surface-variant">
+                      <h3 className="text-[15px] font-bold text-on-surface">{tip.titulo}</h3>
+                      <p className="mt-0.5 text-sm leading-relaxed text-on-surface-variant">
                         {tip.desc}
                       </p>
                     </div>
