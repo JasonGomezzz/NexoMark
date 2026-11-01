@@ -11,14 +11,14 @@ Modo: Operate. Ruta `/campaigns/new` (solo marketero) dentro del marco `AppLayou
 
 ## Direction contract
 
-THESIS: La campaña es un viaje por una línea de cinco estaciones y la voz es el tren que la arranca; se rechaza el formulario con un botón "Dictar" secundario y la barra lateral de CRM.
+THESIS: Cada campaña es una prueba de imprenta: se dicta sobre un pliego y sale con una ficha técnica que la IA llena; se rechaza el formulario con un botón "Dictar" secundario y la barra lateral de CRM.
 
-OWN-WORLD: Banda marina #14283F con una vía #2C4862 de 6 px y cinco estaciones; la actual es un círculo turquesa #17B8AD de 40 px con anillo #79DDD3. Fondo #F5FAFA (oscuro #0B1929), Overpass 800 para titulares y frases, Inter para el resto, botones en pastilla, cero sombras en reposo, filetes de 6 px para abrir secciones.
+OWN-WORLD: Dirección C · Conforme (31/10/2026, reemplaza a la B · Línea). Mesa marina #14283F (oscuro #07111D) con la orden de trabajo de cinco casillas, la actual turquesa #17B8AD; pliego #F7FBFB (oscuro #0F2236) con marcas de corte #79DDD3; Bricolage Grotesque 500–800 para titulares, cifras y el texto dictado, Inter para el resto; botones de 10 px y 44 px de alto, filete `.regla` de 1 px para abrir secciones, cero sombras en reposo.
 
-STORY: El marketero ve dónde está en el recorrido, habla, ve cada frase quedarse como una parada en una vía que termina en el micrófono, y pasa a "Próxima estación: Generar" donde la IA completa los campos.
+STORY: El marketero ve en la orden que está en Dictar, habla, ve su idea escrita en grande sobre el pliego, y pasa a la ficha técnica donde la IA propone los 7 campos marcados «propuesto por la IA» o «falta».
 
-FIRST VIEWPORT: Banda de 96 px con las cinco estaciones (Dictar actual). Izquierda (≈2/3): título "Dicta la campaña", vía vertical turquesa con las frases a 34 px y el micrófono de 84 px al final. Derecha (380 px): "Próxima estación: Generar" con los 7 campos como paradas y el botón "Completar campos".
+FIRST VIEWPORT: Encabezado "Orden nueva · paso 1 de 5" y "Dicta la campaña". Izquierda: párrafo dictado a 28–42 px (lo provisional en tinta tenue) y el micrófono-sello de 86 px con aro que gira "escuchando · mm:ss". Derecha (380 px, separada por un hilo): "Ficha técnica" con los 7 campos y "Completar ficha".
 
-FORM: Línea (transit diagram) — challenger del catálogo fusionado, ganó por claridad y reconocimiento; seed ef3c7bb1.
+FORM: Conforme (imprenta: mesa, pliego, orden de trabajo y sello); elegida por Jason entre tres láminas; seed ef3c7bb1.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
