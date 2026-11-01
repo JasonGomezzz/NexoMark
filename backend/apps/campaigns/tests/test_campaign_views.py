@@ -448,7 +448,8 @@ class TestCampaignPurchaseCredits:
         api_client.post(CREDITS_PURCHASE_URL, {"plan": "elite"}, format="json")
         compra = CreditPurchase.objects.get(usuario=user_marketero)
         assert compra.creditos == 5000
-        assert compra.plan_nombre == "Elite"
+        assert compra.plan_nombre == "Agencia Plus"
+        assert compra.monto == 399
         assert compra.estado == "aprobado"
 
     def test_ignora_creditos_y_monto_enviados_por_el_cliente(self, api_client, user_marketero):

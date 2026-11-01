@@ -53,9 +53,9 @@ logger = logging.getLogger(__name__)
 # frontend/src/lib/credits.js (PLANS). El cliente solo envía la key del
 # plan; el monto/créditos SIEMPRE se leen de aquí, nunca del body.
 CREDIT_PLAN_MAP = {
-    "basico": {"nombre": "Básico", "precio": 49, "creditos": 500},
-    "pro": {"nombre": "Pro", "precio": 129, "creditos": 1500},
-    "elite": {"nombre": "Elite", "precio": 299, "creditos": 5000},
+    "basico": {"nombre": "Freelance", "precio": 79, "creditos": 500},
+    "pro": {"nombre": "Agencia", "precio": 199, "creditos": 1500},
+    "elite": {"nombre": "Agencia Plus", "precio": 399, "creditos": 5000},
 }
 
 

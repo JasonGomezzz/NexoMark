@@ -61,6 +61,7 @@ export default function CreditsExhausted({ onClose }) {
               <p className="text-lg font-bold tabular-nums text-on-surface">
                 S/ {plan.precio}
               </p>
+              <p className="text-xs text-on-surface-variant">Al mes · sin IGV</p>
               <Button
                 size="sm"
                 variant={plan.popular ? 'default' : 'outline'}

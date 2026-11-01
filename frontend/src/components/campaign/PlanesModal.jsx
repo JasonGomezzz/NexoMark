@@ -126,6 +126,7 @@ export default function PlanesModal({ open, onClose }) {
                     <span className="mr-1 align-top text-base font-semibold">S/</span>
                     {plan.precio}
                   </p>
+                  <p className="mb-2 text-xs text-on-surface-variant">Al mes · sin IGV</p>
                   <p className="mb-6 text-sm font-medium text-primary">
                     {plan.creditos} Créditos de IA
                   </p>
@@ -190,6 +191,7 @@ export default function PlanesModal({ open, onClose }) {
                 {checkoutPlan.precio}
               </p>
             </div>
+            <p className="mb-4 text-sm text-on-surface-variant">Precio mensual sin IGV. Esta demostración no realiza cargos.</p>
 
             <div className="mb-6 flex items-center gap-2 text-sm font-semibold text-on-surface">
               <CreditCard className="h-4 w-4 text-primary" />

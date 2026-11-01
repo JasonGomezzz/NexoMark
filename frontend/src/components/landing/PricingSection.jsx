@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PLANS as CREDIT_PLANS } from '@/lib/credits'
 
 /**
  * Precios por CUOTA DE TOKENS de IA (1 crédito = 1 generación).
@@ -9,8 +10,8 @@ import { Button } from '@/components/ui/button'
  */
 const PLANS = [
   {
-    nombre: 'Starter',
-    precio: 'S/ 99',
+    nombre: CREDIT_PLANS[0].nombre,
+    precio: `S/ ${CREDIT_PLANS[0].precio}`,
     periodo: '/mes',
     destacado: false,
     features: [
@@ -19,11 +20,11 @@ const PLANS = [
       { txt: '1 usuario marketero', ok: true },
       { txt: 'Analytics avanzado', ok: false },
     ],
-    cta: 'Elegir Starter',
+    cta: `Elegir ${CREDIT_PLANS[0].nombre}`,
   },
   {
-    nombre: 'Pro',
-    precio: 'S/ 299',
+    nombre: CREDIT_PLANS[1].nombre,
+    precio: `S/ ${CREDIT_PLANS[1].precio}`,
     periodo: '/mes',
     destacado: true,
     features: [
@@ -32,12 +33,12 @@ const PLANS = [
       { txt: 'Hasta 5 usuarios', ok: true },
       { txt: 'App de aprobación para clientes', ok: true },
     ],
-    cta: 'Empezar con Pro',
+    cta: `Empezar con ${CREDIT_PLANS[1].nombre}`,
   },
   {
-    nombre: 'Enterprise',
-    precio: 'A medida',
-    periodo: '',
+    nombre: CREDIT_PLANS[2].nombre,
+    precio: `S/ ${CREDIT_PLANS[2].precio}`,
+    periodo: '/mes',
     destacado: false,
     features: [
       { txt: 'Créditos de IA ilimitados', ok: true },
@@ -45,7 +46,7 @@ const PLANS = [
       { txt: 'Usuarios ilimitados', ok: true },
       { txt: 'Soporte prioritario', ok: true },
     ],
-    cta: 'Contactar ventas',
+    cta: `Elegir ${CREDIT_PLANS[2].nombre}`,
   },
 ]
 
@@ -60,6 +61,7 @@ export default function PricingSection() {
           Pagas solo por lo que generas. Cada crédito equivale a una generación de
           IA. Sin contratos complicados.
         </p>
+        <p className="mt-3 text-sm text-on-surface-variant">Precios mensuales sin IGV.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
