@@ -158,21 +158,14 @@ class PliegoTitulo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (contexto != null) ...[
+            Text(contexto!, style: context.text.bodySmall),
+            const SizedBox(height: 4),
+          ],
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (contexto != null) ...[
-                      Text(contexto!, style: context.text.bodySmall),
-                      const SizedBox(height: 4),
-                    ],
-                    Semantics(header: true, child: Text(titulo, style: context.text.displaySmall)),
-                  ],
-                ),
-              ),
+              Expanded(child: Semantics(header: true, child: Text(titulo, style: context.text.displaySmall))),
               ?accion,
             ],
           ),
@@ -551,6 +544,27 @@ class Sello extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// La imagen de una pieza con el sello «conforme» encima cuando el cliente
+/// ya la aprobó (lo sellado es exactamente lo que se publica).
+class PiezaConSello extends StatelessWidget {
+  const PiezaConSello({super.key, required this.child, required this.sellada, this.version});
+
+  final Widget child;
+  final bool sellada;
+  final int? version;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!sellada) return child;
+    return Stack(
+      children: [
+        child,
+        Positioned(right: 12, bottom: 12, child: Sello(size: 64, version: version)),
+      ],
     );
   }
 }

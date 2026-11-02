@@ -130,7 +130,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
 
     final contenido = Scaffold(
       backgroundColor: context.colors.surface,
-      body: RefreshIndicator(
+      body: RefreshIndicator.adaptive(
         onRefresh: _refrescar,
         
         child: CustomScrollView(

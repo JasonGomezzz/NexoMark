@@ -122,8 +122,9 @@ class CountUp extends StatelessWidget {
     final fmt = format ?? (v) => '$v';
     if (Motion.reduced(context)) return Text(fmt(value), style: style);
     return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: value.toDouble()),
-      duration: const Duration(milliseconds: 600),
+      // Arranca cerca del valor real (90 %): se nota que llegó el dato sin "contar desde 0".
+      tween: Tween(begin: value * 0.9, end: value.toDouble()),
+      duration: Motion.move,
       curve: Motion.easeOut,
       builder: (context, v, _) => Text(
         fmt(v.round()),

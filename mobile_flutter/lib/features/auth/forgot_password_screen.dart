@@ -105,7 +105,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         FilledButton(
                           onPressed: _enviando ? null : _enviar,
                           child: _enviando
-                              ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                              ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                               : const Text('Enviar enlace'),
                         ),
                       ],

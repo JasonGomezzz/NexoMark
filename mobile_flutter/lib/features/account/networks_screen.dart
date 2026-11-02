@@ -107,7 +107,7 @@ class _NetworksScreenState extends ConsumerState<NetworksScreen> {
     return MesaScaffold(
       appBar: AppBar(title: const Text('Redes conectadas')),
       body: SafeArea(
-        child: RefreshIndicator(
+        child: RefreshIndicator.adaptive(
           onRefresh: () async => ref.invalidate(connectionsProvider),
           child: ListView(
             padding: const EdgeInsets.all(16),
@@ -223,7 +223,7 @@ class _Conectar extends StatelessWidget {
             ),
           ),
           cargando
-              ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+              ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
               : Icon(LucideIcons.externalLink, color: context.colors.primary),
         ],
       ),

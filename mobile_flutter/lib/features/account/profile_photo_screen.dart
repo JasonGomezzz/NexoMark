@@ -150,7 +150,7 @@ class _ProfilePhotoScreenState extends ConsumerState<ProfilePhotoScreen> {
               FilledButton(
                 onPressed: _ocupado ? null : _subir,
                 child: _ocupado
-                    ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                    ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                     : const Text('Usar esta foto'),
               )
             else if (user?.hasAvatar ?? false)

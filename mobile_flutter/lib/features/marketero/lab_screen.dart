@@ -323,7 +323,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
         padding: const EdgeInsets.only(bottom: 28),
         children: [
           PliegoTitulo(
-            contexto: 'Orden nueva · paso 1 de 5',
+            contexto: 'Orden nueva · paso\u00A01\u00A0de\u00A05',
             titulo: 'Dicta la campaña',
             accion: vozDisponible
                 ? TextButton.icon(
@@ -391,7 +391,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
         final hayTexto = _brief.text.trim().isNotEmpty;
         final (titulo, detalle) = switch (null) {
           _ when _dictado.escuchando => ('Te escucho', 'Toca para terminar. Puedes pausar y seguir.'),
-          _ when hayTexto => ('Brief listo', 'Toca el micrófono para seguir dictando.'),
+          _ when hayTexto => (_porVoz ? 'Dictado listo' : 'Texto listo', 'Toca el micrófono para seguir dictando.'),
           _ => ('Toca y cuenta la campaña', 'Producto, promoción, cliente, tono y red.'),
         };
         final completar = SizedBox(
@@ -399,7 +399,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
           child: FilledButton.icon(
             onPressed: _ocupado || !hayTexto ? null : _interpretar,
             icon: _ocupado
-                ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
+                ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                 : const Icon(LucideIcons.wandSparkles, size: 18),
             label: Text(_ocupado ? 'Completando la ficha…' : 'Completar ficha'),
           ),
@@ -509,7 +509,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       padding: const EdgeInsets.only(bottom: 28),
       children: [
         PliegoTitulo(
-          contexto: 'Orden nueva · paso 2 de 5',
+          contexto: 'Orden nueva · paso\u00A02\u00A0de\u00A05',
           titulo: 'Ficha técnica',
           subtitulo: faltan == 0
               ? 'La IA la llenó con lo que dijiste. Corrige lo que haga falta: nada se genera hasta que confirmes.'
@@ -550,7 +550,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
         FilledButton.icon(
           onPressed: _ocupado || sinCreditos ? null : _confirmar,
           icon: _ocupado
-              ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
+              ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
               : const Icon(LucideIcons.wandSparkles, size: 18),
           label: Text(_ocupado ? 'Enviando a la IA…' : 'Generar campaña · 1 crédito'),
         ),
@@ -570,7 +570,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       padding: const EdgeInsets.only(bottom: 28),
       children: [
         PliegoTitulo(
-          contexto: 'Orden nueva · paso 2 de 5',
+          contexto: 'Orden nueva · paso\u00A02\u00A0de\u00A05',
           titulo: listo ? 'Prueba lista' : (fallo ? 'No se pudo generar' : 'Generando'),
           subtitulo: listo
               ? 'Revisa el texto y la imagen, y envíala a tu cliente.'

@@ -105,7 +105,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
       appBar: AppBar(title: const Text('Cambiar correo')),
       body: SafeArea(
         child: _cargando
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator.adaptive())
             : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -176,7 +176,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                                   FilledButton(
                                     onPressed: _ocupado ? null : _solicitar,
                                     child: _ocupado
-                                        ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                                        ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                                         : const Text('Enviar enlaces'),
                                   ),
                                 ],

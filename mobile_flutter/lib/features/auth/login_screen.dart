@@ -277,7 +277,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             FilledButton(
               onPressed: _enviando ? null : _enviar,
               child: _enviando
-                  ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                  ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                   : Text(_registro ? 'Crear cuenta' : 'Entrar'),
             ),
             if (!_registro)
@@ -625,7 +625,7 @@ class _VincularGoogleSheetState extends State<_VincularGoogleSheet> {
           FilledButton(
             onPressed: _enviando ? null : _confirmar,
             child: _enviando
-                ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                 : const Text('Vincular y entrar'),
           ),
         ],

@@ -67,7 +67,7 @@ class StatsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.surface,
-      body: RefreshIndicator(
+      body: RefreshIndicator.adaptive(
         onRefresh: refrescar,
         child: ListView(
           padding: const EdgeInsets.only(bottom: 32),
@@ -213,7 +213,7 @@ class _Resumen extends StatelessWidget {
         children: [
           dato(publicadas, publicadas == 1 ? 'publicada' : 'publicadas'),
           const TextSpan(text: '   '),
-          dato(pendientes, 'esperando aprobación'),
+          dato(pendientes, 'esperando\u00A0aprobación'),
           const TextSpan(text: '   '),
           dato(fallidas, fallidas == 1 ? 'fallida' : 'fallidas', color: fallidas > 0 ? context.colors.error : null),
         ],
@@ -222,7 +222,8 @@ class _Resumen extends StatelessWidget {
   }
 }
 
-/// Años con datos. Se toca pocas veces: sin animación.
+/// El año del informe: un control con borde y chevron (como en la web) que
+/// abre una hoja con los años que tienen datos. Se toca pocas veces.
 class _SelectorAnio extends StatelessWidget {
   const _SelectorAnio({required this.anios, required this.valor, required this.onChanged});
 
@@ -230,28 +231,57 @@ class _SelectorAnio extends StatelessWidget {
   final int valor;
   final ValueChanged<int> onChanged;
 
+  Future<void> _elegir(BuildContext context) async {
+    final elegido = await showModalBottomSheet<int>(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text('Año del informe', style: context.text.titleLarge),
+            ),
+            for (final a in anios)
+              ListTile(
+                title: Text('$a', style: context.text.titleMedium),
+                trailing: a == valor ? Icon(LucideIcons.check, color: context.colors.primary) : null,
+                selected: a == valor,
+                onTap: () => Navigator.pop(context, a),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (elegido != null && elegido != valor) onChanged(elegido);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final a in anios)
-          ChoiceChip(
-            label: Text('$a'),
-            selected: a == valor,
-            showCheckmark: false,
-            onSelected: (_) => onChanged(a),
-            backgroundColor: context.colors.surfaceContainerLowest,
-            selectedColor: context.colors.primary,
-            side: BorderSide(color: a == valor ? context.colors.primary : context.colors.outlineVariant),
-            labelStyle: context.text.labelLarge?.copyWith(
-              color: a == valor ? context.colors.onPrimary : context.colors.onSurface,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-          ),
-      ],
+    return Semantics(
+      button: true,
+      label: 'Año del informe: $valor. Cambiar',
+      excludeSemantics: true,
+      child: OutlinedButton(
+        onPressed: anios.length > 1 ? () => _elegir(context) : null,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          side: BorderSide(color: context.colors.outline),
+          foregroundColor: context.colors.onSurface,
+          disabledForegroundColor: context.colors.onSurface,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('$valor', style: context.text.titleMedium?.copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+            if (anios.length > 1) ...[const SizedBox(width: 6), const Icon(LucideIcons.chevronDown, size: 18)],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -284,7 +314,11 @@ class _Plancha extends StatelessWidget {
                 children: [
                   Text(nombre, style: context.text.headlineSmall),
                   Text(
-                    r.publicacionesMes == 0 ? 'Nada este mes' : '${formatoNumero(r.publicacionesMes)} este mes',
+                    r.publicacionesMes == 0
+                        ? 'Ninguna publicación este mes'
+                        : r.publicacionesMes == 1
+                            ? '1 publicación este mes'
+                            : '${formatoNumero(r.publicacionesMes)} publicaciones este mes',
                     style: context.text.bodySmall,
                   ),
                 ],
@@ -435,7 +469,7 @@ class _BarrasMesState extends State<_BarrasMes> {
           ),
           TweenAnimationBuilder<double>(
             tween: Tween(begin: reduced ? 1 : 0, end: 1),
-            duration: Motion.of(context, const Duration(milliseconds: 480)),
+            duration: Motion.of(context, Motion.move),
             curve: Motion.easeOut,
             builder: (context, t, _) => SizedBox(
               height: alto,
@@ -605,7 +639,7 @@ class _DetallePublicacion extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           detalle.when(
-            loading: () => const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
+            loading: () => const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator.adaptive())),
             error: (e, _) => ErrorBanner(message: toApiException(e).message),
             data: (d) {
               final m = d.publicacion.ultimaMetrica ?? const Metric();

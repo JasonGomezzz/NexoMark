@@ -135,7 +135,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   }
 
   Widget _cuerpo(BuildContext context, Campaign c, AsyncValue<List<Publication>> pubs) {
-    return RefreshIndicator(
+    return RefreshIndicator.adaptive(
           onRefresh: () async {
             ref.invalidate(campaignPublicationsProvider(widget.id));
             ref.invalidate(campaignProvider(widget.id));
@@ -144,7 +144,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
             children: [
-              AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c, radius: Nexo.radiusSurface)),
+              AspectRatio(
+                aspectRatio: 1,
+                child: PiezaConSello(
+                  sellada: c.estado == EstadoCampana.aprobado,
+                  version: (pubs.value ?? const []).map((p) => p.versionAprobada).whereType<int>().firstOrNull,
+                  child: CampaignImage(campaign: c, radius: Nexo.radiusSurface),
+                ),
+              ),
               const SizedBox(height: 16),
               Align(alignment: Alignment.centerLeft, child: StatePill(c.estado)),
               const SizedBox(height: 10),
@@ -579,7 +586,7 @@ class _VersionesSheet extends ConsumerWidget {
       initialChildSize: 0.6,
       maxChildSize: 0.92,
       builder: (context, scroll) => versiones.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (e, _) => Padding(padding: const EdgeInsets.all(16), child: ErrorBanner(message: toApiException(e).message)),
         data: (lista) => ListView(
           controller: scroll,
@@ -697,7 +704,7 @@ class _DestinosSheetState extends ConsumerState<_DestinosSheet> {
             if (_error != null)
               ErrorBanner(message: _error!)
             else if (destinos == null)
-              const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()))
+              const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator.adaptive()))
             else if (destinos.isEmpty)
               const InfoBanner(
                 message: 'El cliente todavía no conectó Instagram ni Facebook. Puedes enviarla igual; se aprobará sin publicar.',

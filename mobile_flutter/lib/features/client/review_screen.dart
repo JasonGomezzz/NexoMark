@@ -125,7 +125,13 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(Nexo.gutter, 4, Nexo.gutter, 32),
       children: [
-        AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c, radius: Nexo.radiusSurface)),
+        AspectRatio(
+          aspectRatio: 1,
+          child: PiezaConSello(
+            sellada: c.estado == EstadoCampana.aprobado,
+            child: CampaignImage(campaign: c, radius: Nexo.radiusSurface),
+          ),
+        ),
         const SizedBox(height: 16),
         Align(alignment: Alignment.centerLeft, child: StatePill(c.estado)),
         const SizedBox(height: 10),
@@ -186,9 +192,9 @@ class _EstrellasInput extends StatelessWidget {
                 padding: const EdgeInsets.all(5),
                 child: TweenAnimationBuilder<double>(
                   key: ValueKey('$i-${i <= valor}'),
-                  tween: Tween(begin: i <= valor && !Motion.reduced(context) ? 0.8 : 1, end: 1),
-                  duration: const Duration(milliseconds: 320),
-                  curve: Curves.easeOutBack,
+                  tween: Tween(begin: i <= valor && !Motion.reduced(context) ? 0.95 : 1, end: 1),
+                  duration: Motion.fast,
+                  curve: Motion.easeOut,
                   builder: (context, s, child) => Transform.scale(scale: s, child: child),
                   child: Icon(
                     i <= valor ? Icons.star_rounded : Icons.star_outline_rounded,

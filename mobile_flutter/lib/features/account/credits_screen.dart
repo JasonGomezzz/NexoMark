@@ -50,7 +50,7 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
     return MesaScaffold(
       appBar: AppBar(title: const Text('Créditos')),
       body: SafeArea(
-        child: RefreshIndicator(
+        child: RefreshIndicator.adaptive(
           onRefresh: () async {
             ref.invalidate(_solicitudesProvider);
             await ref.read(sessionProvider.notifier).refreshUser();

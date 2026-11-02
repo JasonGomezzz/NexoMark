@@ -29,7 +29,7 @@ class AccountScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Cuenta')),
       body: SafeArea(
         top: false,
-        child: RefreshIndicator(
+        child: RefreshIndicator.adaptive(
           onRefresh: () => ref.read(sessionProvider.notifier).refreshUser(),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),

@@ -97,7 +97,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             FilledButton(
               onPressed: _ocupado ? null : _guardar,
               child: _ocupado
-                  ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                  ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                   : const Text('Guardar contraseña'),
             ),
           ],

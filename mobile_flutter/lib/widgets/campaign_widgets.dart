@@ -9,6 +9,7 @@ import '../core/theme/motion.dart';
 import '../core/theme/tokens.dart';
 import '../data/models.dart';
 import '../features/marketero/providers.dart';
+import 'conforme.dart';
 import 'motion_widgets.dart';
 import 'nexo_widgets.dart';
 
@@ -139,8 +140,18 @@ class CampaignCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
             children: [
-              SizedBox.square(dimension: 64, child: CampaignImage(campaign: campaign, radius: Nexo.radiusField)),
-              const SizedBox(width: 14),
+              SizedBox(
+                width: 72,
+                height: 72,
+                child: Stack(
+                  children: [
+                    SizedBox.square(dimension: 64, child: CampaignImage(campaign: campaign, radius: Nexo.radiusField)),
+                    // Lo aprobado lleva el sello «conforme».
+                    if (campaign.estado == EstadoCampana.aprobado) const Positioned(right: 0, bottom: 0, child: Sello(size: 30)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +190,7 @@ class CampaignCardSkeleton extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Skeleton(width: 64, height: 64, radius: Nexo.radiusField),
+          Padding(padding: EdgeInsets.only(right: 8), child: Skeleton(width: 64, height: 64, radius: Nexo.radiusField)),
           SizedBox(width: 14),
           Expanded(
             child: Column(

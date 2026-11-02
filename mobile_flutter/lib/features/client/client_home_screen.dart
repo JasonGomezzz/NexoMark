@@ -14,8 +14,10 @@ import '../../widgets/nexo_widgets.dart';
 final pendingProvider = FutureProvider.autoDispose<List<Campaign>>((ref) => ref.watch(clientRepositoryProvider).pending());
 final decididasProvider = FutureProvider.autoDispose<List<Campaign>>((ref) async {
   final todas = await ref.watch(clientRepositoryProvider).mine();
-  // Spring /mine trae todas las del cliente; las pendientes van en Aprobar.
-  return todas.where((c) => c.estado != EstadoCampana.pendienteAprobacion).toList();
+  // Spring /mine trae todas las del cliente, también las que la agencia aún no envía.
+  // Aquí van solo las que el cliente ya decidió; las pendientes van en Aprobar.
+  const decididas = {EstadoCampana.aprobado, EstadoCampana.rechazado, EstadoCampana.fracaso};
+  return todas.where((c) => decididas.contains(c.estado)).toList();
 });
 
 String extracto(String? texto, [int max = 110]) {
@@ -69,7 +71,7 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> with Widget
     final aprobar = widget.tramo == TramoCliente.aprobar;
     final lista = ref.watch(aprobar ? pendingProvider : decididasProvider);
     return Scaffold(
-      body: RefreshIndicator(
+      body: RefreshIndicator.adaptive(
         onRefresh: _refrescar,
         
         child: CustomScrollView(
