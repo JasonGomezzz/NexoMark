@@ -374,6 +374,7 @@ class Publication {
     this.ultimaMetrica,
     this.copyAprobado,
     this.resultadoIncierto = false,
+    this.versionAprobada,
   });
 
   final int id;
@@ -390,6 +391,9 @@ class Publication {
   final Metric? ultimaMetrica;
   final String? copyAprobado;
   final bool resultadoIncierto;
+
+  /// Versión de la campaña que aprobó el cliente (la del sello «conforme»).
+  final int? versionAprobada;
 
   factory Publication.fromJson(Map<String, dynamic> j) {
     final metrica = j['ultima_metrica'];
@@ -408,6 +412,7 @@ class Publication {
       ultimaMetrica: metrica is Map<String, dynamic> ? Metric.fromJson(metrica) : null,
       copyAprobado: _pick<String>(j, 'copy_aprobado'),
       resultadoIncierto: j['resultado_incierto'] == true,
+      versionAprobada: _int(j, 'version_aprobada'),
     );
   }
 }

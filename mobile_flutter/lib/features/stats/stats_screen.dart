@@ -1,4 +1,5 @@
-import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,9 +12,9 @@ import '../../core/theme/motion.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
-import '../../widgets/publication_widgets.dart';
-import '../marketero/providers.dart' show xConfigProvider;
+import '../marketero/providers.dart' show thumbnailProvider, xConfigProvider;
 
 final _anioProvider = NotifierProvider<_AnioController, int>(_AnioController.new);
 
@@ -55,135 +56,174 @@ class StatsScreen extends ConsumerWidget {
       }
     }
 
+    Future<void> actualizarMetricas() async {
+      try {
+        final m = await ref.read(socialRepositoryProvider).refreshMetrics();
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+        await refrescar();
+      } on ApiException catch (e) {
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Estadísticas'),
-        actions: [
-          if (user?.rol == Rol.marketero)
-            IconButton(
-              tooltip: 'Actualizar métricas',
-              icon: const Icon(LucideIcons.refreshCw),
-              onPressed: () async {
-                try {
-                  final m = await ref.read(socialRepositoryProvider).refreshMetrics();
-                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-                  await refrescar();
-                } on ApiException catch (e) {
-                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-                }
-              },
+      backgroundColor: context.colors.surface,
+      body: RefreshIndicator(
+        onRefresh: refrescar,
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 32),
+          children: [
+            PliegoTitulo(
+              contexto: 'Informe del año',
+              titulo: 'Métricas de $anio',
+              accion: user?.rol == Rol.marketero
+                  ? IconButton(
+                      tooltip: 'Actualizar métricas',
+                      icon: const Icon(LucideIcons.refreshCw, size: 20),
+                      onPressed: actualizarMetricas,
+                    )
+                  : null,
             ),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: RefreshIndicator(
-          onRefresh: refrescar,
-          child: summary.when(
-            loading: () => ListView(
-              padding: const EdgeInsets.all(16),
-              children: const [
-                Skeleton(height: 40, radius: 99),
-                SizedBox(height: 16),
-                Skeleton(height: 260, radius: Nexo.radiusSurface),
-                SizedBox(height: 12),
-                Skeleton(height: 260, radius: Nexo.radiusSurface),
+            ...summary.when(
+              loading: () => [
+                const Padding(
+                  padding: EdgeInsets.all(Nexo.gutter),
+                  child: Column(
+                    children: [
+                      Skeleton(height: 18, width: 260),
+                      SizedBox(height: 24),
+                      Skeleton(height: 280, radius: Nexo.radiusSurface),
+                    ],
+                  ),
+                ),
               ],
-            ),
-            error: (e, _) => ListView(
-              padding: const EdgeInsets.all(16),
-              children: [ErrorBanner(message: toApiException(e).message, onRetry: refrescar)],
-            ),
-            data: (s) {
-              final anios = {...s.anios, DateTime.now().year, anio}.toList()..sort((a, b) => b.compareTo(a));
-              final redes = ['instagram', 'facebook', 'x', 'tiktok'].where((red) {
-                final datos = s.redes[red];
-                if (datos == null) return false;
-                if (red == 'instagram' || red == 'facebook') return true;
-                return (red == 'x' && xActivo) || datos.publicaciones > 0;
-              }).toList();
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
-                children: [
-                  _SelectorAnio(anios: anios, valor: anio, onChanged: (v) => ref.read(_anioProvider.notifier).set(v)),
-                  const SizedBox(height: 14),
-                  Entrance(
-                    child: IntrinsicHeight(
-                      child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+              error: (e, _) => [
+                Padding(
+                  padding: const EdgeInsets.all(Nexo.gutter),
+                  child: ErrorBanner(message: toApiException(e).message, onRetry: refrescar),
+                ),
+              ],
+              data: (s) {
+                final anios = {...s.anios, DateTime.now().year, anio}.toList()..sort((a, b) => b.compareTo(a));
+                final redes = ['instagram', 'x', 'facebook', 'tiktok'].where((red) {
+                  final datos = s.redes[red];
+                  if (datos == null) return false;
+                  if (red == 'instagram' || red == 'facebook') return true;
+                  return (red == 'x' && xActivo) || datos.publicaciones > 0;
+                }).toList();
+                return [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(Nexo.gutter, 14, Nexo.gutter, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: MetricCard(label: 'Publicadas en $anio', value: s.totalPublicaciones, icon: LucideIcons.globe)),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: MetricCard(
-                            label: 'Esperando aprobación',
-                            value: s.pendientes,
-                            icon: LucideIcons.hourglass,
-                            accent: context.nexo.warning,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: MetricCard(label: 'Fallidas', value: s.fallidas, icon: LucideIcons.circleAlert, accent: context.colors.error),
-                        ),
+                        _Resumen(publicadas: s.totalPublicaciones, pendientes: s.pendientes, fallidas: s.fallidas),
+                        const SizedBox(height: 12),
+                        _SelectorAnio(anios: anios, valor: anio, onChanged: (v) => ref.read(_anioProvider.notifier).set(v)),
                       ],
                     ),
-                    ),
                   ),
-                  const SizedBox(height: 16),
-                  for (final (i, red) in redes.indexed)
+                  for (final red in redes)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Entrance(index: 1 + i, child: _PanelRed(resumen: s.redes[red]!, summary: s)),
+                      padding: const EdgeInsets.fromLTRB(Nexo.gutter, 20, Nexo.gutter, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Regla(),
+                          const SizedBox(height: 18),
+                          _Plancha(resumen: s.redes[red]!, summary: s),
+                        ],
+                      ),
                     ),
-                  const SizedBox(height: 12),
-                  const SectionTitle('Por publicación', subtitle: 'Toca una para ver todas sus métricas.'),
-                  ...pubs.when(
-                    data: (lista) {
-                      final visibles = lista.where((p) => p.estado == 'publicado' || p.estado == 'en_buzon').toList();
-                      if (visibles.isEmpty) {
-                        return [
-                          EmptyState(
-                            icon: LucideIcons.chartColumn,
-                            title: 'Sin publicaciones en $anio',
-                            message: user?.rol == Rol.cliente
-                                ? 'Cuando apruebes una campaña con destinos, verás aquí cómo le va.'
-                                : 'Cuando un cliente apruebe una campaña con destinos, verás aquí cómo le va.',
-                          ),
-                        ];
-                      }
-                      return [
-                        for (final (i, p) in visibles.indexed)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: Entrance(
-                              index: i,
-                              child: PublicationTile(
-                                publicacion: p,
-                                onTap: () => showModalBottomSheet<void>(
-                                  context: context,
-                                  useRootNavigator: true,
-                                  isScrollControlled: true,
-                                  builder: (_) => _DetallePublicacion(publicacion: p),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ];
-                    },
-                    loading: () => [const Skeleton(height: 120, radius: Nexo.radiusSurface)],
-                    error: (e, _) => [ErrorBanner(message: toApiException(e).message)],
-                  ),
-                ],
-              );
-            },
-          ),
+                ];
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Nexo.gutter, 28, Nexo.gutter, 0),
+              child: SectionTitle(
+                'Lo publicado, con su sello',
+                subtitle: 'Cada pieza salió tal como la aprobó el cliente. El sello dice qué versión. Tócala para ver todo.',
+              ),
+            ),
+            ...pubs.when(
+              data: (lista) {
+                final visibles = lista.where((p) => p.estado == 'publicado' || p.estado == 'en_buzon').toList();
+                if (visibles.isEmpty) {
+                  return [
+                    EmptyState(
+                      icon: LucideIcons.stamp,
+                      title: 'Nada publicado en $anio',
+                      message: user?.rol == Rol.cliente
+                          ? 'Cuando apruebes una campaña con destinos, verás aquí cómo le va.'
+                          : 'Cuando un cliente apruebe una campaña con destinos, verás aquí cómo le va.',
+                    ),
+                  ];
+                }
+                return [
+                  for (final (i, p) in visibles.indexed) ...[
+                    if (i > 0)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: Nexo.gutter),
+                        child: Divider(color: context.nexo.hairline),
+                      ),
+                    _PiezaSellada(
+                      publicacion: p,
+                      onTap: () => showModalBottomSheet<void>(
+                        context: context,
+                        useRootNavigator: true,
+                        isScrollControlled: true,
+                        builder: (_) => _DetallePublicacion(publicacion: p),
+                      ),
+                    ),
+                  ],
+                ];
+              },
+              loading: () => [
+                const Padding(padding: EdgeInsets.all(Nexo.gutter), child: Skeleton(height: 96, radius: Nexo.radiusSurface)),
+              ],
+              error: (e, _) => [
+                Padding(padding: const EdgeInsets.all(Nexo.gutter), child: ErrorBanner(message: toApiException(e).message)),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
+/// "14 publicadas · 1 esperando aprobación · 0 fallidas": cifras reales en una línea.
+class _Resumen extends StatelessWidget {
+  const _Resumen({required this.publicadas, required this.pendientes, required this.fallidas});
+
+  final int publicadas;
+  final int pendientes;
+  final int fallidas;
+
+  @override
+  Widget build(BuildContext context) {
+    TextSpan dato(int n, String texto, {Color? color}) => TextSpan(
+          children: [
+            TextSpan(text: formatoNumero(n), style: TextStyle(fontWeight: FontWeight.w700, color: color ?? context.colors.onSurface)),
+            TextSpan(text: ' $texto'),
+          ],
+        );
+    return Text.rich(
+      TextSpan(
+        style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
+        children: [
+          dato(publicadas, publicadas == 1 ? 'publicada' : 'publicadas'),
+          const TextSpan(text: '   '),
+          dato(pendientes, 'esperando aprobación'),
+          const TextSpan(text: '   '),
+          dato(fallidas, fallidas == 1 ? 'fallida' : 'fallidas', color: fallidas > 0 ? context.colors.error : null),
+        ],
+      ),
+    );
+  }
+}
+
+/// Años con datos. Se toca pocas veces: sin animación.
 class _SelectorAnio extends StatelessWidget {
   const _SelectorAnio({required this.anios, required this.valor, required this.onChanged});
 
@@ -193,282 +233,338 @@ class _SelectorAnio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 44,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: anios.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, i) {
-          final activo = anios[i] == valor;
-          return Pressable(
-            onTap: () => onChanged(anios[i]),
-            child: AnimatedContainer(
-              duration: Motion.of(context, Motion.fast),
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: activo ? context.colors.primary : context.colors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: activo ? context.colors.primary : context.colors.outlineVariant),
-              ),
-              child: Text(
-                '${anios[i]}',
-                style: context.text.labelLarge?.copyWith(color: activo ? context.colors.onPrimary : context.colors.onSurface),
-              ),
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final a in anios)
+          ChoiceChip(
+            label: Text('$a'),
+            selected: a == valor,
+            showCheckmark: false,
+            onSelected: (_) => onChanged(a),
+            backgroundColor: context.colors.surfaceContainerLowest,
+            selectedColor: context.colors.primary,
+            side: BorderSide(color: a == valor ? context.colors.primary : context.colors.outlineVariant),
+            labelStyle: context.text.labelLarge?.copyWith(
+              color: a == valor ? context.colors.onPrimary : context.colors.onSurface,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
-          );
-        },
-      ),
+            materialTapTargetSize: MaterialTapTargetSize.padded,
+          ),
+      ],
     );
   }
 }
 
-Color colorRed(BuildContext context, String red) => switch (red) {
-      'instagram' => Nexo.instagram,
-      'facebook' => Nexo.facebook,
-      _ => context.colors.onSurface,
-    };
-
-/// Nivel 1: una red, con su logo grande, totales y 12 meses de barras.
-class _PanelRed extends StatefulWidget {
-  const _PanelRed({required this.resumen, required this.summary});
+/// Una plancha por red: logo y nombre, dos cifras grandes, filas finas con el
+/// resto y 12 meses de barras. Lo que la red no informa dice "sin dato".
+class _Plancha extends StatelessWidget {
+  const _Plancha({required this.resumen, required this.summary});
 
   final NetworkSummary resumen;
   final StatsSummary summary;
 
   @override
-  State<_PanelRed> createState() => _PanelRedState();
-}
-
-class _PanelRedState extends State<_PanelRed> {
-  bool _meGusta = false;
-
-  @override
   Widget build(BuildContext context) {
-    final r = widget.resumen;
+    final r = resumen;
     final m = r.metricas;
-    final sinMetricas = r.red == 'tiktok' || r.red == 'x';
-    final etiquetaLikes = r.red == 'facebook' ? 'Reacciones' : 'Me gusta';
-    return NexoCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    final soloEnvios = r.red == 'tiktok' || r.red == 'x';
+    final likes = r.red == 'facebook' ? 'Reacciones' : 'Me gusta';
+    final nombre = etiquetaRed[r.red] ?? r.red;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            NetworkIcon(r.red, size: 36),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(nombre, style: context.text.headlineSmall),
+                  Text(
+                    r.publicacionesMes == 0 ? 'Nada este mes' : '${formatoNumero(r.publicacionesMes)} este mes',
+                    style: context.text.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _Cifra(etiqueta: soloEnvios ? 'Enviadas al buzón' : 'Publicaciones', valor: r.publicaciones)),
+            if (!soloEnvios) Expanded(child: _Cifra(etiqueta: likes, valor: m.meGusta)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (soloEnvios)
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NetworkIcon(r.red, size: 40),
-              const SizedBox(width: 12),
+              Icon(LucideIcons.inbox, size: 16, color: context.colors.onSurfaceVariant),
+              const SizedBox(width: 8),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Text(
+                  '$nombre no entrega métricas. La persona publica desde su app.',
+                  style: context.text.bodySmall,
+                ),
+              ),
+            ],
+          )
+        else ...[
+          for (final (etiqueta, valor) in [('Comentarios', m.comentarios), ('Compartidos', m.compartidos), ('Alcance', m.alcance)]) ...[
+            Divider(color: context.nexo.hairline),
+            Semantics(
+              label: '$etiqueta: ${valorODato(valor)}',
+              excludeSemantics: true,
+              child: SizedBox(
+                height: 40,
+                child: Row(
                   children: [
-                    Text(etiquetaRed[r.red] ?? r.red, style: context.text.titleLarge),
+                    Expanded(child: Text(etiqueta, style: context.text.bodyMedium)),
                     Text(
-                      '${formatoNumero(r.publicaciones)} publicadas · ${formatoNumero(r.publicacionesMes)} este mes',
-                      style: context.text.bodySmall,
+                      valorODato(valor),
+                      style: valor == null
+                          ? context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)
+                          : context.text.bodyMedium?.copyWith(fontWeight: FontWeight.w700, fontFeatures: const [FontFeature.tabularFigures()]),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          if (sinMetricas)
-            Text(
-              'Sin dato: ${etiquetaRed[r.red]} no entrega métricas con los permisos actuales.',
-              style: context.text.bodySmall,
-            )
-          else
-            // 2 × 2: cuatro rótulos en una fila se pisan a 360–412 dp.
-            LayoutBuilder(
-              builder: (context, c) => Wrap(
-                runSpacing: 12,
-                children: [
-                  for (final (label, valor) in [
-                    (etiquetaLikes, m.meGusta),
-                    ('Comentarios', m.comentarios),
-                    ('Compartidos', m.compartidos),
-                    ('Alcance', m.alcance),
-                  ])
-                    SizedBox(width: c.maxWidth / 2, child: _Total(label, valor)),
-                ],
-              ),
-            ),
-          if (!sinMetricas && r.publicaciones > 0 && r.conMetricas < r.publicaciones) ...[
-            const SizedBox(height: 8),
-            Text(
-              '${r.conMetricas} de ${r.publicaciones} publicaciones ya tienen métricas; Meta puede tardar hasta 48 h.',
-              style: context.text.bodySmall,
             ),
           ],
-          const SizedBox(height: 16),
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Text(
-                _meGusta ? '$etiquetaLikes por mes' : 'Publicaciones por mes',
-                style: context.text.labelLarge,
+          Divider(color: context.nexo.hairline),
+          if (r.publicaciones > 0 && r.conMetricas < r.publicaciones)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                '${r.conMetricas} de ${r.publicaciones} publicaciones ya tienen métricas: Meta puede tardar hasta 48 h.',
+                style: context.text.bodySmall,
               ),
-              if (!sinMetricas)
-                SegmentedButton<bool>(
-                  showSelectedIcon: false,
-                  style: SegmentedButton.styleFrom(visualDensity: VisualDensity.compact),
-                  segments: [
-                    const ButtonSegment(value: false, label: Text('Posts')),
-                    ButtonSegment(value: true, label: Text(etiquetaLikes)),
-                  ],
-                  selected: {_meGusta},
-                  onSelectionChanged: (v) => setState(() => _meGusta = v.first),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 150,
-            child: _BarrasMes(
-              red: r.red,
-              serie: _meGusta ? widget.summary.meGustaPorMes : widget.summary.publicacionesPorMes,
-              unidad: _meGusta ? etiquetaLikes.toLowerCase() : 'publicaciones',
             ),
-          ),
         ],
-      ),
+        const SizedBox(height: 18),
+        Text(soloEnvios ? 'Enviadas por mes' : '$likes por mes', style: context.text.titleSmall),
+        const SizedBox(height: 10),
+        _BarrasMes(
+          red: r.red,
+          serie: soloEnvios ? summary.publicacionesPorMes : summary.meGustaPorMes,
+          unidad: soloEnvios ? 'enviadas' : likes.toLowerCase(),
+          anio: summary.anio ?? DateTime.now().year,
+        ),
+      ],
     );
   }
 }
 
-class _Total extends StatelessWidget {
-  const _Total(this.label, this.valor);
-  final String label;
+class _Cifra extends StatelessWidget {
+  const _Cifra({required this.etiqueta, required this.valor});
+  final String etiqueta;
   final int? valor;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
+    return Semantics(
+      label: '$etiqueta: ${valorODato(valor)}',
+      excludeSemantics: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(etiqueta, style: context.text.bodySmall),
+          const SizedBox(height: 2),
           valor == null
-              ? Text('sin dato', style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant))
-              : CountUp(value: valor!, style: context.text.titleLarge, format: formatoNumero),
-          Text(label, style: context.text.bodySmall),
+              ? Text('sin dato', style: context.text.headlineSmall?.copyWith(color: context.colors.onSurfaceVariant, fontWeight: FontWeight.w600))
+              : CountUp(value: valor!, style: context.text.displayMedium, format: formatoNumero),
         ],
       ),
     );
   }
 }
 
-/// 12 meses de una sola serie (un gráfico por red, sin leyenda: el título lo
-/// nombra). Barras finas con la punta redondeada y ancladas a la base; un mes
-/// sin dato no dibuja barra y el toque lo dice. Las barras crecen desde la
-/// base una vez al aparecer.
+/// 12 meses de una sola serie, con el color de la red (sin leyenda: el título
+/// la nombra). Sin eje Y: el número del mes se lee al tocar o en el lector de
+/// pantalla. Mes sin dato: una raya en la base; mes que aún no llega: nada.
+/// El mes actual va en negrita. Las barras crecen una vez al aparecer.
 class _BarrasMes extends StatefulWidget {
-  const _BarrasMes({required this.red, required this.serie, required this.unidad});
+  const _BarrasMes({required this.red, required this.serie, required this.unidad, required this.anio});
 
   final String red;
   final List<MonthPoint> serie;
   final String unidad;
+  final int anio;
 
   @override
   State<_BarrasMes> createState() => _BarrasMesState();
 }
 
 class _BarrasMesState extends State<_BarrasMes> {
-  bool _visible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _visible = true);
-    });
-  }
+  int? _tocado;
 
   @override
   Widget build(BuildContext context) {
-    final color = colorRed(context, widget.red);
+    final color = context.nexo.chart(widget.red);
     final meses = DateFormat.MMM('es');
-    final valores = [for (final p in widget.serie) p.valores[widget.red]];
-    final maximo = valores.whereType<int>().fold<int>(0, (a, b) => a > b ? a : b);
-    final techo = maximo == 0 ? 4.0 : (maximo * 1.2).ceilToDouble();
-    final animar = _visible || Motion.reduced(context);
+    final hoy = DateTime.now();
+    final actual = widget.anio == hoy.year ? hoy.month - 1 : (widget.anio > hoy.year ? -1 : 12);
+    final valores = List<int?>.generate(12, (i) => i < widget.serie.length ? widget.serie[i].valores[widget.red] : null);
+    final maximo = valores.whereType<int>().fold<int>(0, math.max);
+    String mes(int i) => meses.format(DateTime(2000, i + 1)).replaceAll('.', '');
+    final reduced = Motion.reduced(context);
+    const alto = 72.0;
     return Semantics(
       label: '${widget.unidad} por mes en ${etiquetaRed[widget.red]}: '
-          '${[for (final (i, v) in valores.indexed) '${meses.format(DateTime(2000, i + 1))} ${valorODato(v)}'].join(', ')}',
-      child: BarChart(
-        duration: Motion.of(context, const Duration(milliseconds: 600)),
-        curve: Motion.easeOut,
-        BarChartData(
-          maxY: techo,
-          minY: 0,
-          alignment: BarChartAlignment.spaceBetween,
-          gridData: FlGridData(
-            drawVerticalLine: false,
-            horizontalInterval: techo / 2,
-            getDrawingHorizontalLine: (_) => FlLine(color: context.colors.outlineVariant.withValues(alpha: 0.6), strokeWidth: 1),
-          ),
-          borderData: FlBorderData(show: false),
-          titlesData: FlTitlesData(
-            topTitles: const AxisTitles(),
-            rightTitles: const AxisTitles(),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 28,
-                interval: techo / 2,
-                getTitlesWidget: (v, meta) => Text(
-                  v == 0 ? '0' : NumberFormat.compact(locale: 'es').format(v),
-                  style: context.text.bodySmall,
-                ),
-              ),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 22,
-                getTitlesWidget: (v, meta) {
-                  final i = v.toInt();
-                  // Un rótulo cada tres meses: a 360 dp los doce no caben sin pisarse.
-                  if (i % 3 != 0) return const SizedBox.shrink();
-                  return Text(meses.format(DateTime(2000, i + 1)).replaceAll('.', ''), style: context.text.bodySmall);
-                },
-              ),
-            ),
-          ),
-          barTouchData: BarTouchData(
-            touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (_) => context.colors.inverseSurface,
-              tooltipBorderRadius: BorderRadius.circular(8),
-              getTooltipItem: (group, _, rod, _) => BarTooltipItem(
-                '${meses.format(DateTime(2000, group.x + 1))}: ${valorODato(valores[group.x])} ${widget.unidad}',
-                context.text.bodySmall!.copyWith(color: context.colors.onInverseSurface),
-              ),
-            ),
-          ),
-          barGroups: [
-            for (final (i, v) in valores.indexed)
-              BarChartGroupData(
-                x: i,
-                barRods: [
-                  BarChartRodData(
-                    toY: animar ? (v ?? 0).toDouble() : 0,
-                    width: 10,
-                    color: color,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    backDrawRodData: BackgroundBarChartRodData(
-                      show: true,
-                      toY: techo,
-                      color: Colors.transparent,
-                    ),
+          '${[for (var i = 0; i < 12; i++) if (i <= actual) '${mes(i)} ${valorODato(valores[i])}'].join(', ')}',
+      excludeSemantics: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            height: 20,
+            child: _tocado == null
+                ? null
+                : Text(
+                    '${mes(_tocado!)}: ${valorODato(valores[_tocado!])} ${widget.unidad}',
+                    style: context.text.bodySmall?.copyWith(color: context.colors.onSurface, fontWeight: FontWeight.w600),
                   ),
+          ),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: reduced ? 1 : 0, end: 1),
+            duration: Motion.of(context, const Duration(milliseconds: 480)),
+            curve: Motion.easeOut,
+            builder: (context, t, _) => SizedBox(
+              height: alto,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (var i = 0; i < 12; i++)
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTapDown: i > actual ? null : (_) => setState(() => _tocado = _tocado == i ? null : i),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: switch (valores[i]) {
+                            _ when i > actual => const SizedBox.shrink(),
+                            final v? when v > 0 => Container(
+                                width: 10,
+                                height: math.max(3, (alto - 4) * (v / (maximo == 0 ? 1 : maximo)) * t),
+                                decoration: BoxDecoration(
+                                  color: _tocado == null || _tocado == i ? color : color.withValues(alpha: 0.45),
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                                ),
+                              ),
+                            _ => Container(width: 10, height: 2, color: context.colors.outlineVariant),
+                          },
+                        ),
+                      ),
+                    ),
                 ],
               ),
-          ],
+            ),
+          ),
+          Container(height: 1, color: context.colors.outlineVariant),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              for (var i = 0; i < 12; i++)
+                Expanded(
+                  child: Text(
+                    mes(i),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: i == actual ? FontWeight.w800 : FontWeight.w500,
+                      color: i == actual ? context.colors.onSurface : context.colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Una pieza publicada con su sello: la imagen aprobada, el sello «conforme»
+/// con la versión que aprobó el cliente y sus números.
+class _PiezaSellada extends ConsumerWidget {
+  const _PiezaSellada({required this.publicacion, required this.onTap});
+
+  final Publication publicacion;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = publicacion;
+    final m = p.ultimaMetrica;
+    final mini = ref.watch(thumbnailProvider((p.campaignId, p.versionAprobada ?? 0))).value;
+    final likes = p.red == 'facebook' ? 'reacciones' : 'me gusta';
+    final numeros = p.red == 'tiktok'
+        ? 'En el buzón de TikTok'
+        : m == null || m.vacia
+            ? 'Métricas: sin dato todavía'
+            : '${valorODato(m.meGusta)} $likes · ${valorODato(m.comentarios)} comentarios';
+    return Semantics(
+      button: true,
+      label: '${p.campaignTitulo ?? 'Publicación'}. ${p.cuentaNombre}, ${etiquetaRed[p.red]}. $numeros',
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Nexo.gutter, vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 96,
+                height: 104,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(Nexo.radiusField),
+                      child: SizedBox.square(
+                        dimension: 88,
+                        child: ColoredBox(
+                          color: context.colors.surfaceContainerHigh,
+                          child: mini == null
+                              ? Icon(LucideIcons.image, color: context.colors.onSurfaceVariant)
+                              : Image.memory(mini, fit: BoxFit.cover, gaplessPlayback: true),
+                        ),
+                      ),
+                    ),
+                    Positioned(right: 0, bottom: 0, child: Sello(size: 44, version: p.versionAprobada)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.campaignTitulo ?? 'Publicación', style: context.text.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Text(
+                      [p.clienteNombre, etiquetaRed[p.red], if (p.publicadoAt != null) fechaCorta(p.publicadoAt)].whereType<String>().join(' · '),
+                      style: context.text.bodySmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(numeros, style: context.text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -524,17 +620,24 @@ class _DetallePublicacion extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (d.aviso != null) ...[InfoBanner(message: d.aviso!), const SizedBox(height: 12)],
-                  LayoutBuilder(
-                    builder: (context, c) => Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        for (final (label, v) in items)
-                          SizedBox(width: (c.maxWidth - 10) / 2, child: MetricCard(label: label, value: v)),
-                      ],
+                  if (d.aviso?.trim().isNotEmpty ?? false) ...[InfoBanner(message: d.aviso!), const SizedBox(height: 12)],
+                  for (final (i, (label, v)) in items.indexed) ...[
+                    if (i > 0) Divider(color: context.nexo.hairline),
+                    SizedBox(
+                      height: 44,
+                      child: Row(
+                        children: [
+                          Expanded(child: Text(label, style: context.text.bodyMedium)),
+                          Text(
+                            valorODato(v),
+                            style: v == null
+                                ? context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)
+                                : context.text.titleLarge?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 10),
                   Text(
                     m.obtenida == null
@@ -544,9 +647,9 @@ class _DetallePublicacion extends ConsumerWidget {
                   ),
                   if (d.publicacion.copyAprobado?.isNotEmpty ?? false) ...[
                     const SizedBox(height: 16),
-                    Text('Lo que se publicó', style: context.text.labelLarge),
+                    Text('Lo que se publicó', style: context.text.titleSmall),
                     const SizedBox(height: 6),
-                    NexoCard(child: Text(d.publicacion.copyAprobado!, style: context.text.bodyMedium)),
+                    Text(d.publicacion.copyAprobado!, style: context.text.bodyMedium),
                   ],
                   if (publicacion.permalink?.isNotEmpty ?? false) ...[
                     const SizedBox(height: 12),
