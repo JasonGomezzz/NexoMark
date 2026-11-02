@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart' show CupertinoDialogAction;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -39,7 +40,7 @@ class BrandLogo extends StatelessWidget {
         SizedBox(width: size * 0.32),
         Text(
           'NexoMark',
-          style: TextStyle(fontSize: size * 0.68, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.4),
+          style: GoogleFonts.bricolageGrotesque(fontSize: size * 0.68, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.4),
         ),
         SizedBox(width: size * 0.18),
         Container(

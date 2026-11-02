@@ -70,7 +70,7 @@ class AccountScreen extends ConsumerWidget {
                   _Opcion(
                     icon: LucideIcons.zap,
                     titulo: 'Créditos',
-                    detalle: user.tokensDisponibles == null ? 'sin dato' : '${user.tokensDisponibles} disponibles',
+                    detalle: user.tokensDisponibles == null ? 'sin dato' : user.tokensDisponibles == 1 ? '1 disponible' : '${user.tokensDisponibles} disponibles',
                     onTap: () => context.push('$base/creditos'),
                   ),
                   _Opcion(

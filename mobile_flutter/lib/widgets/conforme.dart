@@ -455,7 +455,7 @@ class CreditosChip extends StatelessWidget {
     final agotado = valor != null && valor <= 0;
     return Semantics(
       button: true,
-      label: valor == null ? 'Créditos: sin dato' : 'Créditos: $valor disponibles',
+      label: valor == null ? 'Créditos: sin dato' : valor == 1 ? 'Créditos: 1 disponible' : 'Créditos: $valor disponibles',
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -526,21 +526,25 @@ class Sello extends StatelessWidget {
         padding: EdgeInsets.all(size * 0.07),
         child: Container(
           decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: tinta.withValues(alpha: 0.55), width: 1)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              NexoMarkLogo(
-                size: size * (version == null ? 0.78 : 0.62),
-                teal: encaje ?? kAlwaysDismissedAnimation,
-                colorCrea: crea,
-                colorAprueba: tinta,
+              Align(
+                alignment: version == null ? Alignment.center : const Alignment(0, -0.32),
+                child: NexoMarkLogo(
+                  size: size * (version == null ? 0.78 : 0.56),
+                  teal: encaje ?? kAlwaysDismissedAnimation,
+                  colorCrea: crea,
+                  colorAprueba: tinta,
+                ),
               ),
               if (version != null)
-                Transform.translate(
-                  offset: Offset(0, -size * 0.1),
+                Align(
+                  alignment: const Alignment(0, 0.72),
                   child: Text(
                     'v$version',
-                    style: GoogleFonts.inter(fontSize: math.max(11, size * 0.17), height: 1, fontWeight: FontWeight.w700, color: tinta),
+                    textScaler: TextScaler.noScaling,
+                    style: GoogleFonts.inter(fontSize: math.max(10, size * 0.2), height: 1, fontWeight: FontWeight.w800, color: tinta),
                   ),
                 ),
             ],

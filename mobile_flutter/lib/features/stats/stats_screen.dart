@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/api/api_client.dart';
@@ -386,6 +385,9 @@ class _Cifra extends StatelessWidget {
   }
 }
 
+/// Meses como se escriben en Perú (y en la web): «set», no «sept».
+const mesesCortos = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'];
+
 /// 12 meses de una sola serie, con el color de la red (sin leyenda: el título
 /// la nombra). Sin eje Y: el número del mes se lee al tocar o en el lector de
 /// pantalla. Mes sin dato: una raya en la base; mes que aún no llega: nada.
@@ -408,12 +410,11 @@ class _BarrasMesState extends State<_BarrasMes> {
   @override
   Widget build(BuildContext context) {
     final color = context.nexo.chart(widget.red);
-    final meses = DateFormat.MMM('es');
     final hoy = DateTime.now();
     final actual = widget.anio == hoy.year ? hoy.month - 1 : (widget.anio > hoy.year ? -1 : 12);
     final valores = List<int?>.generate(12, (i) => i < widget.serie.length ? widget.serie[i].valores[widget.red] : null);
     final maximo = valores.whereType<int>().fold<int>(0, math.max);
-    String mes(int i) => meses.format(DateTime(2000, i + 1)).replaceAll('.', '');
+    String mes(int i) => mesesCortos[i];
     final reduced = Motion.reduced(context);
     const alto = 72.0;
     return Semantics(

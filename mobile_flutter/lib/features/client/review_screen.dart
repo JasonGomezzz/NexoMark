@@ -296,7 +296,7 @@ class _BarraDecision extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      valoracion == 0 ? 'Valórala para decidir' : 'Tu valoración: $valoracion de 5',
+                      valoracion == 0 ? 'Valórala' : '$valoracion de 5',
                       style: context.text.titleSmall,
                     ),
                   ),

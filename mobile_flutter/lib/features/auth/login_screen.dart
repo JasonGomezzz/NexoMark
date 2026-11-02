@@ -151,36 +151,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       SignedOut(:final aviso) => aviso,
       _ => null,
     };
-    return Scaffold(
-      body: Stack(
-        children: [
-          SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-              children: [
-                const Entrance(child: _FlowDemo()),
-                const SizedBox(height: 20),
-                Entrance(
-                  index: 1,
-                  child: _Tabs(
-                    registro: _registro,
-                    onChanged: (v) => setState(() {
-                      _registro = v;
-                      _error = null;
-                    }),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: estiloMesa,
+      child: Scaffold(
+        backgroundColor: context.nexo.cama,
+        body: Stack(
+          children: [
+            SafeArea(
+              bottom: false,
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 24),
+                children: [
+                  const Entrance(child: _FlowDemo()),
+                  const SizedBox(height: 6),
+                  Entrance(
+                    index: 1,
+                    child: Pliego(
+                      margen: const EdgeInsets.all(Nexo.margenMesa),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(Nexo.gutter, 18, Nexo.gutter, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _Tabs(
+                              registro: _registro,
+                              onChanged: (v) => setState(() {
+                                _registro = v;
+                                _error = null;
+                              }),
+                            ),
+                            const SizedBox(height: 16),
+                            if (aviso != null) ...[
+                              InfoBanner(message: aviso, tone: InfoTone.warning, icon: LucideIcons.lockKeyhole),
+                              const SizedBox(height: 12),
+                            ],
+                            _formulario(context),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                if (aviso != null) ...[
-                  InfoBanner(message: aviso, tone: InfoTone.warning, icon: LucideIcons.lockKeyhole),
-                  const SizedBox(height: 12),
                 ],
-                Entrance(index: 2, child: _formulario(context)),
-              ],
+              ),
             ),
-          ),
-          _Bienvenida(nombre: _bienvenida),
-        ],
+            _Bienvenida(nombre: _bienvenida),
+          ],
+        ),
       ),
     );
   }
@@ -188,6 +204,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _formulario(BuildContext context) {
     return Form(
       key: _form,
+      // Un error se borra apenas se corrige el campo (antes quedaba hasta reenviar).
+      autovalidateMode: AutovalidateMode.onUserInteractionIfError,
       child: AnimatedSize(
         duration: Motion.of(context, Motion.base),
         curve: Motion.easeOut,
@@ -452,7 +470,8 @@ class _FlowDemoState extends State<_FlowDemo> {
 
   @override
   Widget build(BuildContext context) {
-    return NavyPanel(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Nexo.gutter, 14, Nexo.gutter, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -460,15 +479,19 @@ class _FlowDemoState extends State<_FlowDemo> {
           const SizedBox(height: 18),
           Text(
             'De la idea dictada al post publicado',
-            style: context.text.headlineSmall?.copyWith(color: Nexo.onNavy, fontWeight: FontWeight.w800),
+            style: context.text.displaySmall?.copyWith(color: Nexo.onNavy, fontSize: 28),
           ),
           const SizedBox(height: 18),
           FlowStepper(current: _paso, onNavy: true),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           SizedBox(
-            height: 44,
-            child: SwapIn(
-              duration: Motion.base,
+            height: 40,
+            // La frase anterior se va de inmediato: dos frases encimadas no se leen.
+            child: AnimatedSwitcher(
+              duration: Motion.of(context, Motion.base),
+              switchInCurve: Motion.easeOut,
+              switchOutCurve: const Threshold(0),
+              layoutBuilder: (actual, _) => Align(alignment: Alignment.topLeft, child: actual),
               child: Text(
                 _frases[_paso],
                 key: ValueKey(_paso),
@@ -498,11 +521,11 @@ class _Bienvenida extends StatelessWidget {
         duration: Motion.of(context, Motion.base),
         curve: Motion.easeOut,
         child: Container(
-          color: Nexo.navy,
+          color: context.nexo.cama,
           alignment: Alignment.center,
           child: AnimatedScale(
             scale: visible ? 1 : 0.96,
-            duration: Motion.of(context, const Duration(milliseconds: 320)),
+            duration: Motion.of(context, Motion.move),
             curve: Motion.easeOut,
             child: Column(
               mainAxisSize: MainAxisSize.min,
