@@ -56,6 +56,8 @@ ApiException toApiException(Object error) {
       if (d is Map<String, dynamic>) data = d;
     }
     final status = response.statusCode;
+    // El límite de intentos llega del servidor en inglés técnico ("throttled"): se dice en simple.
+    if (status == 429) message = 'Demasiados intentos seguidos. Espera unos minutos y vuelve a intentarlo.';
     message ??= switch (status) {
       401 => 'Tu sesión venció. Inicia sesión otra vez.',
       403 => 'No tienes permiso para hacer esto.',
