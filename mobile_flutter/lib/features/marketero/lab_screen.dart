@@ -325,12 +325,15 @@ class _LabScreenState extends ConsumerState<LabScreen> {
           PliegoTitulo(
             contexto: 'Orden nueva · paso\u00A01\u00A0de\u00A05',
             titulo: 'Dicta la campaña',
-            accion: vozDisponible
+            // El botón está desde el primer cuadro (desactivado hasta preparar el dictado): así el título no salta.
+            accion: vozDisponible || !_dictado.preparado
                 ? TextButton.icon(
-                    onPressed: () {
-                      if (_dictado.escuchando) _dictado.detener();
-                      setState(() => _escribiendo = !_escribiendo);
-                    },
+                    onPressed: !_dictado.preparado
+                        ? null
+                        : () {
+                            if (_dictado.escuchando) _dictado.detener();
+                            setState(() => _escribiendo = !_escribiendo);
+                          },
                     icon: Icon(_escribiendo ? LucideIcons.mic : LucideIcons.pencilLine, size: 18),
                     label: Text(_escribiendo ? 'Dictar' : (_brief.text.isEmpty ? 'Escribir' : 'Editar')),
                   )
