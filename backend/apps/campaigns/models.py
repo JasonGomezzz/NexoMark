@@ -164,6 +164,7 @@ class Campaign(models.Model):
         verbose_name="Token callback n8n",
         help_text="UUID para autenticar el callback de n8n. No exponer al frontend.",
     )
+    generation_credit_cost = models.PositiveIntegerField(default=1)
     tokens_consumidos = models.IntegerField(
         default=0,
         verbose_name="Tokens consumidos",

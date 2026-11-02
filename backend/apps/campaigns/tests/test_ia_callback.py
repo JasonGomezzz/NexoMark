@@ -93,6 +93,17 @@ class TestIaResultCallbackFailure:
         user_marketero.refresh_from_db()
         assert user_marketero.tokens_disponibles == initial_tokens + 1
 
+    def test_failure_returns_standard_proposal_cost(self, campaign_pendiente_ia, user_marketero):
+        campaign_pendiente_ia.generation_credit_cost = 4
+        campaign_pendiente_ia.save()
+        initial = user_marketero.tokens_disponibles
+        response = APIClient().post(CALLBACK_URL, {
+            'n8n_callback_token': str(campaign_pendiente_ia.n8n_callback_token),
+            'success': False, 'error': 'timeout',
+        }, format='json')
+        user_marketero.refresh_from_db()
+        assert user_marketero.tokens_disponibles == initial + 4
+
     def test_failure_saves_error_message(self, campaign_pendiente_ia):
         client = APIClient()
         error_msg = "Gemini API rate limit exceeded"

@@ -265,7 +265,7 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email", "nombre", "rol", "is_active", "fecha_creacion", "tokens_disponibles", "has_avatar", "has_password", "google_connected"]
+        fields = ["id", "email", "nombre", "rol", "is_active", "fecha_creacion", "tokens_disponibles", "plan_key", "has_avatar", "has_password", "google_connected"]
         read_only_fields = fields
 
 

@@ -15,8 +15,8 @@ const PLANS = [
     periodo: '/mes',
     destacado: false,
     features: [
-      { txt: '500 créditos de IA al mes', ok: true },
-      { txt: 'Copy con IA ilimitado', ok: true },
+      { txt: `${CREDIT_PLANS[0].creditos} créditos de IA al mes`, ok: true },
+      { txt: 'Texto e imagen con IA según saldo', ok: true },
       { txt: '1 usuario marketero', ok: true },
       { txt: 'Analytics avanzado', ok: false },
     ],
@@ -28,9 +28,9 @@ const PLANS = [
     periodo: '/mes',
     destacado: true,
     features: [
-      { txt: '2,000 créditos de IA al mes', ok: true },
+      { txt: `${CREDIT_PLANS[1].creditos} créditos de IA`, ok: true },
       { txt: 'Copy e imágenes con IA', ok: true },
-      { txt: 'Hasta 5 usuarios', ok: true },
+      { txt: 'Revisión y aprobación del cliente', ok: true },
       { txt: 'App de aprobación para clientes', ok: true },
     ],
     cta: `Empezar con ${CREDIT_PLANS[1].nombre}`,
@@ -41,10 +41,10 @@ const PLANS = [
     periodo: '/mes',
     destacado: false,
     features: [
-      { txt: 'Créditos de IA ilimitados', ok: true },
-      { txt: 'Analytics completo', ok: true },
-      { txt: 'Usuarios ilimitados', ok: true },
-      { txt: 'Soporte prioritario', ok: true },
+      { txt: `${CREDIT_PLANS[2].creditos} créditos de IA`, ok: true },
+      { txt: 'Estadísticas de publicaciones disponibles', ok: true },
+      { txt: 'Historial de versiones', ok: true },
+      { txt: 'Revisión y aprobación del cliente', ok: true },
     ],
     cta: `Elegir ${CREDIT_PLANS[2].nombre}`,
   },
@@ -58,8 +58,8 @@ export default function PricingSection() {
           Planes flexibles por créditos
         </h2>
         <p className="mx-auto max-w-xl text-base text-on-surface-variant">
-          Pagas solo por lo que generas. Cada crédito equivale a una generación de
-          IA. Sin contratos complicados.
+          Pagas solo por lo que generas. Cada propuesta de texto e imagen estándar consume 4 créditos de
+          IA. Los pagos y la contratación de planes se muestran como demostración.
         </p>
         <p className="mt-3 text-sm text-on-surface-variant">Precios mensuales sin IGV.</p>
       </div>

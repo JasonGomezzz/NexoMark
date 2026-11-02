@@ -2,8 +2,8 @@
 MarketMind IA — n8n Service (Orquestador Asíncrono)
 
 Flujo producción (USE_MOCK_AI=False):
-  1. Valida tokens_disponibles > 0 (defensa en profundidad).
-  2. En transaction.atomic(): descuenta 1 token, incrementa intentos,
+  1. Valida tokens_disponibles >= 4 (defensa en profundidad).
+  2. En transaction.atomic(): descuenta 4 créditos, incrementa intentos,
      transiciona campaña → PENDIENTE_IA.
   3. Dispara webhook a n8n con callback_token + callback_url.
      Timeout de 5s: n8n responde inmediatamente (modo "Respond Immediately").
@@ -35,7 +35,7 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
     """
     Orquesta la generación asíncrona de copy IA para una campaña.
 
-    Descuenta 1 token, transiciona a PENDIENTE_IA y dispara el webhook n8n.
+    Descuenta 4 créditos, transiciona a PENDIENTE_IA y dispara el webhook n8n.
     Django retorna 202 inmediatamente; el resultado llega por callback.
 
     Args:
@@ -55,13 +55,14 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
 
     user = campaign.marketero
 
-    if user.tokens_disponibles <= 0:
+    cost = 4  # Texto (1) + imagen estándar (3), según propuesta comercial.
+    if user.tokens_disponibles < cost:
         logger.warning(
             "Campaña %s sin tokens disponibles para usuario %s",
             campaign.id,
             user.id,
         )
-        return {"dispatched": False, "error": "Sin tokens disponibles."}
+        return {"dispatched": False, "error": "Se necesitan 4 créditos para texto e imagen estándar."}
 
     if campaign.intentos_generacion >= 3:
         logger.warning(
@@ -78,12 +79,16 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
 
     # ── Descontar token + incrementar intentos + transicionar ──────────
     with transaction.atomic():
-        user.tokens_disponibles -= 1
+        user = type(user).objects.select_for_update().get(pk=user.pk)
+        if user.tokens_disponibles < cost:
+            return {"dispatched": False, "error": "Se necesitan 4 créditos para texto e imagen estándar."}
+        user.tokens_disponibles -= cost
         user.save(update_fields=["tokens_disponibles"])
 
         campaign.intentos_generacion += 1
-        campaign.tokens_consumidos += 1
-        campaign.save(update_fields=["intentos_generacion", "tokens_consumidos", "fecha_actualizacion"])
+        campaign.tokens_consumidos += cost
+        campaign.generation_credit_cost = cost
+        campaign.save(update_fields=["intentos_generacion", "tokens_consumidos", "generation_credit_cost", "fecha_actualizacion"])
 
         campaign.transition_to(CampaignStatus.PENDIENTE_IA)
 
@@ -169,7 +174,8 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
         )
         # Rollback: devolver token + marcar error + estado → BORRADOR
         with transaction.atomic():
-            user.tokens_disponibles += 1
+            user = type(user).objects.select_for_update().get(pk=user.pk)
+            user.tokens_disponibles += campaign.generation_credit_cost
             user.save(update_fields=["tokens_disponibles"])
 
             campaign.ia_error_message = f"n8n no disponible: {error_msg}"

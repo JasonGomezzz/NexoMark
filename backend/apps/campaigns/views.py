@@ -53,9 +53,9 @@ logger = logging.getLogger(__name__)
 # frontend/src/lib/credits.js (PLANS). El cliente solo envía la key del
 # plan; el monto/créditos SIEMPRE se leen de aquí, nunca del body.
 CREDIT_PLAN_MAP = {
-    "basico": {"nombre": "Freelance", "precio": 79, "creditos": 500},
-    "pro": {"nombre": "Agencia", "precio": 199, "creditos": 1500},
-    "elite": {"nombre": "Agencia Plus", "precio": 399, "creditos": 5000},
+    "basico": {"nombre": "Freelance", "precio": 79, "creditos": 100},
+    "pro": {"nombre": "Agencia", "precio": 199, "creditos": 400},
+    "elite": {"nombre": "Agencia Plus", "precio": 399, "creditos": 1000},
 }
 
 
@@ -201,7 +201,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if request.user.tokens_disponibles <= 0:
+        if request.user.tokens_disponibles < 4:
             return Response(
                 api_response(
                     success=False,
@@ -297,7 +297,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
         if 'google_ads' in platforms(campaign):
             return Response(api_response(False, 'Google Ads se ha retirado del proyecto.'), status=400)
 
-        if request.user.tokens_disponibles <= 0:
+        if request.user.tokens_disponibles < 4:
             return Response(
                 api_response(
                     success=False,
@@ -384,7 +384,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        if request.user.tokens_disponibles <= 0:
+        if request.user.tokens_disponibles < 4:
             return Response(
                 api_response(
                     success=False,
@@ -833,14 +833,17 @@ class CampaignViewSet(viewsets.ModelViewSet):
             )
 
         with transaction.atomic():
+            account = type(request.user).objects.select_for_update().get(pk=request.user.pk)
             CreditPurchase.objects.create(
                 usuario=request.user,
                 plan_nombre=plan["nombre"],
                 monto=plan["precio"],
                 creditos=plan["creditos"],
             )
-            request.user.tokens_disponibles += plan["creditos"]
-            request.user.save(update_fields=["tokens_disponibles"])
+            account.tokens_disponibles += plan["creditos"]
+            account.plan_key = plan_key
+            account.save(update_fields=["tokens_disponibles", "plan_key"])
+            request.user.tokens_disponibles = account.tokens_disponibles
 
         return Response(
             api_response(
@@ -850,6 +853,8 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     "tokens_disponibles": request.user.tokens_disponibles,
                     "creditos_agregados": plan["creditos"],
                     "plan": plan["nombre"],
+                    "plan_key": account.plan_key,
+                    "simulated": True,
                 },
             ),
             status=status.HTTP_200_OK,
@@ -880,7 +885,7 @@ class IaResultCallbackView(APIView):
         Procesa el resultado de generación IA enviado por n8n.
 
         Éxito: PENDIENTE_IA → GENERADO, guarda texto_generado.
-        Fallo: PENDIENTE_IA → BORRADOR, devuelve 1 token al marketero.
+        Fallo: PENDIENTE_IA → BORRADOR, devuelve el costo registrado al marketero.
         Todo en transaction.atomic() para consistencia.
         """
         token = request.data.get("n8n_callback_token")
@@ -928,8 +933,8 @@ class IaResultCallbackView(APIView):
                 campaign.ia_error_message = error_msg
                 campaign.save(update_fields=["ia_error_message", "fecha_actualizacion"])
 
-                user = campaign.marketero
-                user.tokens_disponibles += 1
+                user = type(campaign.marketero).objects.select_for_update().get(pk=campaign.marketero_id)
+                user.tokens_disponibles += campaign.generation_credit_cost
                 user.save(update_fields=["tokens_disponibles"])
 
                 campaign.transition_to(CampaignStatus.BORRADOR)

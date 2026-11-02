@@ -84,7 +84,7 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
                     Text('Solicitar créditos', style: context.text.titleMedium),
                     const SizedBox(height: 4),
                     Text(
-                      'El administrador decide cuántos sumar. Los planes y precios reales aún no están definidos.',
+                      'El administrador decide cuántos sumar. Consulta los planes en la web; los pagos son una demostración sin cargos reales.',
                       style: context.text.bodySmall,
                     ),
                     const SizedBox(height: 12),

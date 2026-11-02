@@ -157,7 +157,7 @@ export default function PlanesModal({ open, onClose }) {
             </div>
 
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-on-surface-variant/70">
-              Seguridad garantizada mediante pasarelas de pago locales
+              Demostración de planes — no se realizan cargos ni suscripciones reales
             </p>
           </>
         ) : step === 'exito' ? (

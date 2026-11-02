@@ -297,6 +297,7 @@ export default function AccountSettingsPage() {
                 <p className="break-words text-sm font-medium text-on-surface">{user.nombre || '—'}</p>
               </div>}
               <ReadonlyField icon={Mail} label="Email" value={user.email} />
+              {user.rol === 'marketero' && <p className="text-sm text-on-surface-variant">Plan de demostración: {({ basico: 'Freelance', pro: 'Agencia', elite: 'Agencia Plus' })[user.plan_key] || 'Sin plan seleccionado'}. No implica una suscripción ni un cargo real.</p>}
               <ReadonlyField
                 icon={ShieldCheck}
                 label="Rol"
@@ -483,7 +484,7 @@ export default function AccountSettingsPage() {
             </div>
 
             <p className="mt-3 text-xs text-on-surface-variant">
-              1 crédito = 1 generación o regeneración exitosa de IA.{' '}
+              Texto + imagen estándar: 4 créditos por generación o regeneración.{' '}
               {tokens === 0 ? (
                 <span className="font-semibold text-error">
                   Cuota agotada — pide un reset al administrador.

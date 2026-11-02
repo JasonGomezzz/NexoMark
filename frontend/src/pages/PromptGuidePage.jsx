@@ -105,7 +105,7 @@ const TIPS = [
   },
   {
     titulo: 'Refina por iteración',
-    desc: 'No esperes perfección al primer intento: usa Regenerar (1 crédito) con un brief ajustado.',
+    desc: 'No esperes perfección al primer intento: usa Regenerar (4 créditos) con un brief ajustado.',
   },
 ]
 

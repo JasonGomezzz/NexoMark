@@ -595,7 +595,7 @@ export default function CampaignDetailPage() {
                 {campaign.estado === 'generado' && (
                   <p className="glass-soft mt-2 max-w-sm rounded-lg px-3 py-2 text-xs">
                     <span className="font-semibold text-primary">Activo provisional: </span>
-                    el copy está listo, pero falta el activo visual. Regenerar (1 crédito)
+                    el copy está listo, pero falta el activo visual. Regenerar (4 créditos)
                     vuelve a intentar copy e imagen.
                   </p>
                 )}

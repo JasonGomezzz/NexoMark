@@ -172,6 +172,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     # ── Plan de suscripción ──────────────────────────────────
+    plan_key = models.CharField(
+        max_length=16, blank=True, default='',
+        choices=[('basico', 'Freelance'), ('pro', 'Agencia'), ('elite', 'Agencia Plus')],
+    )
     tokens_disponibles = models.IntegerField(
         default=100,
         verbose_name="Tokens disponibles",
