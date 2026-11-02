@@ -3,15 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
-import '../../widgets/linea.dart';
+import '../../widgets/conforme.dart';
 import '../client/client_home_screen.dart';
 import '../marketero/projects_screen.dart';
 import '../marketero/providers.dart';
+import 'acciones.dart';
 
-/// La navegación es el recorrido. El marketero ve las cinco estaciones
-/// (Dictar → Generar → Aprobar → Publicar → Medir); el cliente, su tramo
-/// (Aprobar → Publicar → Medir). Cada estación lleva su conteo real.
+/// La app es una prueba de imprenta: la mesa marina enmarca, el trabajo va
+/// en el pliego y la navegación es la orden de trabajo. El marketero ve los
+/// cinco pasos (Dictar → Generar → Aprobar → Publicar → Medir); el cliente,
+/// su tramo (Aprobar → Publicar → Medir). Cada casilla lleva su conteo real.
 /// Las pestañas conservan su estado (IndexedStack): cambiar es instantáneo.
 class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.shell, required this.rol});
@@ -19,13 +22,13 @@ class HomeShell extends ConsumerWidget {
   final StatefulNavigationShell shell;
   final Rol rol;
 
-  List<Estacion> _estaciones(WidgetRef ref) {
+  List<Paso> _pasos(WidgetRef ref) {
     if (rol == Rol.cliente) {
       final pendientes = ref.watch(pendingProvider).value?.length;
       return [
-        Estacion('Aprobar', LucideIcons.checkCheck, conteo: pendientes, descripcionConteo: pendientes == null ? null : '$pendientes por revisar'),
-        const Estacion('Publicar', LucideIcons.send),
-        const Estacion('Medir', LucideIcons.chartColumn),
+        Paso('Aprobar', LucideIcons.stamp, conteo: pendientes, descripcionConteo: pendientes == null ? null : '$pendientes por revisar'),
+        const Paso('Publicar', LucideIcons.send),
+        const Paso('Medir', LucideIcons.chartColumn),
       ];
     }
     final stats = ref.watch(campaignStatsProvider).value;
@@ -34,22 +37,28 @@ class HomeShell extends ConsumerWidget {
     final aprobar = conteo(TramoCampanas.aprobar);
     final publicar = conteo(TramoCampanas.publicar);
     return [
-      const Estacion('Dictar', LucideIcons.mic),
-      Estacion('Generar', LucideIcons.wandSparkles, conteo: generar, descripcionConteo: generar == null ? null : '$generar campañas'),
-      Estacion('Aprobar', LucideIcons.checkCheck, conteo: aprobar, descripcionConteo: aprobar == null ? null : '$aprobar esperan al cliente'),
-      Estacion('Publicar', LucideIcons.send, conteo: publicar, descripcionConteo: publicar == null ? null : '$publicar aprobadas'),
-      const Estacion('Medir', LucideIcons.chartColumn),
+      const Paso('Dictar', LucideIcons.mic),
+      Paso('Generar', LucideIcons.wandSparkles, conteo: generar, descripcionConteo: generar == null ? null : '$generar campañas'),
+      Paso('Aprobar', LucideIcons.stamp, conteo: aprobar, descripcionConteo: aprobar == null ? null : '$aprobar esperan al cliente'),
+      Paso('Publicar', LucideIcons.send, conteo: publicar, descripcionConteo: publicar == null ? null : '$publicar aprobadas'),
+      const Paso('Medir', LucideIcons.chartColumn),
     ];
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: shell,
-      bottomNavigationBar: LineaBar(
-        estaciones: _estaciones(ref),
+      backgroundColor: context.nexo.cama,
+      body: Column(
+        children: [
+          MesaBar(acciones: accionesMesa(context, ref)),
+          Expanded(child: Pliego(child: shell)),
+        ],
+      ),
+      bottomNavigationBar: OrdenBar(
+        pasos: _pasos(ref),
         actual: shell.currentIndex,
-        // Tocar la estación activa vuelve a su raíz.
+        // Tocar el paso activo vuelve a su raíz.
         onSelect: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
       ),
     );

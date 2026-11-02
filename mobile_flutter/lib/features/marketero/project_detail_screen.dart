@@ -13,6 +13,7 @@ import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/campaign_widgets.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../../widgets/publication_widgets.dart';
 import 'lab_screen.dart' show industrias, tonos;
@@ -87,7 +88,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     final pubs = ref.watch(campaignPublicationsProvider(widget.id));
     final c = campana.value ?? widget.inicial;
     if (campana.value != null) _vigilar(campana.value!, pubs.value ?? const []);
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(
         title: Text(c?.titulo ?? 'Proyecto', overflow: TextOverflow.ellipsis),
         actions: [

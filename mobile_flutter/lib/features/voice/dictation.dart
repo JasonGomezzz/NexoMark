@@ -68,6 +68,10 @@ class DictationController extends ChangeNotifier {
   bool get esIos => Platform.isIOS;
   String get proveedorAudio => esIos ? 'Apple' : 'Google';
 
+  /// Lo ya confirmado por el reconocedor en esta sesión de dictado; lo que
+  /// sigue en el texto es provisional (puede cambiar mientras se habla).
+  String get confirmado => _base;
+
   /// Texto breve y verificable de dónde se transcribe; null si no hay dictado.
   String? get avisoPrivacidad => switch (modo) {
         ModoDictado.enDispositivo => 'El audio no sale del teléfono. NexoMark solo recibe el texto que confirmes.',

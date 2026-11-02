@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-/// Movimiento NexoMark (direcciones.md → «Dirección elegida» → Movimiento).
+/// Movimiento NexoMark (direcciones.md → «Dirección elegida: C · Conforme»).
 /// Reglas: transform y opacidad; nada aparece desde escala 0 (se parte de
 /// 0.95, siempre con opacidad); la interfaz se queda entre 150 y 300 ms; lo
 /// que se usa decenas de veces al día (pestañas, filtros, filas) no se anima;
@@ -9,7 +9,7 @@ abstract final class Motion {
   /// Entrar o aparecer.
   static const easeOut = Cubic(0.23, 1, 0.32, 1);
 
-  /// Algo que se mueve en pantalla (el anillo que cambia de estación).
+  /// Algo que se mueve o cambia de forma en pantalla.
   static const easeInOut = Cubic(0.77, 0, 0.175, 1);
 
   /// Hojas inferiores y cajones (curva de iOS).
@@ -18,23 +18,26 @@ abstract final class Motion {
   /// Presionar: escala 0.97.
   static const press = Duration(milliseconds: 140);
 
-  /// Cambio de color o de estado pequeño.
+  /// La casilla se sella (y cambios de color pequeños).
   static const fast = Duration(milliseconds: 160);
 
-  /// Nueva parada del dictado: la vía crece.
+  /// Párrafo o parada nueva.
   static const stop = Duration(milliseconds: 180);
 
   /// Entradas de contenido.
   static const base = Duration(milliseconds: 220);
 
-  /// El anillo de la estación se desliza.
+  /// Hojas inferiores.
+  static const sheet = Duration(milliseconds: 220);
+
+  /// Algo que se mueve de lugar.
   static const move = Duration(milliseconds: 240);
 
-  /// Hojas inferiores.
-  static const sheet = Duration(milliseconds: 280);
-
-  /// Momentos firma: el encaje de la N y la aprobación del cliente.
+  /// Momentos firma: el encaje de la N y el sello del cliente (una vez).
   static const signature = Duration(milliseconds: 420);
+
+  /// Vuelta del aro «escuchando · mm:ss» del micrófono (lineal, solo mientras escucha).
+  static const aroMicrofono = Duration(seconds: 24);
 
   /// Separación entre elementos que entran juntos.
   static const stagger = Duration(milliseconds: 50);

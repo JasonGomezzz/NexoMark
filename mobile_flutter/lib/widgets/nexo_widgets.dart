@@ -9,7 +9,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/theme/motion.dart';
 import '../core/theme/tokens.dart';
 import '../data/models.dart';
-import 'linea.dart';
+import 'conforme.dart';
 import 'motion_widgets.dart';
 
 final _miles = NumberFormat.decimalPattern('es_PE');
@@ -362,7 +362,7 @@ class NexoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? context.colors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(Nexo.radiusSurface),
-        border: Border.all(color: context.colors.outlineVariant),
+        border: Border.all(color: context.nexo.hairline),
       ),
       child: child,
     );
@@ -425,7 +425,7 @@ class MetricCard extends StatelessWidget {
   }
 }
 
-/// Título de sección. Abre con la regla de 6 px (la línea marca el inicio).
+/// Título de sección. Abre con la regla de 1 px (como en la ficha técnica).
 class SectionTitle extends StatelessWidget {
   const SectionTitle(this.title, {super.key, this.trailing, this.subtitle, this.regla = true});
 
@@ -441,7 +441,7 @@ class SectionTitle extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (regla) ...[const Regla(), const SizedBox(height: 12)],
+          if (regla) ...[const Regla(), const SizedBox(height: 16)],
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -481,7 +481,7 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          EstacionHueca(icono: icon),
+          CasillaVacia(icono: icon),
           const SizedBox(height: 16),
           Text(title, style: context.text.titleLarge, textAlign: TextAlign.center),
           const SizedBox(height: 6),
@@ -636,7 +636,7 @@ class CreditsMeter extends StatelessWidget {
               builder: (context, v, _) => LinearProgressIndicator(
                 value: v,
                 minHeight: 8,
-                backgroundColor: Nexo.via,
+                backgroundColor: Nexo.onNavyMuted.withValues(alpha: 0.22),
                 color: agotado ? Nexo.onNavyError : Nexo.turquoise,
               ),
             ),
@@ -665,8 +665,6 @@ class CreditsMeter extends StatelessWidget {
 
 // ── Flujo ──────────────────────────────────────────────────
 
-const pasosFlujo = ['Dictar', 'Generar', 'Aprobar', 'Publicar', 'Medir'];
-
 int pasoDeEstado(EstadoCampana e, {bool publicada = false}) => switch (e) {
       EstadoCampana.borrador => 0,
       EstadoCampana.pendienteIa => 1,
@@ -676,122 +674,6 @@ int pasoDeEstado(EstadoCampana e, {bool publicada = false}) => switch (e) {
       EstadoCampana.fracaso => 2,
       EstadoCampana.aprobado => publicada ? 4 : 3,
     };
-
-/// Dictar → Generar → Aprobar → Publicar → Medir: el recorrido de una
-/// campaña con el lenguaje de la línea. Paradas hechas llenas, la actual
-/// turquesa con anillo, las que faltan huecas. El anillo se desliza al
-/// cambiar de paso (240 ms).
-class FlowStepper extends StatelessWidget {
-  const FlowStepper({super.key, required this.current, this.onNavy = false});
-
-  final int current;
-  final bool onNavy;
-
-  @override
-  Widget build(BuildContext context) {
-    final via = onNavy ? Nexo.via : context.colors.outlineVariant;
-    final hecho = onNavy ? Nexo.turquoiseSoft : context.colors.primary;
-    final fondo = onNavy ? Nexo.banda : context.colors.surface;
-    final tenue = onNavy ? Nexo.onNavyMuted : context.colors.onSurfaceVariant;
-    final tinta = onNavy ? Nexo.onNavy : context.colors.onSurface;
-    final mover = Motion.of(context, Motion.move);
-    return Semantics(
-      label: 'Paso ${current + 1} de ${pasosFlujo.length}: ${pasosFlujo[current.clamp(0, pasosFlujo.length - 1)]}',
-      excludeSemantics: true,
-      child: LayoutBuilder(builder: (context, constraints) {
-        final n = pasosFlujo.length;
-        final slot = constraints.maxWidth / n;
-        const centro = 18.0;
-        final paso = current.clamp(0, n - 1);
-        return SizedBox(
-          height: 60,
-          child: Stack(
-            children: [
-              Positioned(
-                left: slot / 2,
-                right: slot / 2,
-                top: centro - 2,
-                child: Container(height: 4, decoration: BoxDecoration(color: via, borderRadius: BorderRadius.circular(2))),
-              ),
-              Positioned(
-                left: slot / 2,
-                top: centro - 2,
-                child: AnimatedContainer(
-                  duration: mover,
-                  curve: Motion.easeInOut,
-                  height: 4,
-                  width: slot * paso,
-                  decoration: BoxDecoration(color: hecho, borderRadius: BorderRadius.circular(2)),
-                ),
-              ),
-              AnimatedPositioned(
-                duration: mover,
-                curve: Motion.easeInOut,
-                left: slot * paso + slot / 2 - 18,
-                top: 0,
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: fondo,
-                    border: Border.all(color: Nexo.turquoiseSoft, width: 2),
-                  ),
-                ),
-              ),
-              for (var i = 0; i < n; i++)
-                Positioned(
-                  left: slot * i,
-                  width: slot,
-                  top: 0,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: centro * 2,
-                        child: Center(
-                          child: Container(
-                            width: i == paso ? 24 : 18,
-                            height: i == paso ? 24 : 18,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: i < paso ? hecho : (i == paso ? Nexo.turquoise : fondo),
-                              border: i > paso ? Border.all(color: via, width: 4) : null,
-                            ),
-                            child: i < paso
-                                ? Icon(LucideIcons.check, size: 12, color: onNavy ? Nexo.navyDeep : context.colors.onPrimary)
-                                : i == paso
-                                    ? Center(
-                                        child: Container(
-                                          width: 7,
-                                          height: 7,
-                                          decoration: const BoxDecoration(color: Nexo.navyDeep, shape: BoxShape.circle),
-                                        ),
-                                      )
-                                    : null,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        pasosFlujo[i],
-                        maxLines: 1,
-                        overflow: TextOverflow.visible,
-                        softWrap: false,
-                        style: context.text.labelMedium?.copyWith(
-                          fontWeight: i == paso ? FontWeight.w800 : FontWeight.w600,
-                          color: i <= paso ? tinta : tenue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        );
-      }),
-    );
-  }
-}
 
 /// Fecha corta en español de Perú: "21 oct. 2026".
 String fechaCorta(DateTime? d) => d == null ? 'sin fecha' : DateFormat('d MMM y', 'es').format(d);

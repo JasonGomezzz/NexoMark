@@ -8,6 +8,7 @@ import '../../core/api/api_client.dart';
 import '../../core/providers.dart';
 import '../../core/theme/motion.dart';
 import '../../core/theme/tokens.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import 'avatar_provider.dart';
 
@@ -87,7 +88,7 @@ class _ProfilePhotoScreenState extends ConsumerState<ProfilePhotoScreen> {
     final user = ref.watch(currentUserProvider);
     final actual = ref.watch(avatarProvider(user?.hasAvatar == true ? user?.avatarVersion : null)).value;
     final mostrar = _nueva ?? actual;
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: const Text('Foto de perfil')),
       body: SafeArea(
         child: ListView(

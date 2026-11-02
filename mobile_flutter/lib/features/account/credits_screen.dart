@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/providers.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../../core/theme/tokens.dart';
 
@@ -46,7 +47,7 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final solicitudes = ref.watch(_solicitudesProvider);
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: const Text('Créditos')),
       body: SafeArea(
         child: RefreshIndicator(

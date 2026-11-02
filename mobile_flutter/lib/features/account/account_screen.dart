@@ -10,6 +10,7 @@ import '../../core/theme/motion.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../auth/google_auth.dart';
 import 'avatar_provider.dart';
@@ -24,7 +25,7 @@ class AccountScreen extends ConsumerWidget {
     final base = user.rol == Rol.cliente ? '/c/cuenta' : '/m/cuenta';
     final esMarketero = user.rol == Rol.marketero;
 
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: const Text('Cuenta')),
       body: SafeArea(
         top: false,
@@ -192,7 +193,7 @@ class _Perfil extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(color: Nexo.banda2, borderRadius: BorderRadius.circular(999)),
+                  decoration: BoxDecoration(color: Nexo.turquoise.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(999)),
                   child: Text(
                     user.rol == Rol.cliente ? 'Cliente' : 'Marketero',
                     style: context.text.labelMedium?.copyWith(color: Nexo.turquoiseSoft),

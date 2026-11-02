@@ -11,7 +11,7 @@ import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/campaign_widgets.dart';
 import '../../widgets/motion_widgets.dart';
-import '../../widgets/nexo_mark_logo.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../marketero/providers.dart' show xConfigProvider;
 import '../marketero/x_variant_block.dart' show xVariantsProvider;
@@ -96,7 +96,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final campana = ref.watch(_reviewProvider(widget.id));
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: const Text('Revisar campaña')),
       body: campana.when(
         loading: () => const Center(child: CircularProgressIndicator.adaptive()),
@@ -327,11 +327,11 @@ class _BarraDecision extends StatelessWidget {
   }
 }
 
-/// Momento firma del cliente: las dos piezas de la N encajan. La clara
-/// (quien creó la campaña) ya está en su sitio; la turquesa (quien aprueba)
-/// entra por la diagonal y encaja en 420 ms. El háptico suena al encajar, en
-/// el mismo cuadro. Con "reducir movimiento" la N ya está encajada y solo
-/// se funde. Cubre toda la pantalla: es la confirmación, no un adorno.
+/// Momento firma del cliente: el sello «conforme» cae sobre la mesa (de 0.96
+/// a 1, con opacidad) y dentro las dos piezas de la N encajan: la clara (quien
+/// creó la campaña) ya está; la turquesa (quien aprueba) entra por la
+/// diagonal. Todo en 420 ms, una vez. El háptico suena al encajar, en el mismo
+/// cuadro. Con "reducir movimiento" el sello ya está puesto y solo se funde.
 Future<void> mostrarAprobada(BuildContext context, Campaign c) {
   final destino = c.destinos.isEmpty
       ? 'Sin publicación automática.'
@@ -359,6 +359,7 @@ class _AprobadaState extends State<_Aprobada> with SingleTickerProviderStateMixi
   late final AnimationController _c = AnimationController(vsync: this, duration: Motion.signature);
   late final Animation<double> _teal = Tween(begin: 1.0, end: 0.0).animate(CurvedAnimation(parent: _c, curve: Motion.easeOut));
   late final Animation<double> _texto = CurvedAnimation(parent: _c, curve: const Interval(0.5, 1, curve: Motion.easeOut));
+  late final Animation<double> _cae = CurvedAnimation(parent: _c, curve: const Interval(0, 0.55, curve: Motion.easeOut));
 
   @override
   void initState() {
@@ -391,7 +392,7 @@ class _AprobadaState extends State<_Aprobada> with SingleTickerProviderStateMixi
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Material(
-        color: Nexo.banda,
+        color: context.nexo.cama,
         child: Semantics(
           liveRegion: true,
           label: 'Campaña aprobada. ${widget.destino}',
@@ -400,15 +401,23 @@ class _AprobadaState extends State<_Aprobada> with SingleTickerProviderStateMixi
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                NexoMarkLogo(size: 168, teal: _teal),
-                const SizedBox(height: 8),
+                FadeTransition(
+                  opacity: _cae,
+                  child: ScaleTransition(
+                    scale: Tween(begin: 0.96, end: 1.0).animate(_cae),
+                    child: Sello(size: 176, encaje: _teal, sobreMesa: true),
+                  ),
+                ),
+                const SizedBox(height: 22),
                 FadeTransition(
                   opacity: _texto,
                   child: SlideTransition(
                     position: Tween(begin: const Offset(0, 0.15), end: Offset.zero).animate(_texto),
                     child: Column(
                       children: [
-                        Text('Aprobada', style: context.text.displaySmall?.copyWith(color: Nexo.onNavy)),
+                        Text('Conforme', style: context.text.displaySmall?.copyWith(color: Nexo.onNavy)),
+                        const SizedBox(height: 4),
+                        Text('Aprobaste esta versión.', style: context.text.titleMedium?.copyWith(color: Nexo.onNavy)),
                         const SizedBox(height: 8),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 32),

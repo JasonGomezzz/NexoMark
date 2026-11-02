@@ -8,9 +8,8 @@ import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/campaign_widgets.dart';
-import '../../widgets/linea.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
-import '../shell/acciones.dart';
 import 'providers.dart';
 
 /// Qué tramo de la línea muestra la lista.
@@ -129,25 +128,22 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
       ),
     ];
 
-    return Scaffold(
-      appBar: _esEstacion ? null : AppBar(title: Text(widget.tramo.titulo)),
+    final contenido = Scaffold(
+      backgroundColor: context.colors.surface,
       body: RefreshIndicator(
         onRefresh: _refrescar,
-        edgeOffset: _esEstacion ? MediaQuery.paddingOf(context).top + kToolbarHeight : 0,
+        
         child: CustomScrollView(
           slivers: [
             if (_esEstacion)
-              LineaHeader(
-                titulo: widget.tramo.titulo,
-                subtitulo: widget.tramo.subtitulo,
-                acciones: accionesEstacion(context, ref),
-              ),
+              SliverToBoxAdapter(child: PliegoTitulo(titulo: widget.tramo.titulo, subtitulo: widget.tramo.subtitulo)),
             ...cuerpo,
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
       ),
     );
+    return _esEstacion ? contenido : MesaScaffold(appBar: AppBar(title: Text(widget.tramo.titulo)), body: contenido);
   }
 
   List<Widget> _contenido(BuildContext context, List<Campaign> items) {
@@ -308,9 +304,9 @@ class _Filtros extends StatelessWidget {
               showCheckmark: false,
               onSelected: (_) => onChanged(estado),
               backgroundColor: context.colors.surfaceContainerLowest,
-              selectedColor: context.isDark ? context.colors.primary : Nexo.banda,
-              side: BorderSide(color: activo ? (context.isDark ? context.colors.primary : Nexo.banda) : context.colors.outlineVariant),
-              labelStyle: context.text.labelMedium?.copyWith(color: activo ? (context.isDark ? context.colors.onPrimary : Nexo.onNavy) : context.colors.onSurface),
+              selectedColor: context.colors.primary,
+              side: BorderSide(color: activo ? context.colors.primary : context.colors.outlineVariant),
+              labelStyle: context.text.labelMedium?.copyWith(color: activo ? context.colors.onPrimary : context.colors.onSurface),
               materialTapTargetSize: MaterialTapTargetSize.padded,
             ),
           );

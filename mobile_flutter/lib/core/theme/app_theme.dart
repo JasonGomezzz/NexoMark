@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'tokens.dart';
 
-/// Tema de la dirección "Línea". Dos familias:
-/// - Overpass (600–800): titulares, estaciones, cifras y el texto dictado.
+/// Tema de la dirección "Conforme". Dos familias:
+/// - Bricolage Grotesque (600–800): titulares, cifras y el texto dictado.
 /// - Inter (400–700): cuerpo, controles y tablas.
 ///
 /// Todo el tracking se fija a mano: Material deja +0.25/+0.5 en el cuerpo y
@@ -18,7 +19,7 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
   final ios = plataforma == TargetPlatform.iOS;
   final base = ThemeData(useMaterial3: true, colorScheme: scheme, brightness: brightness, platform: plataforma);
 
-  TextStyle display(double size, FontWeight w, double tracking, double height) => GoogleFonts.overpass(
+  TextStyle display(double size, FontWeight w, double tracking, double height) => GoogleFonts.bricolageGrotesque(
         fontSize: size,
         fontWeight: w,
         letterSpacing: size * tracking,
@@ -35,16 +36,17 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
   const cifras = [FontFeature.tabularFigures()];
 
   final textTheme = TextTheme(
-    // Cifra destacada y cifra grande.
-    displayLarge: display(40, FontWeight.w800, -0.02, 1).copyWith(fontFeatures: cifras),
-    displayMedium: display(28, FontWeight.w800, -0.02, 1).copyWith(fontFeatures: cifras),
-    // Título de página (h1 móvil).
-    displaySmall: display(30, FontWeight.w800, -0.02, 1.05),
-    // Frase dictada (móvil).
-    headlineMedium: display(25, FontWeight.w700, -0.02, 1.18),
-    // h2 de sección (móvil) y h3.
-    headlineSmall: display(20, FontWeight.w800, -0.015, 1.2),
-    titleLarge: display(18, FontWeight.w800, -0.01, 1.25),
+    // Cifras: destacada y de plancha.
+    displayLarge: display(44, FontWeight.w800, -0.03, 1).copyWith(fontFeatures: cifras),
+    displayMedium: display(36, FontWeight.w800, -0.03, 1).copyWith(fontFeatures: cifras),
+    // Título de página (móvil).
+    displaySmall: display(30, FontWeight.w800, -0.025, 1.05),
+    // Texto dictado: párrafo continuo.
+    headlineMedium: display(28, FontWeight.w600, -0.022, 1.2),
+    // h2 de sección.
+    headlineSmall: display(21, FontWeight.w800, -0.01, 1.2),
+    // h3: nombres de red, títulos de hoja.
+    titleLarge: display(18, FontWeight.w700, -0.005, 1.25),
     titleMedium: texto(16, FontWeight.w600, 1.35),
     titleSmall: texto(15, FontWeight.w600, 1.35),
     bodyLarge: texto(16, FontWeight.w400, 1.6),
@@ -55,7 +57,7 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
     labelSmall: texto(13, FontWeight.w600, 1.2),
   );
 
-  const pastilla = StadiumBorder();
+  final control = RoundedRectangleBorder(borderRadius: BorderRadius.circular(Nexo.radiusField));
   const buttonPadding = EdgeInsets.symmetric(horizontal: 22, vertical: 14);
   const minButton = Size(48, 52);
   final campo = BorderRadius.circular(Nexo.radiusField);
@@ -67,14 +69,22 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
     // En iOS no hay onda: la respuesta al toque es la escala de Pressable y el resaltado.
     splashFactory: ios ? NoSplash.splashFactory : InkSparkle.splashFactory,
     highlightColor: ios ? scheme.onSurface.withValues(alpha: 0.06) : null,
+    // Las barras superiores van sobre la mesa (marino), nunca sobre el pliego.
     appBarTheme: AppBarTheme(
-      backgroundColor: scheme.surface,
+      backgroundColor: nexo.cama,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: ios,
-      titleTextStyle: textTheme.titleLarge,
-      foregroundColor: scheme.onSurface,
+      titleTextStyle: textTheme.titleLarge?.copyWith(color: Nexo.onNavy),
+      foregroundColor: Nexo.onNavy,
+      iconTheme: const IconThemeData(color: Nexo.onNavy),
+      actionsIconTheme: const IconThemeData(color: Nexo.onNavy),
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
     ),
     cardTheme: CardThemeData(
       color: scheme.surfaceContainerLowest,
@@ -88,7 +98,7 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        shape: pastilla,
+        shape: control,
         padding: buttonPadding,
         minimumSize: minButton,
         textStyle: textTheme.labelLarge,
@@ -98,7 +108,7 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        shape: pastilla,
+        shape: control,
         padding: buttonPadding,
         minimumSize: minButton,
         side: BorderSide(color: scheme.outline),
@@ -108,7 +118,7 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        shape: pastilla,
+        shape: control,
         minimumSize: const Size(48, 48),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         textStyle: textTheme.labelLarge,
@@ -159,7 +169,7 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Nexo.radiusSurface)),
     ),
     chipTheme: base.chipTheme.copyWith(
-      shape: const StadiumBorder(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Nexo.radiusField)),
       side: BorderSide(color: scheme.outlineVariant),
       labelStyle: textTheme.labelSmall,
       backgroundColor: scheme.surfaceContainerLowest,

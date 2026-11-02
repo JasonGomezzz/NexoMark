@@ -13,7 +13,7 @@ double contraste(Color a, Color b) {
 }
 
 void main() {
-  // Mismos pares que la web (tests/brandPalette.test.js) más los de la línea y los gráficos.
+  // Mismos pares que la web (tests/brandPalette.test.js) más los de la mesa y los gráficos.
   for (final (nombre, s, n) in [
     ('claro', nexoLightScheme, NexoColors.light),
     ('oscuro', nexoDarkScheme, NexoColors.dark),
@@ -50,13 +50,16 @@ void main() {
     });
   }
 
-  group('banda de la línea', () {
-    test('estación sobre la banda', () => expect(contraste(Nexo.onNavy, Nexo.banda), greaterThanOrEqualTo(9)));
-    test('estación inactiva sobre la banda', () => expect(contraste(Nexo.onNavyMuted, Nexo.banda), greaterThanOrEqualTo(4.5)));
-    test('conteo sobre banda-2', () => expect(contraste(Nexo.onNavy, Nexo.banda2), greaterThanOrEqualTo(4.5)));
-    test('ícono de la estación actual', () => expect(contraste(Nexo.navyDeep, Nexo.turquoise), greaterThanOrEqualTo(4.5)));
-    test('turquesa sobre la banda (3:1, gráfico)', () => expect(contraste(Nexo.turquoise, Nexo.banda), greaterThanOrEqualTo(3)));
-  });
+  for (final (nombre, n) in [('claro', NexoColors.light), ('oscuro', NexoColors.dark)]) {
+    group('mesa en tema $nombre', () {
+      test('texto sobre la mesa', () => expect(contraste(Nexo.onNavy, n.cama), greaterThanOrEqualTo(9)));
+      test('paso inactivo sobre la mesa', () => expect(contraste(Nexo.onNavyMuted, n.cama), greaterThanOrEqualTo(4.5)));
+      test('conteo sobre cama-2', () => expect(contraste(Nexo.onNavy, n.cama2), greaterThanOrEqualTo(4.5)));
+      test('casilla actual sobre la mesa (3:1, objeto)', () => expect(contraste(Nexo.turquoise, n.cama), greaterThanOrEqualTo(3)));
+      test('marcas de corte sobre la mesa (3:1, objeto)', () => expect(contraste(n.registro, n.cama), greaterThanOrEqualTo(3)));
+    });
+  }
+  test('ícono de la casilla actual', () => expect(contraste(Nexo.navyDeep, Nexo.turquoise), greaterThanOrEqualTo(4.5)));
 
   group('marino', () {
     test('texto sobre marino', () => expect(contraste(Nexo.onNavy, Nexo.navy), greaterThanOrEqualTo(9)));
@@ -65,13 +68,14 @@ void main() {
     test('error sobre marino', () => expect(contraste(Nexo.onNavyError, Nexo.navy), greaterThanOrEqualTo(4.5)));
   });
 
-  test('los tokens coinciden con direcciones.md (B · Línea)', () {
+  test('los tokens coinciden con direcciones.md (C · Conforme)', () {
     expect(nexoLightScheme.primary, const Color(0xFF087B75));
     expect(nexoDarkScheme.primary, const Color(0xFF17B8AD));
-    expect(nexoLightScheme.surface, const Color(0xFFF5FAFA));
-    expect(nexoDarkScheme.surface, const Color(0xFF0B1929));
     expect(Nexo.navy, const Color(0xFF14283F));
-    expect(nexoDarkScheme.surfaceContainerLowest, const Color(0xFF102236));
+    expect(nexoLightScheme.surface, const Color(0xFFF7FBFB));
+    expect(nexoDarkScheme.surface, const Color(0xFF0F2236));
+    expect(NexoColors.dark.cama, const Color(0xFF07111D));
+    expect(NexoColors.light.registro, const Color(0xFF79DDD3));
     expect(NexoColors.light.chartInstagram, const Color(0xFFB4307E));
     expect(NexoColors.dark.chartFacebook, const Color(0xFF5B8FE0));
   });

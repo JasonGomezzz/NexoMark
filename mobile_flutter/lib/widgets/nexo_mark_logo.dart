@@ -18,9 +18,17 @@ class NexoMarkLogo extends StatelessWidget {
     this.white = kAlwaysDismissedAnimation,
     this.teal = kAlwaysDismissedAnimation,
     this.scale = const AlwaysStoppedAnimation(1),
+    this.colorCrea = Nexo.onNavy,
+    this.colorAprueba = Nexo.turquoise,
   });
 
   final double size;
+
+  /// Pieza de quien crea (blanca sobre marino; marina sobre el pliego).
+  final Color colorCrea;
+
+  /// Pieza de quien aprueba.
+  final Color colorAprueba;
   final Animation<double> white;
   final Animation<double> teal;
   final Animation<double> scale;
@@ -31,7 +39,7 @@ class NexoMarkLogo extends StatelessWidget {
       child: SizedBox.square(
         dimension: size,
         child: CustomPaint(
-          painter: _NexoMarkPainter(white: white, teal: teal, scale: scale),
+          painter: _NexoMarkPainter(white: white, teal: teal, scale: scale, crea: colorCrea, aprueba: colorAprueba),
         ),
       ),
     );
@@ -108,12 +116,15 @@ final _tealPiece = _polygon([
   (const Offset(616, 584), 0),
 ]);
 
-final _whitePaint = Paint()..color = Nexo.onNavy;
-final _tealPaint = Paint()..color = Nexo.turquoise;
 
 class _NexoMarkPainter extends CustomPainter {
-  _NexoMarkPainter({required this.white, required this.teal, required this.scale})
-    : super(repaint: Listenable.merge([white, teal, scale]));
+  _NexoMarkPainter({required this.white, required this.teal, required this.scale, required Color crea, required Color aprueba})
+    : _whitePaint = Paint()..color = crea,
+      _tealPaint = Paint()..color = aprueba,
+      super(repaint: Listenable.merge([white, teal, scale]));
+
+  final Paint _whitePaint;
+  final Paint _tealPaint;
 
   final Animation<double> white;
   final Animation<double> teal;
@@ -140,5 +151,6 @@ class _NexoMarkPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_NexoMarkPainter old) => old.white != white || old.teal != teal || old.scale != scale;
+  bool shouldRepaint(_NexoMarkPainter old) =>
+      old.white != white || old.teal != teal || old.scale != scale || old._whitePaint.color != _whitePaint.color || old._tealPaint.color != _tealPaint.color;
 }

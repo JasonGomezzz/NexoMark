@@ -8,9 +8,8 @@ import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/campaign_widgets.dart';
-import '../../widgets/linea.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
-import '../shell/acciones.dart';
 
 final pendingProvider = FutureProvider.autoDispose<List<Campaign>>((ref) => ref.watch(clientRepositoryProvider).pending());
 final decididasProvider = FutureProvider.autoDispose<List<Campaign>>((ref) async {
@@ -72,16 +71,12 @@ class _ClientHomeScreenState extends ConsumerState<ClientHomeScreen> with Widget
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refrescar,
-        edgeOffset: MediaQuery.paddingOf(context).top + kToolbarHeight,
+        
         child: CustomScrollView(
           slivers: [
-            LineaHeader(
-              titulo: aprobar ? 'Aprobar' : 'Publicar',
-              subtitulo: aprobar
+            SliverToBoxAdapter(child: PliegoTitulo(titulo: aprobar ? 'Aprobar' : 'Publicar', subtitulo: aprobar
                   ? 'Revisa lo que tu agencia preparó. Nada se publica sin tu aprobación.'
-                  : 'Lo que ya decidiste y dónde se publicó.',
-              acciones: accionesEstacion(context, ref),
-            ),
+                  : 'Lo que ya decidiste y dónde se publicó.')),
             ...lista.when(
               data: (items) => items.isEmpty
                   ? [

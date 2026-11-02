@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/providers.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../auth/forgot_password_screen.dart';
 
@@ -57,7 +58,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     if (user != null && !user.hasPassword) return const ForgotPasswordScreen(crear: true);
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: const Text('Cambiar contraseña')),
       body: SafeArea(
         child: ListView(

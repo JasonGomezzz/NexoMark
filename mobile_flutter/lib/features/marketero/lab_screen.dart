@@ -13,10 +13,9 @@ import '../../core/theme/motion.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/campaign_widgets.dart';
-import '../../widgets/linea.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/motion_widgets.dart';
 import '../../widgets/nexo_widgets.dart';
-import '../shell/acciones.dart';
 import '../voice/dictation.dart';
 import '../voice/voice_card.dart';
 import 'providers.dart';
@@ -93,11 +92,10 @@ class _LabScreenState extends ConsumerState<LabScreen> {
   DateTime? _inicioCaptura;
   void _marcarInicio() => _inicioCaptura ??= DateTime.now();
 
-  // Reloj del dictado: tiempo escuchando (suma las pausas) y cuándo apareció cada frase.
+  // Reloj del dictado: tiempo escuchando (suma las pausas); va en el aro del micrófono.
   Duration _acumulado = Duration.zero;
   DateTime? _inicioSesion;
   Timer? _reloj;
-  final _tiempos = <Duration>[];
 
   Duration get _escuchado => _acumulado + (_inicioSesion == null ? Duration.zero : DateTime.now().difference(_inicioSesion!));
 
@@ -115,13 +113,6 @@ class _LabScreenState extends ConsumerState<LabScreen> {
 
   void _alCambiarBrief() {
     if (_brief.text.isNotEmpty) _marcarInicio();
-    final n = frasesDe(_brief.text).length;
-    if (_tiempos.length > n) _tiempos.removeRange(n, _tiempos.length);
-    if (_dictado.escuchando) {
-      while (_tiempos.length < n) {
-        _tiempos.add(_escuchado);
-      }
-    }
     setState(() {});
   }
 
@@ -289,7 +280,6 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       _porVoz = false;
       _inicioCaptura = null;
       _acumulado = Duration.zero;
-      _tiempos.clear();
       _error = null;
       _erroresCampo = const {};
     });
@@ -299,91 +289,63 @@ class _LabScreenState extends ConsumerState<LabScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final sinCreditos = user?.sinCreditos ?? false;
-    final (cuerpo, dock) = switch (_etapa) {
-      _Etapa.brief => (_etapaBrief(context, sinCreditos), _dockBrief(context)),
-      _Etapa.campos => (_etapaCampos(context), _dockCampos(context, sinCreditos)),
-      _Etapa.generando => (_etapaGenerando(context), _dockGenerando(context)),
-    };
-    final (titulo, subtitulo) = switch (_etapa) {
-      _Etapa.brief => ('Dicta la campaña', 'Cada frase queda como una parada. Al terminar, la IA propone los campos.'),
-      _Etapa.campos => ('Revisa los campos', 'Corrige lo que haga falta. Nada se genera hasta que confirmes.'),
-      _Etapa.generando => switch (_campana?.estado) {
-          EstadoCampana.generado => ('Lista para enviar', 'Revisa el texto y la imagen, y envíala a tu cliente.'),
-          EstadoCampana.borrador => ('No se pudo generar', null),
-          _ => ('Generando', 'La IA escribe el texto y crea la imagen.'),
-        },
+    final (contenido, pie) = switch (_etapa) {
+      _Etapa.brief => (_etapaBrief(context, sinCreditos), _pieBrief(context)),
+      _Etapa.campos => (_etapaCampos(context), _pieCampos(context, sinCreditos)),
+      _Etapa.generando => (_etapaGenerando(context), _pieGenerando(context)),
     };
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          LineaHeader(titulo: titulo, subtitulo: subtitulo, acciones: accionesEstacion(context, ref)),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: AnimatedSwitcher(
-              duration: Motion.of(context, Motion.base),
-              switchInCurve: Motion.easeOut,
-              switchOutCurve: Motion.easeOut,
-              transitionBuilder: (child, a) => FadeTransition(
-                opacity: a,
-                child: SlideTransition(
-                  position: Tween(begin: const Offset(0, 0.02), end: Offset.zero).animate(a),
-                  child: child,
-                ),
-              ),
-              layoutBuilder: (actual, previos) => Stack(
-                alignment: Alignment.topCenter,
-                fit: StackFit.passthrough,
-                children: [...previos, ?actual],
-              ),
-              child: KeyedSubtree(key: ValueKey(_etapa), child: cuerpo),
-            ),
+      backgroundColor: context.colors.surface,
+      body: AnimatedSwitcher(
+        duration: Motion.of(context, Motion.base),
+        switchInCurve: Motion.easeOut,
+        switchOutCurve: Motion.easeOut,
+        transitionBuilder: (child, a) => FadeTransition(
+          opacity: a,
+          child: SlideTransition(
+            position: Tween(begin: const Offset(0, 0.015), end: Offset.zero).animate(a),
+            child: child,
           ),
-        ],
+        ),
+        child: KeyedSubtree(key: ValueKey(_etapa), child: contenido),
       ),
-      bottomNavigationBar: dock,
+      bottomNavigationBar: PieAccion(child: pie),
     );
   }
 
   // ── Etapa 1: dictar ──────────────────────────────────────
 
   Widget _etapaBrief(BuildContext context, bool sinCreditos) {
-    final frases = frasesDe(_brief.text);
-    final paradas = [
-      for (var i = 0; i < frases.length; i++) Parada(frases[i], tiempo: i < _tiempos.length ? _tiempos[i] : null),
-    ];
     final vozDisponible = _dictado.modo != ModoDictado.noDisponible;
     return ListenableBuilder(
       listenable: _dictado,
-      builder: (context, _) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      builder: (context, _) => ListView(
+        padding: const EdgeInsets.only(bottom: 28),
         children: [
-          if (sinCreditos)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(Nexo.gutter, 0, Nexo.gutter, 12),
-              child: _SinCreditos(onRequest: () => context.push('/m/cuenta/creditos')),
-            ),
-          if (vozDisponible)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () {
-                    if (_dictado.escuchando) _dictado.detener();
-                    setState(() => _escribiendo = !_escribiendo);
-                  },
-                  icon: Icon(_escribiendo ? LucideIcons.mic : LucideIcons.pencilLine, size: 18),
-                  label: Text(_escribiendo ? 'Prefiero dictar' : (_brief.text.isEmpty ? 'Prefiero escribir' : 'Editar el texto')),
-                ),
-              ),
-            ),
-          const SizedBox(height: 4),
-          if (_escribiendo)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(Nexo.gutter, 0, Nexo.gutter, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          PliegoTitulo(
+            contexto: 'Orden nueva · paso 1 de 5',
+            titulo: 'Dicta la campaña',
+            accion: vozDisponible
+                ? TextButton.icon(
+                    onPressed: () {
+                      if (_dictado.escuchando) _dictado.detener();
+                      setState(() => _escribiendo = !_escribiendo);
+                    },
+                    icon: Icon(_escribiendo ? LucideIcons.mic : LucideIcons.pencilLine, size: 18),
+                    label: Text(_escribiendo ? 'Dictar' : (_brief.text.isEmpty ? 'Escribir' : 'Editar')),
+                  )
+                : null,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Nexo.gutter, 20, Nexo.gutter, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (sinCreditos) ...[
+                  _SinCreditos(onRequest: () => context.push('/m/cuenta/creditos')),
+                  const SizedBox(height: 16),
+                ],
+                if (_escribiendo)
                   TextField(
                     controller: _brief,
                     autofocus: vozDisponible,
@@ -392,106 +354,95 @@ class _LabScreenState extends ConsumerState<LabScreen> {
                     maxLength: 2000,
                     textCapitalization: TextCapitalization.sentences,
                     style: context.text.titleLarge?.copyWith(fontWeight: FontWeight.w600, height: 1.35),
-                    decoration: const InputDecoration(
-                      hintText: 'Producto, promoción, cliente, tono y red…',
-                      counterText: '',
-                    ),
+                    decoration: const InputDecoration(hintText: 'Producto, promoción, cliente, tono y red…', counterText: ''),
+                  )
+                else
+                  ParrafoDictado(
+                    texto: _brief.text,
+                    confirmado: _dictado.confirmado,
+                    escuchando: _dictado.escuchando,
+                    ejemplo: 'Toca el micrófono y cuéntala como se la contarías a un diseñador: «Súbeme una foto con 2×1 '
+                        'en capuchinos los martes para Café Aurora, tono casual, para Instagram».',
                   ),
-                  if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(message: _error!)],
-                  const SizedBox(height: 24),
-                  const _ProximaEstacion(),
+                const SizedBox(height: 20),
+                AvisoPrivacidad(dictado: _dictado),
+                if (_dictado.aviso != null) ...[
+                  const SizedBox(height: 10),
+                  SwapIn(child: InfoBanner(key: ValueKey(_dictado.aviso), message: _dictado.aviso!, tone: InfoTone.warning)),
                 ],
-              ),
-            )
-          else
-            Expanded(
-              child: ViaDictado(
-                paradas: paradas,
-                escuchando: _dictado.escuchando,
-                placeholder: 'Por ejemplo: «Súbeme una foto con 2×1 en capuchinos los martes para Café Aurora, '
-                    'tono casual, para Instagram».',
-                pie: [
-                  AvisoPrivacidad(dictado: _dictado),
-                  if (_dictado.aviso != null) ...[
-                    const SizedBox(height: 10),
-                    SwapIn(child: InfoBanner(key: ValueKey(_dictado.aviso), message: _dictado.aviso!, tone: InfoTone.warning)),
-                  ],
-                  if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(message: _error!)],
-                  const SizedBox(height: 28),
-                  const _ProximaEstacion(),
-                  const SizedBox(height: 28),
-                ],
-              ),
+                if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(message: _error!)],
+                const SizedBox(height: 24),
+                const Regla(),
+                const SizedBox(height: 18),
+                const _FichaPorCompletar(),
+              ],
             ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _dockBrief(BuildContext context) {
+  Widget _pieBrief(BuildContext context) {
     return ListenableBuilder(
       listenable: _dictado,
       builder: (context, _) {
-        final vozDisponible = _dictado.modo != ModoDictado.noDisponible;
+        final vozDisponible = _dictado.modo != ModoDictado.noDisponible && !_escribiendo;
         final hayTexto = _brief.text.trim().isNotEmpty;
-        final n = frasesDe(_brief.text).length;
         final (titulo, detalle) = switch (null) {
-          _ when !vozDisponible => ('Escribe el brief', 'Este teléfono no tiene reconocimiento de voz.'),
-          _ when _dictado.escuchando => ('Te escucho · ${mmss(_escuchado)}', 'Toca para terminar. Puedes pausar y seguir.'),
-          _ when hayTexto => (n == 1 ? '1 frase lista' : '$n frases listas', 'Toca el micrófono para seguir dictando.'),
+          _ when _dictado.escuchando => ('Te escucho', 'Toca para terminar. Puedes pausar y seguir.'),
+          _ when hayTexto => ('Brief listo', 'Toca el micrófono para seguir dictando.'),
           _ => ('Toca y cuenta la campaña', 'Producto, promoción, cliente, tono y red.'),
         };
-        return _Dock(
-          via: vozDisponible && !_escribiendo,
-          viaVacia: !hayTexto,
-          child: Row(
-            children: [
-              if (vozDisponible && !_escribiendo) ...[
-                MicButton(
-                  escuchando: _dictado.escuchando,
-                  nivel: _dictado.nivel,
-                  onTap: _dictado.preparado && !_ocupado ? () => _dictado.alternar(_brief.text) : null,
-                ),
-                const SizedBox(width: 16),
-              ],
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!_escribiendo) ...[
-                      Text(
-                        titulo,
-                        style: context.text.titleLarge?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(detalle, style: context.text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    ],
-                    if (hayTexto && !_dictado.escuchando) ...[
-                      if (!_escribiendo) const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: _ocupado ? null : _interpretar,
-                          icon: _ocupado
-                              ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
-                              : const Icon(LucideIcons.sparkles, size: 18),
-                          label: Text(_ocupado ? 'Completando…' : 'Completar campos'),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+        final completar = SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: _ocupado || !hayTexto ? null : _interpretar,
+            icon: _ocupado
+                ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
+                : const Icon(LucideIcons.wandSparkles, size: 18),
+            label: Text(_ocupado ? 'Completando la ficha…' : 'Completar ficha'),
           ),
+        );
+        if (!vozDisponible) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              completar,
+              const SizedBox(height: 6),
+              Text('Completar la ficha no usa créditos; generar la campaña usa 1.', style: context.text.bodySmall, textAlign: TextAlign.center),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            MicSello(
+              escuchando: _dictado.escuchando,
+              nivel: _dictado.nivel,
+              tiempo: _escuchado,
+              onTap: _dictado.preparado && !_ocupado ? () => _dictado.alternar(_brief.text) : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(titulo, style: context.text.headlineSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(detalle, style: context.text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  if (hayTexto && !_dictado.escuchando) ...[const SizedBox(height: 10), completar],
+                ],
+              ),
+            ),
+          ],
         );
       },
     );
   }
 
-  // ── Etapa 2: revisar los campos ──────────────────────────
+  // ── Etapa 2: la ficha técnica ────────────────────────────
 
   Widget _etapaCampos(BuildContext context) {
     final xActivo = ref.watch(xConfigProvider).value?.habilitado ?? false;
@@ -499,29 +450,32 @@ class _LabScreenState extends ConsumerState<LabScreen> {
     final intent = _intent!;
     final plataforma = _campos['plataforma']!.text;
 
-    Widget texto(String clave, {TextInputType? teclado, int minLines = 1, int maxLines = 1, String? ayuda}) {
-      final ctrl = _campos[clave]!;
-      return TextField(
-        controller: ctrl,
-        keyboardType: teclado,
-        autocorrect: teclado != TextInputType.emailAddress,
-        minLines: minLines,
-        maxLines: maxLines,
-        onChanged: (_) => setState(() => _erroresCampo = {..._erroresCampo}..remove(clave)),
-        decoration: InputDecoration(
-          labelText: _etiquetaCampo[clave],
-          helperText: ayuda,
-          errorText: _erroresCampo[clave],
-        ),
-      );
+    _Origen origen(String clave) {
+      final actual = _campos[clave]!.text.trim();
+      if (actual.isEmpty) return _Origen.falta;
+      return actual == (intent.campos[clave] ?? '').trim() ? _Origen.ia : _Origen.tuyo;
     }
 
+    Widget texto(String clave, {TextInputType? teclado, int minLines = 1, int maxLines = 1, String? ayuda}) => TextField(
+          controller: _campos[clave],
+          keyboardType: teclado,
+          autocorrect: teclado != TextInputType.emailAddress,
+          minLines: minLines,
+          maxLines: maxLines,
+          onChanged: (_) => setState(() => _erroresCampo = {..._erroresCampo}..remove(clave)),
+          decoration: InputDecoration(
+            hintText: 'Escríbelo aquí',
+            helperText: ayuda,
+            errorText: _erroresCampo[clave],
+          ),
+        );
+
     Widget fichas(String clave, Map<String, String> opciones, {bool iconos = false}) => _SelectorFichas(
-          titulo: _etiquetaCampo[clave]!,
           opciones: opciones,
           valor: _campos[clave]!.text,
           error: _erroresCampo[clave],
           iconos: iconos,
+          etiqueta: _etiquetaCampo[clave]!,
           onChanged: (v) => setState(() {
             _campos[clave]!.text = v;
             _erroresCampo = {..._erroresCampo}..remove(clave);
@@ -529,12 +483,9 @@ class _LabScreenState extends ConsumerState<LabScreen> {
         );
 
     final filas = <(String, Widget)>[
-      ('titulo', texto('titulo')),
+      ('titulo', texto('titulo', maxLines: 2)),
       ('cliente_nombre', texto('cliente_nombre')),
-      (
-        'cliente_email',
-        texto('cliente_email', teclado: TextInputType.emailAddress, ayuda: 'Aquí le llega la campaña para aprobar: el correo de su cuenta de cliente.'),
-      ),
+      ('cliente_email', texto('cliente_email', teclado: TextInputType.emailAddress, ayuda: 'Aquí le llega la campaña para aprobar: el correo de su cuenta de cliente.')),
       ('industria', fichas('industria', industrias)),
       ('tono', fichas('tono', tonos)),
       (
@@ -552,50 +503,60 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       ),
       ('prompt', texto('prompt', minLines: 3, maxLines: 8)),
     ];
+    final faltan = filas.where((f) => origen(f.$1) == _Origen.falta).length;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Nexo.gutter, 4, Nexo.gutter, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final aviso in intent.advertencias)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: InfoBanner(message: aviso, tone: InfoTone.warning, icon: LucideIcons.triangleAlert),
-            ),
-          for (var i = 0; i < filas.length; i++)
-            Entrance(
-              index: i,
-              child: _CampoParada(
-                completo: _campos[filas[i].$1]!.text.trim().isNotEmpty,
-                faltaba: intent.faltantes.contains(filas[i].$1),
-                ultimo: i == filas.length - 1,
-                child: filas[i].$2,
-              ),
-            ),
-          if (_error != null) ...[const SizedBox(height: 4), ErrorBanner(message: _error!)],
-        ],
-      ),
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 28),
+      children: [
+        PliegoTitulo(
+          contexto: 'Orden nueva · paso 2 de 5',
+          titulo: 'Ficha técnica',
+          subtitulo: faltan == 0
+              ? 'La IA la llenó con lo que dijiste. Corrige lo que haga falta: nada se genera hasta que confirmes.'
+              : faltan == 1
+                  ? 'Falta 1 dato que la IA no encontró en el brief.'
+                  : 'Faltan $faltan datos que la IA no encontró en el brief.',
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Nexo.gutter, 8, Nexo.gutter, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final aviso in intent.advertencias)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: InfoBanner(message: aviso, tone: InfoTone.warning, icon: LucideIcons.triangleAlert),
+                ),
+              for (var i = 0; i < filas.length; i++) ...[
+                Entrance(
+                  index: i,
+                  child: _FilaFicha(etiqueta: _etiquetaCampo[filas[i].$1]!, origen: origen(filas[i].$1), child: filas[i].$2),
+                ),
+                if (i < filas.length - 1) Divider(color: context.nexo.hairline),
+              ],
+              if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(message: _error!)],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _dockCampos(BuildContext context, bool sinCreditos) {
-    return _Dock(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          FilledButton.icon(
-            onPressed: _ocupado || sinCreditos ? null : _confirmar,
-            icon: _ocupado
-                ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
-                : const Icon(LucideIcons.wandSparkles, size: 18),
-            label: Text(_ocupado ? 'Enviando a la IA…' : 'Generar campaña · 1 crédito'),
-          ),
-          const SizedBox(height: 4),
-          TextButton(onPressed: _ocupado ? null : _descartar, child: const Text('Volver al brief')),
-        ],
-      ),
+  Widget _pieCampos(BuildContext context, bool sinCreditos) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FilledButton.icon(
+          onPressed: _ocupado || sinCreditos ? null : _confirmar,
+          icon: _ocupado
+              ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
+              : const Icon(LucideIcons.wandSparkles, size: 18),
+          label: Text(_ocupado ? 'Enviando a la IA…' : 'Generar campaña · 1 crédito'),
+        ),
+        const SizedBox(height: 2),
+        TextButton(onPressed: _ocupado ? null : _descartar, child: const Text('Volver al dictado')),
+      ],
     );
   }
 
@@ -605,213 +566,146 @@ class _LabScreenState extends ConsumerState<LabScreen> {
     final c = _campana!;
     final listo = c.estado == EstadoCampana.generado;
     final fallo = c.estado == EstadoCampana.borrador;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Nexo.gutter, 4, Nexo.gutter, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c)),
-          const SizedBox(height: 16),
-          Align(alignment: Alignment.centerLeft, child: StatePill(c.estado)),
-          const SizedBox(height: 10),
-          Text(c.titulo, style: context.text.headlineSmall),
-          const SizedBox(height: 12),
-          SwapIn(
-            child: listo
-                ? Text(c.textoGenerado ?? '', key: const ValueKey('texto'), style: context.text.bodyLarge)
-                : fallo
-                    ? InfoBanner(
-                        key: const ValueKey('fallo'),
-                        tone: InfoTone.warning,
-                        message: '${c.iaErrorMessage ?? 'La IA no pudo generar la campaña.'} Se devolvió el crédito; puedes regenerarla desde Generar.',
-                      )
-                    : const Column(
-                        key: ValueKey('esqueleto'),
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Skeleton(height: 16),
-                          SizedBox(height: 10),
-                          Skeleton(height: 16),
-                          SizedBox(height: 10),
-                          Skeleton(width: 180, height: 16),
-                        ],
-                      ),
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 28),
+      children: [
+        PliegoTitulo(
+          contexto: 'Orden nueva · paso 2 de 5',
+          titulo: listo ? 'Prueba lista' : (fallo ? 'No se pudo generar' : 'Generando'),
+          subtitulo: listo
+              ? 'Revisa el texto y la imagen, y envíala a tu cliente.'
+              : fallo
+                  ? null
+                  : 'La IA escribe el texto y crea la imagen. Puedes salir: te espera en Generar.',
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Nexo.gutter, 20, Nexo.gutter, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AspectRatio(aspectRatio: 1, child: CampaignImage(campaign: c)),
+              const SizedBox(height: 16),
+              Align(alignment: Alignment.centerLeft, child: StatePill(c.estado)),
+              const SizedBox(height: 10),
+              Text(c.titulo, style: context.text.headlineSmall),
+              const SizedBox(height: 12),
+              SwapIn(
+                child: listo
+                    ? Text(c.textoGenerado ?? '', key: const ValueKey('texto'), style: context.text.bodyLarge)
+                    : fallo
+                        ? InfoBanner(
+                            key: const ValueKey('fallo'),
+                            tone: InfoTone.warning,
+                            message: '${c.iaErrorMessage ?? 'La IA no pudo generar la campaña.'} Se devolvió el crédito; puedes regenerarla desde Generar.',
+                          )
+                        : const Column(
+                            key: ValueKey('esqueleto'),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Skeleton(height: 16),
+                              SizedBox(height: 10),
+                              Skeleton(height: 16),
+                              SizedBox(height: 10),
+                              Skeleton(width: 180, height: 16),
+                            ],
+                          ),
+              ),
+            ],
           ),
-          if (!listo && !fallo) ...[
-            const SizedBox(height: 16),
-            Text(
-              'Puedes salir: la campaña te espera en Generar cuando termine.',
-              style: context.text.bodySmall,
-            ),
-          ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _dockGenerando(BuildContext context) {
+  Widget _pieGenerando(BuildContext context) {
     final c = _campana;
     final terminado = c != null && c.estado != EstadoCampana.pendienteIa;
-    return _Dock(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (terminado)
-            FilledButton.icon(
-              onPressed: () => context.push('/m/campana/${c.id}', extra: c),
-              icon: const Icon(LucideIcons.send, size: 18),
-              label: Text(c.estado == EstadoCampana.generado ? 'Revisar y enviar al cliente' : 'Abrir la campaña'),
-            ),
-          if (terminado) const SizedBox(height: 4),
-          TextButton.icon(
-            onPressed: _nueva,
-            icon: const Icon(LucideIcons.mic, size: 18),
-            label: const Text('Dictar otra campaña'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Zona del pulgar: acciones de la etapa, fijas sobre la línea. En el
-/// dictado no lleva borde: la vía baja sin cortes hasta el micrófono.
-class _Dock extends StatelessWidget {
-  const _Dock({required this.child, this.via = false, this.viaVacia = false});
-  final Widget child;
-  final bool via;
-  final bool viaVacia;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        border: via ? null : Border(top: BorderSide(color: context.nexo.hairline)),
-      ),
-      child: Stack(
-        children: [
-          if (via)
-            Positioned(
-              left: viaX - Nexo.viaDictado / 2,
-              width: Nexo.viaDictado,
-              top: 0,
-              height: 14,
-              child: ColoredBox(color: viaVacia ? context.colors.outlineVariant : Nexo.turquoise),
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(Nexo.gutter, 12, Nexo.gutter, 12),
-            child: child,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// «Próxima estación: Generar»: qué hará la IA con el brief y cuánto cuesta.
-class _ProximaEstacion extends StatelessWidget {
-  const _ProximaEstacion();
-
-  @override
-  Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Regla(),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: context.colors.onSurfaceVariant, width: 3),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text('Próxima estación: Generar', style: context.text.labelMedium?.copyWith(color: context.colors.onSurfaceVariant)),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text('La IA completa 7 campos', style: context.text.headlineSmall),
-        const SizedBox(height: 4),
-        Text(
-          'Título, cliente, correo, industria, tono, red e instrucciones. Lo que no reconozca queda vacío para que lo '
-          'completes. Completar los campos no usa créditos; generar la campaña usa 1.',
-          style: context.text.bodySmall,
-        ),
+        if (terminado) ...[
+          FilledButton.icon(
+            onPressed: () => context.push('/m/campana/${c.id}', extra: c),
+            icon: const Icon(LucideIcons.send, size: 18),
+            label: Text(c.estado == EstadoCampana.generado ? 'Revisar y enviar al cliente' : 'Abrir la campaña'),
+          ),
+          const SizedBox(height: 2),
+        ],
+        TextButton.icon(onPressed: _nueva, icon: const Icon(LucideIcons.mic, size: 18), label: const Text('Dictar otra campaña')),
       ],
     );
   }
 }
 
-/// Un campo de la etapa de revisión como parada: lleno = la IA o tú lo
-/// completaron; hueco ámbar = falta.
-class _CampoParada extends StatelessWidget {
-  const _CampoParada({required this.completo, required this.faltaba, required this.ultimo, required this.child});
+/// La ficha técnica antes de dictar: los siete campos «por completar».
+class _FichaPorCompletar extends StatelessWidget {
+  const _FichaPorCompletar();
 
-  final bool completo;
-  final bool faltaba;
-  final bool ultimo;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Ficha técnica', style: context.text.headlineSmall),
+        const SizedBox(height: 4),
+        Text(
+          'Al terminar, la IA la llena con lo que dijiste. Lo que no reconozca queda vacío y te avisa. '
+          'Completar la ficha no usa créditos; generar la campaña usa 1.',
+          style: context.text.bodySmall,
+        ),
+        const SizedBox(height: 12),
+        for (final (i, campo) in _etiquetaCampo.values.indexed) ...[
+          if (i > 0) Divider(color: context.nexo.hairline),
+          SizedBox(
+            height: 40,
+            child: Row(
+              children: [
+                Expanded(child: Text(campo, style: context.text.bodyMedium)),
+                Text('por completar', style: context.text.bodySmall?.copyWith(color: context.colors.outline)),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+enum _Origen { ia, tuyo, falta }
+
+/// Una fila de la ficha: el nombre del campo, de dónde salió el dato y el control.
+class _FilaFicha extends StatelessWidget {
+  const _FilaFicha({required this.etiqueta, required this.origen, required this.child});
+
+  final String etiqueta;
+  final _Origen origen;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final color = completo ? context.colors.primary : context.nexo.warning;
-    return IntrinsicHeight(
-      child: Row(
+    final (texto, color) = switch (origen) {
+      _Origen.ia => ('propuesto por la IA', context.colors.primary),
+      _Origen.tuyo => ('corregido por ti', context.colors.onSurfaceVariant),
+      _Origen.falta => ('falta', context.nexo.warning),
+    };
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            width: 14,
-            child: Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                Positioned(
-                  top: 22,
-                  bottom: ultimo ? null : 0,
-                  height: ultimo ? 0 : null,
-                  child: Container(width: 2, color: context.colors.outlineVariant),
-                ),
-                Positioned(
-                  top: 22,
-                  child: AnimatedContainer(
-                    duration: Motion.of(context, Motion.fast),
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: completo ? color : context.colors.surface,
-                      border: Border.all(color: color, width: 2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  child,
-                  if (!completo && faltaba)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6, left: 4),
-                      child: Text(
-                        'La IA no lo encontró en el brief: complétalo.',
-                        style: context.text.bodySmall?.copyWith(color: context.nexo.warning),
-                      ),
-                    ),
-                ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(child: Text(etiqueta, style: context.text.titleSmall)),
+              AnimatedSwitcher(
+                duration: Motion.of(context, Motion.fast),
+                child: Text(texto, key: ValueKey(texto), style: context.text.bodySmall?.copyWith(color: color, fontWeight: FontWeight.w600)),
               ),
-            ),
+            ],
           ),
+          const SizedBox(height: 8),
+          child,
         ],
       ),
     );
@@ -848,62 +742,62 @@ class _SinCreditos extends StatelessWidget {
   }
 }
 
-/// Opciones cortas como fichas en pastilla. La elegida se rellena de marino.
+/// Opciones cortas como fichas. La elegida se rellena con `primary`.
 class _SelectorFichas extends StatelessWidget {
   const _SelectorFichas({
-    required this.titulo,
     required this.opciones,
     required this.valor,
     required this.onChanged,
+    required this.etiqueta,
     this.error,
     this.iconos = false,
   });
 
-  final String titulo;
   final Map<String, String> opciones;
   final String valor;
   final ValueChanged<String> onChanged;
+  final String etiqueta;
   final String? error;
   final bool iconos;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 14, bottom: 8),
-          child: Text(titulo, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
-        ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final e in opciones.entries)
-              ChoiceChip(
-                label: Text(e.value),
-                avatar: iconos ? NetworkIcon(e.key, size: 18) : null,
-                selected: valor == e.key,
-                showCheckmark: false,
-                onSelected: (_) {
-                  HapticFeedback.selectionClick();
-                  onChanged(e.key);
-                },
-                backgroundColor: context.colors.surfaceContainerLowest,
-                selectedColor: context.isDark ? context.colors.primary : Nexo.banda,
-                side: BorderSide(color: valor == e.key ? (context.isDark ? context.colors.primary : Nexo.banda) : context.colors.outlineVariant),
-                labelStyle: context.text.labelLarge?.copyWith(color: valor == e.key ? (context.isDark ? context.colors.onPrimary : Nexo.onNavy) : context.colors.onSurface),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                materialTapTargetSize: MaterialTapTargetSize.padded,
-              ),
-          ],
-        ),
-        if (error != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 6, left: 4),
-            child: Text(error!, style: context.text.bodySmall?.copyWith(color: context.colors.error)),
+    return Semantics(
+      label: etiqueta,
+      container: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final e in opciones.entries)
+                ChoiceChip(
+                  label: Text(e.value),
+                  avatar: iconos ? NetworkIcon(e.key, size: 18) : null,
+                  selected: valor == e.key,
+                  showCheckmark: false,
+                  onSelected: (_) {
+                    HapticFeedback.selectionClick();
+                    onChanged(e.key);
+                  },
+                  backgroundColor: context.colors.surfaceContainerLowest,
+                  selectedColor: context.colors.primary,
+                  side: BorderSide(color: valor == e.key ? context.colors.primary : context.colors.outlineVariant),
+                  labelStyle: context.text.labelLarge?.copyWith(color: valor == e.key ? context.colors.onPrimary : context.colors.onSurface),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                ),
+            ],
           ),
-      ],
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 4),
+              child: Text(error!, style: context.text.bodySmall?.copyWith(color: context.colors.error)),
+            ),
+        ],
+      ),
     );
   }
 }

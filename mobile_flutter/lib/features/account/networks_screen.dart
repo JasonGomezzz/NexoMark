@@ -9,6 +9,7 @@ import '../../core/config.dart';
 import '../../core/providers.dart';
 import '../../data/models.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../../widgets/publication_widgets.dart';
 import '../marketero/providers.dart' show tiktokConfigProvider, xConfigProvider;
@@ -103,7 +104,7 @@ class _NetworksScreenState extends ConsumerState<NetworksScreen> {
     final xActivo = ref.watch(xConfigProvider).value?.habilitado ?? false;
     final tiktok = ref.watch(tiktokConfigProvider).value?.configurado ?? false;
     final user = ref.watch(currentUserProvider);
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: const Text('Redes conectadas')),
       body: SafeArea(
         child: RefreshIndicator(

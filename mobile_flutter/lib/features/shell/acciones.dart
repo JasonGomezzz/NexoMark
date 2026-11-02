@@ -4,16 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../data/models.dart';
-import '../../widgets/linea.dart';
+import '../../widgets/conforme.dart';
 import '../account/avatar_provider.dart';
 import '../marketero/providers.dart';
 
 /// Rutas de segundo nivel según el rol.
 String rutaCuenta(Rol? rol) => rol == Rol.cliente ? '/c/cuenta' : '/m/cuenta';
 
-/// Acciones del encabezado de cada estación: créditos (marketero) y cuenta.
-/// Configuración, créditos y todas las campañas viven un nivel más abajo.
-List<Widget> accionesEstacion(BuildContext context, WidgetRef ref) {
+/// Lo de segundo nivel sobre la mesa: créditos (marketero) y cuenta.
+List<Widget> accionesMesa(BuildContext context, WidgetRef ref) {
   final user = ref.watch(currentUserProvider);
   return [
     if (user?.rol == Rol.marketero)
@@ -21,7 +20,7 @@ List<Widget> accionesEstacion(BuildContext context, WidgetRef ref) {
         disponibles: ref.watch(campaignStatsProvider).value?.tokensDisponibles ?? user?.tokensDisponibles,
         onTap: () => context.push('/m/cuenta/creditos'),
       ),
-    const SizedBox(width: 4),
+    const SizedBox(width: 2),
     Semantics(
       button: true,
       label: 'Cuenta',
@@ -29,7 +28,7 @@ List<Widget> accionesEstacion(BuildContext context, WidgetRef ref) {
       child: InkResponse(
         onTap: () => context.push(rutaCuenta(user?.rol)),
         radius: 26,
-        child: const SizedBox.square(dimension: 48, child: Center(child: MyAvatar(size: 36))),
+        child: const SizedBox.square(dimension: 48, child: Center(child: MyAvatar(size: 34))),
       ),
     ),
   ];

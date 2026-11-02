@@ -1,30 +1,18 @@
 import 'package:flutter/material.dart';
 
-/// Sistema visual "Línea" (dirección B, elegida el 30/10/2026). Los valores
+/// Sistema visual "Conforme" (dirección C, elegida el 31/10/2026). Los valores
 /// son los de `docs/diseno/direcciones.md` → «Dirección elegida» y los de
 /// `frontend/src/index.css`; si uno cambia allí, se cambia aquí el mismo día.
 /// `test/paleta_test.dart` comprueba el contraste AA de los pares de texto.
 ///
-/// Idea: cada campaña es un viaje por una línea de cinco estaciones
-/// (Dictar → Generar → Aprobar → Publicar → Medir). El marino es el andén y
-/// el turquesa es el tren que avanza.
+/// Idea: cada campaña es una prueba de imprenta. El marino es la **mesa** que
+/// enmarca la app; el trabajo ocurre en un **pliego** claro con **marcas de
+/// corte**; el recorrido es la **orden de trabajo** (cinco casillas que se
+/// sellan) y el cliente aprueba con un **sello** que lleva la N.
 abstract final class Nexo {
-  // Marca y banda de la línea: iguales en ambos temas.
+  // Marca: iguales en ambos temas.
   static const navy = Color(0xFF14283F);
   static const navyDeep = Color(0xFF0B1929);
-
-  /// Banda de navegación (la línea).
-  static const banda = Color(0xFF14283F);
-
-  /// Conteos y créditos dentro de la banda.
-  static const banda2 = Color(0xFF1D3550);
-
-  /// Tramo de la línea dentro de la banda.
-  static const via = Color(0xFF2C4862);
-
-  /// Anillo de una estación inactiva sobre la banda.
-  static const viaClara = Color(0xFF3D5A6E);
-
   static const turquoise = Color(0xFF17B8AD);
   static const turquoiseSoft = Color(0xFF79DDD3);
   static const onNavy = Color(0xFFFFFFFF);
@@ -36,36 +24,33 @@ abstract final class Nexo {
   static const instagram = Color(0xFFE8409C);
 
   // Radios (direcciones.md → Formas).
-  /// Botones: pastilla, como los letreros de estación.
-  static const radiusPill = 999.0;
-
-  /// Campos, selects y fichas.
+  /// Controles y botones.
   static const radiusField = 10.0;
 
-  /// Superficies (paneles, imagen de la campaña, hojas pequeñas).
+  /// Casillas de la orden de trabajo.
+  static const radiusCasilla = 7.0;
+
+  /// El pliego en móvil (18 en escritorio) y las superficies dentro de él.
   static const radiusSurface = 14.0;
 
   /// Modales y hojas inferiores.
   static const radiusSheet = 22.0;
 
-  // Trazos (móvil).
-  /// Vía de la línea: 6 px en escritorio, 4 en móvil.
-  static const via4 = 4.0;
+  // Trazos.
+  /// Borde punteado de una casilla por sellar.
+  static const punteado = 1.5;
 
-  /// Vía del dictado (vertical).
-  static const viaDictado = 6.0;
+  /// Marca de corte: 1.5 × 16 px.
+  static const corteGrosor = 1.5;
+  static const corteLargo = 16.0;
 
-  /// Anillo de una parada.
-  static const anilloParada = 5.0;
-
-  /// Regla que abre una sección.
-  static const regla = 6.0;
-
-  // Espaciado: base 4.
+  // Espaciado: base 4. En móvil el pliego deja 8 px de mesa y rellena 16 por dentro.
+  static const margenMesa = 8.0;
   static const gutter = 16.0;
 }
 
-/// Tokens que Material no trae: estados, hilo, regla y series por red.
+/// Tokens que Material no trae: la mesa, el registro, el pelo, estados y
+/// series por red. La mesa y el registro cambian con el tema.
 @immutable
 class NexoColors extends ThemeExtension<NexoColors> {
   const NexoColors({
@@ -74,8 +59,11 @@ class NexoColors extends ThemeExtension<NexoColors> {
     required this.successContainer,
     required this.warning,
     required this.warningContainer,
+    required this.cama,
+    required this.cama2,
+    required this.camaLine,
+    required this.registro,
     required this.hairline,
-    required this.regla,
     required this.chartInstagram,
     required this.chartX,
     required this.chartFacebook,
@@ -88,11 +76,20 @@ class NexoColors extends ThemeExtension<NexoColors> {
   final Color warning;
   final Color warningContainer;
 
-  /// Hilos entre filas.
-  final Color hairline;
+  /// La mesa: marco de la app y navegación.
+  final Color cama;
 
-  /// Filete de 6 px que abre una sección.
-  final Color regla;
+  /// Bloques sobre la mesa (la pastilla de créditos, el conteo).
+  final Color cama2;
+
+  /// Divisores y casillas por sellar sobre la mesa.
+  final Color camaLine;
+
+  /// Marcas de corte.
+  final Color registro;
+
+  /// Hilos entre filas de la ficha y las tablas.
+  final Color hairline;
 
   final Color chartInstagram;
   final Color chartX;
@@ -114,8 +111,11 @@ class NexoColors extends ThemeExtension<NexoColors> {
     successContainer: Color(0xFFDCF3DD),
     warning: Color(0xFF9A4F00),
     warningContainer: Color(0xFFFFE3C2),
-    hairline: Color(0xFFD6E5E7),
-    regla: Color(0xFF14283F),
+    cama: Color(0xFF14283F),
+    cama2: Color(0xFF1D3550),
+    camaLine: Color(0xFF2C4862),
+    registro: Color(0xFF79DDD3),
+    hairline: Color(0xFFC9DADD),
     chartInstagram: Color(0xFFB4307E),
     chartX: Color(0xFF6F7A16),
     chartFacebook: Color(0xFF2463C8),
@@ -128,8 +128,11 @@ class NexoColors extends ThemeExtension<NexoColors> {
     successContainer: Color(0xFF173D1B),
     warning: Color(0xFFFFBD7C),
     warningContainer: Color(0xFF563100),
-    hairline: Color(0xFF1F3A52),
-    regla: Color(0xFF3D5A6E),
+    cama: Color(0xFF07111D),
+    cama2: Color(0xFF14283F),
+    camaLine: Color(0xFF22405A),
+    registro: Color(0xFF3FA79E),
+    hairline: Color(0xFF22405A),
     chartInstagram: Color(0xFFD45A9C),
     chartX: Color(0xFF8E9A2E),
     chartFacebook: Color(0xFF5B8FE0),
@@ -143,8 +146,11 @@ class NexoColors extends ThemeExtension<NexoColors> {
     Color? successContainer,
     Color? warning,
     Color? warningContainer,
+    Color? cama,
+    Color? cama2,
+    Color? camaLine,
+    Color? registro,
     Color? hairline,
-    Color? regla,
     Color? chartInstagram,
     Color? chartX,
     Color? chartFacebook,
@@ -156,8 +162,11 @@ class NexoColors extends ThemeExtension<NexoColors> {
       successContainer: successContainer ?? this.successContainer,
       warning: warning ?? this.warning,
       warningContainer: warningContainer ?? this.warningContainer,
+      cama: cama ?? this.cama,
+      cama2: cama2 ?? this.cama2,
+      camaLine: camaLine ?? this.camaLine,
+      registro: registro ?? this.registro,
       hairline: hairline ?? this.hairline,
-      regla: regla ?? this.regla,
       chartInstagram: chartInstagram ?? this.chartInstagram,
       chartX: chartX ?? this.chartX,
       chartFacebook: chartFacebook ?? this.chartFacebook,
@@ -175,8 +184,11 @@ class NexoColors extends ThemeExtension<NexoColors> {
       successContainer: l(successContainer, other.successContainer),
       warning: l(warning, other.warning),
       warningContainer: l(warningContainer, other.warningContainer),
+      cama: l(cama, other.cama),
+      cama2: l(cama2, other.cama2),
+      camaLine: l(camaLine, other.camaLine),
+      registro: l(registro, other.registro),
       hairline: l(hairline, other.hairline),
-      regla: l(regla, other.regla),
       chartInstagram: l(chartInstagram, other.chartInstagram),
       chartX: l(chartX, other.chartX),
       chartFacebook: l(chartFacebook, other.chartFacebook),
@@ -185,12 +197,12 @@ class NexoColors extends ThemeExtension<NexoColors> {
   }
 }
 
-/// En Flutter el fondo de página es `surface` (el `background` de la web).
+/// En Flutter el pliego es `surface` (el `background` de la web).
 const nexoLightScheme = ColorScheme(
   brightness: Brightness.light,
-  surface: Color(0xFFF5FAFA),
+  surface: Color(0xFFF7FBFB),
   surfaceDim: Color(0xFFD4E2E5),
-  surfaceBright: Color(0xFFF5FAFA),
+  surfaceBright: Color(0xFFF7FBFB),
   surfaceContainerLowest: Color(0xFFFFFFFF),
   surfaceContainerLow: Color(0xFFEDF5F5),
   surfaceContainer: Color(0xFFE5EFEF),
@@ -201,7 +213,7 @@ const nexoLightScheme = ColorScheme(
   inverseSurface: Color(0xFF14283F),
   onInverseSurface: Color(0xFFEDF5F5),
   outline: Color(0xFF5A737D),
-  outlineVariant: Color(0xFFB6CDD1),
+  outlineVariant: Color(0xFF9FB8BE),
   primary: Color(0xFF087B75),
   onPrimary: Color(0xFFFFFFFF),
   primaryContainer: Color(0xFF086A65),
@@ -229,10 +241,10 @@ const nexoLightScheme = ColorScheme(
 
 const nexoDarkScheme = ColorScheme(
   brightness: Brightness.dark,
-  surface: Color(0xFF0B1929),
+  surface: Color(0xFF0F2236),
   surfaceDim: Color(0xFF0B1929),
   surfaceBright: Color(0xFF26445C),
-  surfaceContainerLowest: Color(0xFF102236),
+  surfaceContainerLowest: Color(0xFF14283F),
   surfaceContainerLow: Color(0xFF193249),
   surfaceContainer: Color(0xFF203B52),
   surfaceContainerHigh: Color(0xFF29485F),

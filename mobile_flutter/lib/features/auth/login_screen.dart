@@ -13,6 +13,7 @@ import '../../core/theme/motion.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/models.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import 'google_auth.dart';
 

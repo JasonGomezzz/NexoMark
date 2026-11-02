@@ -6,6 +6,7 @@ import '../../core/api/api_client.dart';
 import '../../core/providers.dart';
 import '../../core/theme/tokens.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 
 /// "Olvidé mi contraseña" — también es "Crear contraseña" para cuentas de
@@ -58,7 +59,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: Text(widget.crear ? 'Crear contraseña' : 'Recuperar contraseña')),
       body: SafeArea(
         child: ListView(

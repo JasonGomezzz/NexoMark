@@ -10,6 +10,7 @@ import '../../core/providers.dart';
 import '../../core/theme/motion.dart';
 import '../../data/models.dart';
 import '../../widgets/motion_widgets.dart';
+import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../../core/theme/tokens.dart';
 
@@ -100,7 +101,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    return Scaffold(
+    return MesaScaffold(
       appBar: AppBar(title: const Text('Cambiar correo')),
       body: SafeArea(
         child: _cargando
