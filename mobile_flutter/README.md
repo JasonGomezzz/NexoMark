@@ -55,8 +55,11 @@ keystore; el servidor entrega el client ID web (`GET /api/auth/google/config/`).
   Tabs). Django vuelve por `nexomark://oauth/<red>#code&state`; el canje exige el
   JWT del mismo usuario que inició la conexión.
 - **Destinos sin marcar por defecto**: publicar en una cuenta real es una decisión explícita.
-- **Movimiento** (`lib/core/theme/motion.dart`): curvas de `index.css`, 140–320 ms,
-  nada desde escala 0, escalonado de 50 ms y todo se apaga con "reducir movimiento".
+- **Diseño** (dirección C · Conforme, 31/10): la mesa marina enmarca, el trabajo va en un
+  pliego con marcas de corte y la navegación es la orden de trabajo (casillas). Detalle de
+  marco, navegación, gestos, hápticos, tamaños y movimiento en `DESIGN.md`.
+- **Movimiento** (`lib/core/theme/motion.dart`): 140–240 ms en la interfaz, 420 ms solo para el
+  sello del cliente, nada desde escala 0 y todo se apaga con "reducir movimiento".
 - **Pantalla de carga** (`features/auth/splash_screen.dart`): momento firma, una vez por
   arranque (0,8 s). La N es `widgets/nexo_mark_logo.dart`, dos `Path` ajustados al maestro
   de `brand/`: la pieza clara y la turquesa parten separadas por la diagonal, encajan y el
