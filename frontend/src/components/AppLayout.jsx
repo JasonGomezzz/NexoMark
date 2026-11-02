@@ -24,6 +24,7 @@ import { getAuthItem } from '@/lib/authStorage'
  */
 const NAV_ITEMS = {
   marketero: [
+    { to: '/clients', label: 'Clientes', icon: Users },
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/campaigns', label: 'Campañas', icon: Megaphone },
     { to: '/prompt-guide', label: 'Guía de prompts', icon: Lightbulb },

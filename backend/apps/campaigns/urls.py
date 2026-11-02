@@ -1,4 +1,5 @@
 from django.urls import path
+from .client_accounts import ClientRelationshipsView
 from rest_framework.routers import SimpleRouter
 from .instagram_publication import InstagramPublishView
 from .facebook_publication import FacebookPublishView
@@ -22,6 +23,8 @@ router = SimpleRouter()
 router.register(r"", CampaignViewSet, basename="campaign")
 
 urlpatterns = [
+    path('clients/', ClientRelationshipsView.as_view()),
+    path('clients/<int:pk>/', ClientRelationshipsView.as_view()),
     path('publication-statistics/', PublicationStatisticsView.as_view()),
     path('<int:campaign_id>/publication-statistics/', PublicationStatisticsView.as_view()),
     path('<int:campaign_id>/publication-statistics/refresh/', RefreshPublicationStatisticsView.as_view()),

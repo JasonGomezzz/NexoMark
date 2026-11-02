@@ -14,6 +14,15 @@ from django.db import models
 from django.utils import timezone
 
 
+class ClientRelationship(models.Model):
+    marketero = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='managed_clients')
+    cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='marketer_relationships')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['marketero', 'cliente'], name='unique_marketer_client')]
+
+
 class CampaignTono(models.TextChoices):
     """Tonos disponibles para el copy generado por IA."""
     PROFESIONAL = "profesional", "Profesional"
