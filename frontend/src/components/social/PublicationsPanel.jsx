@@ -19,7 +19,9 @@ const TONOS = {
  * "Enviar a TikTok" (TikTokPanel): ninguna de las dos se publica al aprobar.
  */
 export default function PublicationsPanel({ campaignId, estadoCampana }) {
-  const [todas, setPublicaciones] = useState([])
+  // null mientras carga: "sin cuentas de destino" solo se dice cuando se sabe.
+  const [todas, setPublicaciones] = useState(null)
+  const [falloCarga, setFalloCarga] = useState(false)
   const [publicando, setPublicando] = useState(null)
   const [recarga, setRecarga] = useState(0)
 
@@ -27,17 +29,40 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
     let vigente = true
     socialApi
       .publicaciones(campaignId)
-      .then((lista) => vigente && setPublicaciones(lista))
-      .catch(() => vigente && setPublicaciones([]))
+      .then((lista) => {
+        if (!vigente) return
+        setPublicaciones(lista)
+        setFalloCarga(false)
+      })
+      .catch(() => vigente && setFalloCarga(true))
     return () => {
       vigente = false
     }
   }, [campaignId, estadoCampana, recarga])
 
+  const conPublicacion = ['pendiente_aprobacion', 'aprobado'].includes(estadoCampana)
+  if (falloCarga && todas === null) {
+    if (!conPublicacion) return null
+    return (
+      <section aria-labelledby="publicacion-titulo" className="regla pt-5">
+        <h2 id="publicacion-titulo" className="text-2xl font-extrabold text-on-surface">
+          Publicación
+        </h2>
+        <p role="alert" className="mt-2 text-[15px] text-on-surface-variant">
+          No se pudo cargar el estado de la publicación.{' '}
+          <button type="button" onClick={() => setRecarga((n) => n + 1)} className="inline-flex min-h-11 items-center font-semibold text-primary underline">
+            Reintentar
+          </button>
+        </p>
+      </section>
+    )
+  }
+  if (todas === null) return null
   const publicaciones = todas.filter((p) => REDES_META.includes(p.red))
   if (!publicaciones.length) {
+    // X y TikTok tienen su propio panel: si hay alguna, no es una campaña sin destinos.
+    if (todas.length > 0 || !conPublicacion) return null
     // Enviada o aprobada sin destinos: se dice, para que nadie espere una publicación que no ocurrirá.
-    if (!['pendiente_aprobacion', 'aprobado'].includes(estadoCampana)) return null
     return (
       <section aria-labelledby="publicacion-titulo" className="regla pt-5">
         <h2 id="publicacion-titulo" className="text-2xl font-extrabold text-on-surface">
