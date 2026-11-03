@@ -253,10 +253,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 const SizedBox(height: 16),
                 InfoBanner(
                   icon: LucideIcons.hourglass,
-                  message: (pubs.value ?? const []).isEmpty
-                      ? 'Enviada a ${c.clienteNombre}. No tiene publicación automática: aprobarla no la publica.'
-                      : 'Enviada a ${c.clienteNombre}. Cuando la apruebe se publicará en '
-                          '${(pubs.value ?? const []).map((p) => p.cuentaNombre).join(', ')}.',
+                  message: avisoEnvio(c.clienteNombre, pubs),
                 ),
               ],
               const SizedBox(height: 24),
@@ -904,3 +901,15 @@ class _AjustarSheetState extends State<_AjustarSheet> {
     );
   }
 }
+
+/// Qué pasa al aprobar una campaña enviada. Solo afirma «sin publicación
+/// automática» cuando las publicaciones ya cargaron y no hay ninguna.
+@visibleForTesting
+String avisoEnvio(String cliente, AsyncValue<List<Publication>> pubs) => switch (pubs) {
+      AsyncData(:final value) when value.isEmpty =>
+        'Enviada a $cliente. No tiene publicación automática: aprobarla no la publica.',
+      AsyncData(:final value) =>
+        'Enviada a $cliente. Cuando la apruebe se publicará en ${value.map((p) => p.cuentaNombre).join(', ')}.',
+      AsyncError() => 'Enviada a $cliente. No pudimos leer sus destinos; desliza hacia abajo para reintentar.',
+      _ => 'Enviada a $cliente.',
+    };
