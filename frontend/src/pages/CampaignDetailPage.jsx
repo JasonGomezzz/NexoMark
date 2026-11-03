@@ -51,7 +51,6 @@ export default function CampaignDetailPage() {
   const [deleting, setDeleting] = useState(false)
   const [versionsRefreshKey, setVersionsRefreshKey] = useState(0)
   // Número de la versión vigente (la primera del historial): es la que lleva el sello al aprobarse.
-  const [versionActual, setVersionActual] = useState(null)
 
   // La banda de la línea marca la estación en la que está esta campaña.
   useEstacionPagina(campaign ? etapaDeEstado(campaign.estado) : null)
@@ -354,7 +353,7 @@ export default function CampaignDetailPage() {
                     )}
                   </div>
                 )}
-                {campaign.estado === 'aprobado' && <SelloConforme version={versionActual} tamano={72} className="absolute -right-3 top-3 z-10" />}
+                {campaign.estado === 'aprobado' && <SelloConforme version={campaign.version} tamano={72} className="absolute -right-3 top-3 z-10" />}
               </figure>
 
               <div className="flex min-w-0 flex-col">
@@ -457,7 +456,7 @@ export default function CampaignDetailPage() {
           <VersionHistoryPanel
             campaignId={id}
             refreshKey={versionsRefreshKey}
-            onVersiones={(lista) => setVersionActual(lista[0]?.version_number ?? null)}
+            textoActual={campaign.texto_generado}
             canRestore={['borrador', 'generado'].includes(campaign.estado)}
             onRestored={(c) => {
               setCampaign(c)

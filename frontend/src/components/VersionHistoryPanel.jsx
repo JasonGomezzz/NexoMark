@@ -5,6 +5,7 @@ import { History, X, ImageOff, GitCompareArrows, RotateCcw } from 'lucide-react'
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { versionVigente } from '@/lib/versiones'
 
 /**
  * Historial de versiones (HU23) como drawer lateral — portado de Stitch
@@ -20,6 +21,7 @@ export default function VersionHistoryPanel({
   onRestored,
   onVersiones,
   refreshKey = 0,
+  textoActual = '',
 }) {
   const [versions, setVersions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -74,7 +76,9 @@ export default function VersionHistoryPanel({
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  const actual = versions[0] ?? null
+  // La actual es la que tiene el mismo copy que la campaña, no la última guardada:
+  // restaurar guarda primero lo reemplazado, que queda arriba sin ser lo vigente.
+  const actual = versionVigente(versions, textoActual)
   const compared = versions.find((v) => v.id === compareId) ?? null
 
   return (
@@ -151,7 +155,7 @@ export default function VersionHistoryPanel({
                   />
                 ) : (
                   <ul className="divide-y divide-hairline border-y border-hairline">
-                    {versions.map((v, i) => (
+                    {versions.map((v) => (
                       <li
                         key={v.id}
                         className="flex gap-4 py-4"
@@ -162,7 +166,7 @@ export default function VersionHistoryPanel({
                             <span className="text-sm font-bold text-on-surface">
                               Versión {v.version_number}
                             </span>
-                            {i === 0 && (
+                            {v.id === actual?.id && (
                               <span className="rounded-[6px] bg-primary-fixed px-2 py-0.5 text-[13px] font-bold text-on-primary-fixed">
                                 Actual
                               </span>
@@ -174,7 +178,7 @@ export default function VersionHistoryPanel({
                           <p className="line-clamp-2 text-[13px] leading-relaxed text-on-surface-variant">
                             {v.texto_preview}
                           </p>
-                          {i > 0 && (
+                          {v.id !== actual?.id && (
                             <div className="mt-2 flex flex-wrap gap-3">
                               <button
                                 onClick={() => setCompareId(v.id)}
@@ -219,7 +223,7 @@ function CompareView({ left, right, onClose, onRestore, restoring }) {
   )
 
   const cols = [
-    { v: left, words: wordsL, label: `Versión ${left.version_number} (Actual)`, accent: true },
+    { v: left, words: wordsL, label: left.version_number ? `Versión ${left.version_number} (Actual)` : 'Copy actual', accent: true },
     { v: right, words: wordsR, label: `Versión ${right.version_number}`, accent: false },
   ]
 
