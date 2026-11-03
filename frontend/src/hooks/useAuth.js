@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import api from '../services/api'
-import { clearSession, getAuthItem, setAuthItem, startSession } from '../services/session'
+import { clearSession, getAuthItem, logoutOnServer, setAuthItem, startSession } from '../services/session'
 
 export function useAuth() {
   const [loading, setLoading] = useState(false)
@@ -26,9 +26,8 @@ export function useAuth() {
   }, [])
 
   const logout = useCallback(async () => {
-    const refresh = getAuthItem('refresh_token')
     try {
-      if (refresh) await api.post('/api/auth/logout/', { refresh })
+      await logoutOnServer(api)
     } catch {
       // ignore — clear session regardless
     } finally {

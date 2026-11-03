@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import axios from 'axios'
 import {
   refreshAccessToken, clearSession, attachSessionInterceptors, startSession, getAuthItem, setAuthItem,
+  logoutOnServer,
 } from '../src/services/session.js'
 
 function memoryStorage(entries = []) {
@@ -98,4 +99,20 @@ test('cambiar de modo o cerrar sesión borra credenciales viejas y conserva pref
   assert.equal(getAuthItem('access_token'), null)
   assert.equal(sessionStorage.getItem('user_role'), null)
   assert.equal(localStorage.getItem('marketmind_theme'), 'dark')
+})
+
+test('cerrar sesión con el access vencido invalida también el refresh rotado', async () => {
+  const enviados = []
+  const client = {
+    post: async (url, body) => {
+      enviados.push(body.refresh)
+      if (body.refresh === 'old-refresh') {
+        // El interceptor renovó a mitad del logout y reenvió el refresh viejo.
+        setAuthItem('refresh_token', 'new-refresh')
+        throw Object.assign(new Error('token en lista negra'), { response: { status: 400 } })
+      }
+    },
+  }
+  await logoutOnServer(client)
+  assert.deepEqual(enviados, ['old-refresh', 'new-refresh'])
 })

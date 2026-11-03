@@ -64,6 +64,22 @@ export function clearSession({ redirect = true } = {}) {
   if (redirect) globalThis.window.location.href = '/login'
 }
 
+/**
+ * Invalida en Django el refresh de esta sesión. Si el access ya venció, el interceptor
+ * renueva y reintenta con el cuerpo original, que lleva el refresh ya rotado (400): en
+ * ese caso se repite con el refresh nuevo para que no quede válido 7 días.
+ */
+export async function logoutOnServer(client) {
+  const refresh = getAuthItem('refresh_token')
+  if (!refresh) return
+  try {
+    await client.post('/api/auth/logout/', { refresh })
+  } catch {
+    const rotado = getAuthItem('refresh_token')
+    if (rotado && rotado !== refresh) await client.post('/api/auth/logout/', { refresh: rotado })
+  }
+}
+
 // One rotation for Django, Spring and WebSocket in this tab. A late 401 that used
 // an old token reuses the newer access token instead of rotating refresh again.
 export function refreshAccessToken(rejectedToken) {
