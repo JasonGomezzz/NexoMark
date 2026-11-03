@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 /**
  * Estado de error de generación IA (portado de Stitch: error_total_generacion_fallida).
  * El backend devolvió el crédito (atomic), guardó ia_error_message y la campaña
- * volvió a borrador. Reintentos hasta 3 (intentos_generacion).
+ * volvió a borrador. Reintentos hasta 3 (intentos_generacion). Sin `onRetry` (no se
+ * sabe qué campaña falló) no se ofrece reintentar.
  */
 export default function ErrorState({ message, attempt = 1, maxAttempts = 3, onRetry, onEditBrief }) {
   return (
@@ -32,10 +33,12 @@ export default function ErrorState({ message, attempt = 1, maxAttempts = 3, onRe
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Button onClick={onRetry} disabled={attempt >= maxAttempts}>
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          Reintentar generación
-        </Button>
+        {onRetry && (
+          <Button onClick={onRetry} disabled={attempt >= maxAttempts}>
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            Reintentar generación
+          </Button>
+        )}
         <Button variant="outline" onClick={onEditBrief}>
           <Pencil className="h-4 w-4" aria-hidden="true" />
           Editar la ficha

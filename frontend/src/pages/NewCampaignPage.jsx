@@ -98,6 +98,9 @@ export default function NewCampaignPage() {
   const location = useLocation()
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState(null) // { campaign, warning }
+  // Un solo envío a la vez: el estado `submitting` llega un render tarde y un doble
+  // clic podría crear dos campañas (y cobrar dos créditos).
+  const enviando = useRef(false)
   const [serverError, setServerError] = useState('')
   const [noCredits, setNoCredits] = useState(false)
   // Intención creada al interpretar el brief (voz o texto). Si existe, el
@@ -186,7 +189,20 @@ export default function NewCampaignPage() {
   )
   const brief = useBriefDictado({ onInterpreted: handleInterpreted })
 
+  /** Resultado de una generación o regeneración: el aviso solo si la IA falló. */
+  function mostrarResultado(campaign) {
+    setResult({
+      campaign,
+      warning:
+        campaign?.estado === 'borrador' && campaign?.ia_error_message
+          ? `La generación IA falló: ${campaign.ia_error_message}`
+          : null,
+    })
+  }
+
   async function onSubmit(formData) {
+    if (enviando.current) return
+    enviando.current = true
     setSubmitting(true)
     setServerError('')
     setNoCredits(false)
@@ -196,14 +212,7 @@ export default function NewCampaignPage() {
       const { data } = intent
         ? await api.post(`/api/intents/${intent.id}/confirm/`, { campos: formData })
         : await api.post('/api/campaigns/', formData)
-      const campaign = data.data.campaign
-      setResult({
-        campaign,
-        warning:
-          campaign?.estado === 'borrador' && campaign?.ia_error_message
-            ? `La generación IA falló: ${campaign.ia_error_message}`
-            : null,
-      })
+      mostrarResultado(data.data.campaign)
       // El crédito ya se descontó — que la banda lo refleje al instante
       window.dispatchEvent(new Event('credits-updated'))
     } catch (err) {
@@ -228,6 +237,34 @@ export default function NewCampaignPage() {
         setServerError('El servidor no respondió. Intenta de nuevo en unos segundos.')
       }
     } finally {
+      enviando.current = false
+      setSubmitting(false)
+    }
+  }
+
+  // Reintentar regenera la MISMA campaña (que volvió a borrador): nunca crea otra.
+  async function reintentar() {
+    const id = result?.campaign?.id
+    if (!id || enviando.current) return
+    enviando.current = true
+    setSubmitting(true)
+    try {
+      const { data } = await api.post(`/api/campaigns/${id}/regenerate/`)
+      mostrarResultado(data.data.campaign)
+      window.dispatchEvent(new Event('credits-updated'))
+    } catch (err) {
+      const body = err.response?.data
+      if (err.response?.status === 402) {
+        setResult(null)
+        setNoCredits(true)
+      } else {
+        setResult({
+          campaign: body?.data?.campaign ?? result.campaign,
+          warning: body?.message || 'No se pudo reintentar. Abre la campaña desde la lista.',
+        })
+      }
+    } finally {
+      enviando.current = false
       setSubmitting(false)
     }
   }
@@ -254,9 +291,15 @@ export default function NewCampaignPage() {
     return <GeneratingState onCancel={handleReset} />
   }
   if (result?.warning) {
+    const intentos = result.campaign?.intentos_generacion
     return (
       <div className="mx-auto max-w-xl">
-        <ErrorState message={result.warning} onRetry={handleSubmit(onSubmit)} onEditBrief={handleReset} />
+        <ErrorState
+          message={result.warning}
+          attempt={intentos ?? 1}
+          onRetry={result.campaign?.id ? reintentar : undefined}
+          onEditBrief={handleReset}
+        />
       </div>
     )
   }
@@ -306,7 +349,7 @@ export default function NewCampaignPage() {
   )
 
   const formulario = () => (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="entra-lenta">
+    <form onSubmit={(e) => handleSubmit(onSubmit)(e)} noValidate className="entra-lenta">
       <h2 className="text-2xl font-extrabold leading-tight text-on-surface">
         Ficha técnica
       </h2>
