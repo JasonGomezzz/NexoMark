@@ -40,10 +40,30 @@ precargan el login y el brief. No existen en una compilación release.
 | `DJANGO_URL`, `SPRING_URL` | URL completa, para un despliegue HTTPS |
 | `GOOGLE_IOS_CLIENT_ID` | Client ID de iOS de Google; sin él el botón de Google no aparece en iPhone |
 
-Google en iOS además necesita el esquema invertido del client ID en
-`ios/Runner/Info.plist` (`CFBundleURLTypes`). En Android hace falta un cliente
-Android en Google Cloud con el paquete `com.marketmind.nexomark` y el SHA-1 del
-keystore; el servidor entrega el client ID web (`GET /api/auth/google/config/`).
+### Entrar con Google
+
+Google da un client ID por plataforma, todos en el mismo proyecto de Google Cloud
+que el client ID web de `backend/.env` (`GOOGLE_CLIENT_ID`). El servidor entrega el
+web (`GET /api/auth/google/config/`) y la app lo usa como `serverClientId`; ningún
+client ID ni secreto va escrito en el código.
+
+| Plataforma | Qué crear en Google Cloud (Credenciales → ID de cliente OAuth) | Dónde va |
+|---|---|---|
+| iOS | Tipo **iOS**, bundle ID `com.marketmind.nexomark` | `tool/configurar_google_ios.sh <client-id>` (escribe `ios/Flutter/Google.xcconfig`, fuera de git, con el ID y su esquema invertido para `Info.plist`) |
+| Android | Tipo **Android**, paquete `com.marketmind.nexomark` y el SHA-1 de la firma | Nada en la app: Google solo exige que exista |
+| Servidor | — | Los dos ID, separados por coma, en `GOOGLE_CLIENT_IDS_NATIVOS` de `backend/.env` |
+
+SHA-1 de la firma de Android (hoy la compilación release también firma con la
+clave debug, `android/app/build.gradle.kts`, así que basta uno):
+
+```bash
+cd android && ./gradlew signingReport   # buscar «SHA1» en la variante debug
+```
+
+Si la pantalla de consentimiento está en modo *Testing*, solo entran las cuentas
+agregadas como usuarios de prueba. Los scripts `tool/run_iphone.sh` y
+`tool/instalar_iphone_release.sh` pasan solos el `--dart-define=GOOGLE_IOS_CLIENT_ID`
+cuando existe `Google.xcconfig`.
 
 ## Decisiones
 
