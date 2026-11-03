@@ -51,3 +51,14 @@ def test_miniatura_solo_para_quien_ve_la_campana(campaign, cliente):
     otro.force_authenticate(user=cliente)
     assert otro.get(f"/api/campaigns/{campaign.pk}/miniatura/").status_code == 404
     assert APIClient().get(f"/api/campaigns/{campaign.pk}/miniatura/").status_code == 401
+
+
+def test_lista_filtra_por_estado_en_servidor(api_client, campaign):
+    campaign.estado = "pendiente_aprobacion"
+    campaign.save(update_fields=["estado"])
+    enviadas = api_client.get("/api/campaigns/", {"estado": "pendiente_aprobacion"}).data
+    assert enviadas["count"] == 1
+    assert api_client.get("/api/campaigns/", {"estado": "borrador,generado"}).data["count"] == 0
+    # Un estado que no existe no devuelve todo.
+    assert api_client.get("/api/campaigns/", {"estado": "juvenil"}).data["count"] == 0
+    assert api_client.get("/api/campaigns/").data["count"] == 1

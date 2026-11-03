@@ -131,10 +131,18 @@ class CampaignViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         if user.rol == "superadmin":
-            return Campaign.objects.all()
-        if user.rol == "marketero":
-            return Campaign.objects.filter(marketero=user)
-        return Campaign.objects.none()
+            queryset = Campaign.objects.all()
+        elif user.rol == "marketero":
+            queryset = Campaign.objects.filter(marketero=user)
+        else:
+            return Campaign.objects.none()
+        # ?estado=borrador,generado filtra la lista en servidor (la web filtra por paso
+        # sin depender de la página cargada). Un valor fuera del enum no coincide con nada.
+        estados = self.request.query_params.get("estado") if self.action == "list" else None
+        if estados:
+            validos = {valor for valor in estados.split(",") if valor in CampaignStatus.values}
+            queryset = queryset.filter(estado__in=validos)
+        return queryset
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
