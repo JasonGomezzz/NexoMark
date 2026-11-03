@@ -230,6 +230,18 @@ class TestCampaignRegenerate:
         response = api_client.post(regenerate_url(campaign.pk))
         assert response.status_code == 202
 
+    def test_regenerate_informa_intentos_y_no_se_editan(self, api_client, campaign):
+        response = api_client.post(regenerate_url(campaign.pk))
+        intentos = response.data["data"]["campaign"]["intentos_generacion"]
+        assert intentos == campaign.intentos_generacion + 1
+        # El contador lo lleva el servidor: un PATCH no lo cambia.
+        campaign.refresh_from_db()
+        api_client.patch(
+            f"/api/campaigns/{campaign.pk}/", {"intentos_generacion": 0, "version": campaign.version}, format="json"
+        )
+        campaign.refresh_from_db()
+        assert campaign.intentos_generacion == intentos
+
     def test_regenerate_rechazado_returns_202(self, api_client, campaign):
         campaign.estado = CampaignStatus.RECHAZADO
         campaign.save(update_fields=["estado"])
