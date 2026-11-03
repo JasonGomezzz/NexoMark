@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../config.dart';
 import '../session/token_store.dart';
@@ -75,7 +76,8 @@ ApiException toApiException(Object error) {
 ///
 /// Un 401 renueva el access con el refresh una sola vez, aunque fallen varias
 /// peticiones a la vez (las demás esperan la misma renovación), y reintenta.
-/// Si la renovación falla, se avisa con [onSessionExpired].
+/// Si el servidor rechaza el refresh, se avisa con [onSessionExpired]; si solo
+/// faltó red o el servidor falló, la sesión guardada se conserva.
 class ApiClient {
   ApiClient(this._tokens) {
     django = _build(AppConfig.djangoUrl);
@@ -87,6 +89,14 @@ class ApiClient {
   late final Dio spring;
   void Function()? onSessionExpired;
   Future<String?>? _refreshing;
+
+  /// Cliente aparte para renovar (sin interceptores, para no renovar en bucle).
+  @visibleForTesting
+  late final Dio refreshDio = Dio(BaseOptions(
+    baseUrl: AppConfig.djangoUrl,
+    connectTimeout: const Duration(seconds: 12),
+    receiveTimeout: const Duration(seconds: 20),
+  ));
 
   Dio _build(String baseUrl) {
     final dio = Dio(BaseOptions(
@@ -110,7 +120,13 @@ class ApiClient {
         if (!unauthorized || options.extra['public'] == true || options.extra['retried'] == true) {
           return handler.next(error);
         }
-        final access = await _refreshOnce();
+        final String? access;
+        try {
+          access = await _refreshOnce();
+        } on DioException catch (refreshError) {
+          // Sin red o servidor caído: se informa ese error y la sesión guardada sigue.
+          return handler.next(refreshError);
+        }
         if (access == null) {
           onSessionExpired?.call();
           return handler.next(error);
@@ -131,11 +147,13 @@ class ApiClient {
     return _refreshing ??= _refresh().whenComplete(() => _refreshing = null);
   }
 
+  /// Devuelve el access nuevo, o null si el servidor rechazó el refresh (sesión
+  /// terminada). Un fallo de red o un 5xx se relanza: no significa que la sesión venció.
   Future<String?> _refresh() async {
     final refresh = await _tokens.refresh();
     if (refresh == null) return null;
     try {
-      final response = await Dio(BaseOptions(baseUrl: AppConfig.djangoUrl)).post<Map<String, dynamic>>(
+      final response = await refreshDio.post<Map<String, dynamic>>(
         '/api/auth/token/refresh/',
         data: {'refresh': refresh},
       );
@@ -144,11 +162,16 @@ class ApiClient {
       // La rotación de refresh tokens devuelve uno nuevo: el anterior queda en la lista negra.
       await _tokens.updateTokens(access: access, refresh: response.data?['refresh'] as String?);
       return access;
-    } on DioException {
-      return null;
+    } on DioException catch (e) {
+      if (refreshRechazado(e.response?.statusCode)) return null;
+      rethrow;
     }
   }
 }
+
+/// El servidor rechazó el refresh (vencido, en lista negra o con otra
+/// `token_version`): la sesión terminó. Cualquier otra respuesta, o ninguna, es pasajera.
+bool refreshRechazado(int? status) => status == 400 || status == 401 || status == 403;
 
 /// Opciones para endpoints públicos (sin JWT ni renovación).
 final publicOptions = Options(extra: {'public': true});
