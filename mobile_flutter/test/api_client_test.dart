@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexomark/core/api/api_client.dart';
 import 'package:nexomark/core/session/token_store.dart';
+import 'package:nexomark/data/auth_repository.dart';
 
 /// Responde según la ruta; `null` simula que no hay red.
 class _Adaptador implements HttpClientAdapter {
@@ -71,6 +72,21 @@ void main() {
     final r = await api.django.get<dynamic>('/api/auth/me/');
     expect(r.statusCode, 200);
     expect(await tokens.refresh(), 'r2');
+  });
+
+  test('logout con access vencido invalida también el refresh rotado', () async {
+    api.refreshDio.httpClientAdapter = _Adaptador((_) => (status: 200, body: {'access': 'nuevo', 'refresh': 'r2'}));
+    final invalidados = <String>[];
+    api.django.httpClientAdapter = _Adaptador((o) {
+      if (o.headers['Authorization'] != 'Bearer nuevo') return (status: 401, body: {'detail': 'token vencido'});
+      final refresh = (o.data as Map)['refresh'] as String;
+      if (refresh == 'r1') return (status: 400, body: {'message': 'ya invalidado'});
+      invalidados.add(refresh);
+      return (status: 200, body: {'success': true});
+    });
+    await AuthRepository(api, tokens).logout();
+    expect(invalidados, ['r2']);
+    expect(await tokens.refresh(), isNull);
   });
 
   test('refreshRechazado solo reconoce respuestas que terminan la sesión', () {

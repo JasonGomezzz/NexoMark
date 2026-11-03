@@ -67,11 +67,27 @@ class AuthRepository {
   Future<void> logout() async {
     final refresh = await _tokens.refresh();
     try {
-      if (refresh != null) await _dj.post<dynamic>('/api/auth/logout/', data: {'refresh': refresh});
-    } catch (_) {
-      // Cerrar sesión en el teléfono no depende de que el servidor responda.
+      if (refresh != null) await _invalidar(refresh);
     } finally {
       await _tokens.clear();
+    }
+  }
+
+  /// Pone el refresh en la lista negra. Si el access estaba vencido, la petición
+  /// renueva la sesión y rota el refresh: entonces se invalida también el nuevo.
+  Future<void> _invalidar(String refresh) async {
+    try {
+      await _dj.post<dynamic>('/api/auth/logout/', data: {'refresh': refresh});
+      return;
+    } catch (_) {
+      // Cerrar sesión en el teléfono no depende de que el servidor responda.
+    }
+    final rotado = await _tokens.refresh();
+    if (rotado == null || rotado == refresh) return;
+    try {
+      await _dj.post<dynamic>('/api/auth/logout/', data: {'refresh': rotado});
+    } catch (_) {
+      // Igual que arriba: el teléfono borra la sesión de todas formas.
     }
   }
 
