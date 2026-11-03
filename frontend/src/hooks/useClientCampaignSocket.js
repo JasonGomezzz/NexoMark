@@ -20,13 +20,25 @@ export function useClientCampaignSocket({ onCampaignSubmitted, onCampaignStatusC
     let generation = 0
     let accessToken = getAuthItem('access_token')
     let disconnect = () => {}
+    // Renovación pedida por el propio socket (tras un 4401/4408): la conexión actual
+    // ya reintenta con el token nuevo y su espera creciente. Si aquí se creara otra,
+    // se perdería la guarda del segundo 4401 y Spring podría forzar renovaciones sin fin.
+    let renovandoDesdeSocket = false
+    const renovar = async (token) => {
+      renovandoDesdeSocket = true
+      try {
+        return await refreshAccessToken(token)
+      } finally {
+        renovandoDesdeSocket = false
+      }
+    }
 
     function connect() {
       const currentGeneration = ++generation
       return connectClientCampaignSocket({
         url: getWsUrl(),
         getToken: () => getAuthItem('access_token'),
-        refreshToken: refreshAccessToken,
+        refreshToken: renovar,
         endSession: clearSession,
         onConnected,
         onNotification: async ({ type, campaignId }) => {
@@ -46,6 +58,7 @@ export function useClientCampaignSocket({ onCampaignSubmitted, onCampaignStatusC
       const current = getAuthItem('access_token')
       if (accessToken === current) return
       accessToken = current
+      if (renovandoDesdeSocket && current) return
       generation++
       disconnect()
       if (current) disconnect = connect()
