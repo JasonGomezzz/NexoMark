@@ -152,6 +152,7 @@ export default function CampaignDetailPage() {
       localStorage.removeItem(draftKey)
       setAutoSavedAt(null)
       toast.success('Cambios guardados')
+      return true
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error al guardar')
       if (err.response?.status === 409) {
@@ -160,6 +161,7 @@ export default function CampaignDetailPage() {
         localStorage.setItem(draftKey, text)
         fetchCampaign({ useDraft: true }).catch(() => {})
       }
+      return false
     } finally {
       setSaving(false)
     }
@@ -168,6 +170,13 @@ export default function CampaignDetailPage() {
   async function handleSubmitConfirm(destinos = []) {
     setSubmitting(true)
     setShowModal(false)
+    // El modal promete "exactamente este copy": lo editado se guarda antes de enviar,
+    // y si no se pudo guardar no se envía la versión anterior del servidor.
+    const sinGuardar = text !== (campaign.texto_generado || '') || promptText !== (campaign.prompt || '')
+    if (sinGuardar && !(await handleSave())) {
+      setSubmitting(false)
+      return
+    }
     try {
       await api.post(`/api/campaigns/${id}/submit/`, { destinos })
       localStorage.removeItem(draftKey)
