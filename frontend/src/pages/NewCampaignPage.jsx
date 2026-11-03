@@ -101,6 +101,9 @@ export default function NewCampaignPage() {
   // Un solo envío a la vez: el estado `submitting` llega un render tarde y un doble
   // clic podría crear dos campañas (y cobrar dos créditos).
   const enviando = useRef(false)
+  // Lo último que la IA puso en cada campo: al reinterpretar solo se reemplaza lo que
+  // el usuario no corrigió a mano.
+  const valoresIa = useRef({})
   const [serverError, setServerError] = useState('')
   const [noCredits, setNoCredits] = useState(false)
   // Intención creada al interpretar el brief (voz o texto). Si existe, el
@@ -117,6 +120,7 @@ export default function NewCampaignPage() {
     handleSubmit,
     reset,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -175,15 +179,20 @@ export default function NewCampaignPage() {
   const handleInterpreted = useCallback(
     (nuevoIntent) => {
       const { valores, completados } = camposParaFormulario(nuevoIntent.campos_finales, OPCIONES_FORMULARIO)
-      Object.entries(valores).forEach(([campo, valor]) =>
-        setValue(campo, valor, { shouldValidate: true, shouldDirty: true }),
-      )
+      const actuales = getValues()
+      Object.entries(valores).forEach(([campo, valor]) => {
+        const actual = actuales[campo] ?? ''
+        const corregidoAMano = actual !== '' && actual !== (valoresIa.current[campo] ?? '')
+        if (corregidoAMano) return
+        valoresIa.current[campo] = valor
+        setValue(campo, valor, { shouldValidate: true, shouldDirty: true })
+      })
       setIntent(nuevoIntent)
       setResumenIntent({ completados, advertencias: nuevoIntent.advertencias ?? [] })
       setServerError('')
       setVista('formulario')
     },
-    [setValue],
+    [getValues, setValue],
   )
   const brief = useBriefDictado({ onInterpreted: handleInterpreted })
 
@@ -201,6 +210,7 @@ export default function NewCampaignPage() {
   async function onSubmit(formData) {
     if (enviando.current) return
     enviando.current = true
+    brief.voz.stop()
     setSubmitting(true)
     setServerError('')
     setNoCredits(false)
@@ -273,6 +283,7 @@ export default function NewCampaignPage() {
     setNoCredits(false)
     setIntent(null)
     setResumenIntent(null)
+    valoresIa.current = {}
     brief.reiniciar()
     setVista('proxima')
     reset()
@@ -281,7 +292,8 @@ export default function NewCampaignPage() {
   if (noCredits) {
     return (
       <div className="mx-auto max-w-xl">
-        <CreditsExhausted onClose={handleReset} />
+        {/* Volver conserva el brief y la ficha: sin créditos no se pierde lo dictado. */}
+        <CreditsExhausted onClose={() => setNoCredits(false)} />
       </div>
     )
   }
@@ -501,15 +513,16 @@ export default function NewCampaignPage() {
           Generar campaña
         </Button>
         <p className="text-center text-[13px] text-on-surface-variant">Usa 1 crédito. Si la IA falla, se devuelve.</p>
-        {!intent && (
-          <button
-            type="button"
-            onClick={() => setVista('proxima')}
-            className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline-offset-2 hover:underline"
-          >
-            Volver a dictar
-          </button>
-        )}
+        {/* Con un brief ya interpretado, volver deja seguir dictando y completar de nuevo:
+            lo corregido a mano se conserva. */}
+        <button
+          type="button"
+          onClick={() => setVista('proxima')}
+          disabled={submitting}
+          className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline-offset-2 hover:underline disabled:opacity-50"
+        >
+          {intent ? 'Seguir dictando y completar de nuevo' : 'Volver a dictar'}
+        </button>
       </div>
     </form>
   )
