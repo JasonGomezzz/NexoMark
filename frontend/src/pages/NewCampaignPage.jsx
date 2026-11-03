@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { ArrowLeft, Check, Lightbulb, Loader2, Wand2, TriangleAlert } from 'lucide-react'
 import api from '../services/api'
-import { Button } from '@/components/ui/button'
+import { Button, ButtonLink } from '@/components/ui/button'
 import GeneratingState from '@/components/campaign/GeneratingState'
 import ErrorState from '@/components/campaign/ErrorState'
 import CreditsExhausted from '@/components/campaign/CreditsExhausted'
@@ -97,7 +97,7 @@ export default function NewCampaignPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [submitting, setSubmitting] = useState(false)
-  const [result, setResult] = useState(null) // { campaign, warning }
+  const [result, setResult] = useState(null) // { campaign, warning, demora }
   // Un solo envío a la vez: el estado `submitting` llega un render tarde y un doble
   // clic podría crear dos campañas (y cobrar dos créditos).
   const enviando = useRef(false)
@@ -137,11 +137,9 @@ export default function NewCampaignPage() {
     const timer = setInterval(() => {
       pollAttempts.current += 1
       if (pollAttempts.current > 30) {
+        // No es un fallo: la generación sigue en el servidor y no se devolvió el crédito.
         clearInterval(timer)
-        setResult((r) => ({
-          ...r,
-          warning: 'La IA está tardando más de lo normal. Revisa la campaña en la lista en unos minutos.',
-        }))
+        setResult((r) => ({ ...r, demora: true }))
         return
       }
       api
@@ -170,7 +168,7 @@ export default function NewCampaignPage() {
   // y se envía al cliente (no hay un "resultado" que obligue a volver a la lista).
   useEffect(() => {
     const c = result?.campaign
-    if (!c?.id || result.warning || c.estado === 'pendiente_ia') return
+    if (!c?.id || result.warning || result.demora || c.estado === 'pendiente_ia') return
     navigate(`/campaigns/${c.id}`, { state: { recienGenerada: true } })
   }, [result, navigate])
 
@@ -289,6 +287,23 @@ export default function NewCampaignPage() {
   }
   if (submitting || result?.campaign?.estado === 'pendiente_ia') {
     return <GeneratingState onCancel={handleReset} />
+  }
+  if (result?.demora) {
+    return (
+      <section role="status" className="regla mx-auto max-w-xl pt-6">
+        <h2 className="text-[26px] font-extrabold leading-tight text-on-surface">La IA está tardando más de lo normal</h2>
+        <p className="mt-2 text-[15px] text-on-surface-variant">
+          La generación sigue en el servidor. Abre la campaña en unos minutos para ver el copy y la imagen; si la IA
+          falla, se te devuelve el crédito.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <ButtonLink to={`/campaigns/${result.campaign.id}`}>Ver la campaña</ButtonLink>
+          <Button variant="outline" onClick={handleReset}>
+            Dictar otra
+          </Button>
+        </div>
+      </section>
+    )
   }
   if (result?.warning) {
     const intentos = result.campaign?.intentos_generacion
