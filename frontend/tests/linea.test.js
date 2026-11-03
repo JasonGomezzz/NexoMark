@@ -5,6 +5,7 @@ import {
   estacionDeRuta,
   estacionesDeRol,
   etapaDeEstado,
+  urlDeEtapa,
 } from '../src/components/linea/estaciones.js'
 
 test('cada rol recorre su tramo de la línea', () => {
@@ -50,4 +51,11 @@ test('los conteos suman por etapa y no inventan ceros', () => {
   assert.deepEqual(conteosDeLinea('marketero', stats), { generar: 12, aprobar: 0, publicar: 7 })
   assert.deepEqual(conteosDeLinea('cliente', { pendientes: 2 }), { aprobar: 2, publicar: null })
   assert.deepEqual(conteosDeLinea('marketero', null), {})
+})
+
+test('la lista pide al servidor solo los estados del paso', () => {
+  assert.equal(urlDeEtapa('aprobar'), '/api/campaigns/?estado=pendiente_aprobacion')
+  assert.equal(urlDeEtapa('generar'), '/api/campaigns/?estado=borrador,pendiente_ia,generado,rechazado')
+  assert.equal(urlDeEtapa(null), '/api/campaigns/')
+  assert.equal(urlDeEtapa('desconocido'), '/api/campaigns/')
 })

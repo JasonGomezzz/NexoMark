@@ -66,6 +66,12 @@ export const ESTADOS_DE_ETAPA = {
   publicar: ['aprobado'],
 }
 
+/** Primera página de la lista de campañas, filtrada en el servidor por los estados del paso. */
+export function urlDeEtapa(etapa) {
+  const estados = ESTADOS_DE_ETAPA[etapa]
+  return estados ? `/api/campaigns/?estado=${estados.join(',')}` : '/api/campaigns/'
+}
+
 /** Estación actual según la ruta. Una página puede afinarla (ver EstacionContext). */
 export function estacionDeRuta(pathname, search = '') {
   const etapa = new URLSearchParams(search).get('etapa')

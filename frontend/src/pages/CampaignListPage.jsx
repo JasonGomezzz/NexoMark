@@ -5,14 +5,14 @@ import api from '../services/api'
 import { Button, ButtonLink } from '@/components/ui/button'
 import StatusBadge from '@/components/StatusBadge'
 import { getAuthItem } from '../services/session'
-import { ESTADOS_DE_ETAPA, etapaDeEstado } from '@/components/linea/estaciones'
+import { conteosDeLinea, etapaDeEstado, urlDeEtapa } from '@/components/linea/estaciones'
 import { cn } from '@/lib/utils'
 
 /**
  * Campañas por paso de la orden de trabajo (Marketero/SuperAdmin). Consume Django con
  * paginación DRF. `?etapa=generar|aprobar|publicar` filtra por estación (lo usa
- * la banda de navegación); sin etapa, todas. El filtro y la búsqueda se aplican
- * sobre la página cargada (la API no filtra por estado).
+ * la banda de navegación); sin etapa, todas. El paso se filtra en el servidor
+ * (`?estado=`) y sus conteos salen de /stats/; la búsqueda mira la página cargada.
  */
 const ETAPAS = {
   generar: { titulo: 'En Generar', desc: 'Por generar, listas para enviar o con cambios pedidos por el cliente.' },
@@ -60,26 +60,43 @@ export default function CampaignListPage() {
   const [prevUrl, setPrevUrl] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  // Paso al que corresponde la lista mostrada: al cambiar de paso, la anterior no se
+  // presenta como si fuera la nueva mientras llega la respuesta.
+  const [etapaCargada, setEtapaCargada] = useState(undefined)
+  const [conteos, setConteos] = useState({})
 
   // loadCampaigns solo setea estado en callbacks async (apto para el efecto);
   // fetchCampaigns agrega el reset síncrono y se usa desde handlers.
-  function loadCampaigns(url) {
+  function loadCampaigns(url, paraEtapa, vigente = () => true) {
     return api
       .get(url)
       .then(({ data }) => {
+        if (!vigente()) return
         setCampaigns(data.results)
         setCount(data.count)
         setNextUrl(data.next)
         setPrevUrl(data.previous)
+        setError(false)
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
+      .catch(() => vigente() && setError(true))
+      .finally(() => {
+        if (!vigente()) return
+        setEtapaCargada(paraEtapa)
+        setLoading(false)
+      })
   }
 
-  function fetchCampaigns(url = '/api/campaigns/') {
+  function loadConteos() {
+    return api
+      .get('/api/campaigns/stats/')
+      .then(({ data }) => setConteos(conteosDeLinea(role, data?.data)))
+      .catch(() => setConteos({}))
+  }
+
+  function fetchCampaigns(url = urlDeEtapa(etapa)) {
     setLoading(true)
     setError(false)
-    loadCampaigns(url)
+    loadCampaigns(url, etapa)
   }
 
   async function handleDelete(campaign) {
@@ -89,32 +106,35 @@ export default function CampaignListPage() {
     try {
       await api.delete(`/api/campaigns/${campaign.id}/`)
       fetchCampaigns()
+      loadConteos()
     } catch (err) {
       window.alert(err.response?.data?.message || 'No se pudo eliminar la campaña.')
     }
   }
 
   useEffect(() => {
-    loadCampaigns('/api/campaigns/')
+    let vigente = true
+    loadCampaigns(urlDeEtapa(etapa), etapa, () => vigente)
+    return () => {
+      vigente = false
+    }
+  }, [etapa])
+
+  useEffect(() => {
+    loadConteos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const porEtapa = useMemo(() => {
-    const cuenta = { generar: 0, aprobar: 0, publicar: 0 }
-    campaigns.forEach((c) => {
-      const e = etapaDeEstado(c.estado)
-      if (e) cuenta[e] += 1
-    })
-    return cuenta
-  }, [campaigns])
+  const cargando = loading || etapaCargada !== etapa
 
   const visibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase()
-    return campaigns.filter((c) => {
-      if (etapa && !ESTADOS_DE_ETAPA[etapa].includes(c.estado)) return false
-      if (!q) return true
-      return [c.titulo, c.cliente_nombre, c.cliente_email].some((v) => (v || '').toLowerCase().includes(q))
-    })
-  }, [campaigns, etapa, busqueda])
+    if (!q) return campaigns
+    return campaigns.filter((c) =>
+      [c.titulo, c.cliente_nombre, c.cliente_email].some((v) => (v || '').toLowerCase().includes(q)),
+    )
+  }, [campaigns, busqueda])
+  const sinCampanas = !etapa && count === 0
 
   const elegirEtapa = (id) => setParams(id ? { etapa: id } : {})
 
@@ -151,7 +171,7 @@ export default function CampaignListPage() {
               )}
             >
               {texto}
-              {id && !loading && <span className="tabular-nums opacity-80">{porEtapa[id]}</span>}
+              {id && conteos[id] != null && <span className="tabular-nums opacity-80">{conteos[id]}</span>}
             </button>
           ))}
         </div>
@@ -178,7 +198,7 @@ export default function CampaignListPage() {
         </div>
       )}
 
-      {loading ? (
+      {cargando ? (
         <ul className="divide-y divide-hairline border-y border-hairline" aria-label="Cargando campañas">
           {[...Array(6)].map((_, i) => (
             <li key={i} className="flex items-center gap-4 py-5">
@@ -190,20 +210,20 @@ export default function CampaignListPage() {
       ) : !error && visibles.length === 0 ? (
         <div className="regla flex flex-col items-start gap-3 pt-6">
           <h2 className="text-xl font-extrabold text-on-surface">
-            {campaigns.length === 0
+            {sinCampanas
               ? 'Aún no hay campañas'
               : busqueda
                 ? 'Ninguna campaña coincide con la búsqueda'
                 : `No hay campañas ${etapa ? ETAPAS[etapa].titulo.toLowerCase() : ''}`}
           </h2>
           <p className="max-w-md text-[15px] text-on-surface-variant">
-            {campaigns.length === 0 && role === 'marketero'
+            {sinCampanas && role === 'marketero'
               ? 'Dicta la primera: la IA propone los campos y crea el copy y la imagen.'
               : busqueda
                 ? 'Prueba con otra palabra o quita la búsqueda.'
                 : 'Cuando una campaña llegue a este paso, aparecerá aquí.'}
           </p>
-          {campaigns.length === 0 && role === 'marketero' && (
+          {sinCampanas && role === 'marketero' && (
             <Button className="mt-1" onClick={() => navigate('/campaigns/new')}>
               <Mic className="h-4 w-4" aria-hidden="true" />
               Dictar una campaña
@@ -247,20 +267,21 @@ export default function CampaignListPage() {
               </li>
             ))}
           </ul>
-
-          {(prevUrl || nextUrl) && (
-            <div className="mt-4 flex justify-between">
-              <Button variant="outline" size="sm" disabled={!prevUrl} onClick={() => fetchCampaigns(prevUrl)}>
-                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                Anterior
-              </Button>
-              <Button variant="outline" size="sm" disabled={!nextUrl} onClick={() => fetchCampaigns(nextUrl)}>
-                Siguiente
-                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              </Button>
-            </div>
-          )}
         </>
+      )}
+
+      {/* Fuera de la lista: con una búsqueda sin resultados en esta página, las demás siguen a mano. */}
+      {!cargando && (prevUrl || nextUrl) && (
+        <div className="mt-4 flex justify-between">
+          <Button variant="outline" size="sm" disabled={!prevUrl} onClick={() => fetchCampaigns(prevUrl)}>
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            Anterior
+          </Button>
+          <Button variant="outline" size="sm" disabled={!nextUrl} onClick={() => fetchCampaigns(nextUrl)}>
+            Siguiente
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </div>
       )}
     </div>
   )
