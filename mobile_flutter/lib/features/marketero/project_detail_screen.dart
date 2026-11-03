@@ -37,6 +37,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   Timer? _sondeo;
   bool _ocupado = false;
 
+  /// El copy tiene cambios sin guardar: no se envía hasta guardarlos o cancelarlos.
+  bool _editandoCopy = false;
+
   /// Tope de la espera (60 consultas cada 3 s = 3 min); después se deja de preguntar.
   static const _maxConsultas = 60;
   bool _esperaAgotada = false;
@@ -88,8 +91,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       ..showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
-  Future<void> _accion(Future<String?> Function() body) async {
-    if (_ocupado) return;
+  /// Corre una acción del detalle; devuelve si salió bien.
+  Future<bool> _accion(Future<String?> Function() body) async {
+    if (_ocupado) return false;
     setState(() => _ocupado = true);
     try {
       final mensaje = await body();
@@ -98,8 +102,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       ref.invalidate(campaignListProvider);
       ref.invalidate(campaignStatsProvider);
       if (mensaje != null) _aviso(mensaje);
+      return true;
     } on ApiException catch (e) {
       _aviso(e.status == 402 ? 'No te quedan créditos. Solicita más desde Cuenta.' : e.message);
+      return false;
     } finally {
       if (mounted) setState(() => _ocupado = false);
     }
@@ -145,10 +151,24 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(Nexo.gutter, 12, Nexo.gutter, 12),
-                  child: FilledButton.icon(
-                    onPressed: _ocupado ? null : () => _enviar(c),
-                    icon: const Icon(LucideIcons.send, size: 18),
-                    label: const Text('Enviar al cliente'),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (_editandoCopy)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            'Guarda o cancela el texto antes de enviar: el cliente aprueba lo que está guardado.',
+                            style: context.text.bodySmall,
+                          ),
+                        ),
+                      FilledButton.icon(
+                        onPressed: _ocupado || _editandoCopy ? null : () => _enviar(c),
+                        icon: const Icon(LucideIcons.send, size: 18),
+                        label: const Text('Enviar al cliente'),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -223,7 +243,12 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 ),
               ],
               const SizedBox(height: 20),
-              _Copy(campana: c, ocupado: _ocupado, onAccion: _accion),
+              _Copy(
+                campana: c,
+                ocupado: _ocupado,
+                onAccion: _accion,
+                onEditando: (v) => setState(() => _editandoCopy = v),
+              ),
               if (c.estado == EstadoCampana.pendienteAprobacion) ...[
                 const SizedBox(height: 16),
                 InfoBanner(
@@ -457,11 +482,14 @@ class _Estrellas extends StatelessWidget {
 
 /// Texto de la campaña: leer, editar (con bloqueo optimista) o mejorar con IA (gratis).
 class _Copy extends ConsumerStatefulWidget {
-  const _Copy({required this.campana, required this.ocupado, required this.onAccion});
+  const _Copy({required this.campana, required this.ocupado, required this.onAccion, required this.onEditando});
 
   final Campaign campana;
   final bool ocupado;
-  final Future<void> Function(Future<String?> Function()) onAccion;
+  final Future<bool> Function(Future<String?> Function()) onAccion;
+
+  /// Avisa al detalle si hay cambios sin guardar (bloquea «Enviar al cliente»).
+  final ValueChanged<bool> onEditando;
 
   @override
   ConsumerState<_Copy> createState() => _CopyState();
@@ -485,6 +513,11 @@ class _CopyState extends ConsumerState<_Copy> {
     super.dispose();
   }
 
+  void _editar(bool valor) {
+    setState(() => _editando = valor);
+    widget.onEditando(valor);
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = widget.campana;
@@ -497,7 +530,7 @@ class _CopyState extends ConsumerState<_Copy> {
           'Texto',
           trailing: editable && texto != null && !_editando
               ? TextButton.icon(
-                  onPressed: () => setState(() => _editando = true),
+                  onPressed: () => _editar(true),
                   icon: const Icon(LucideIcons.pencilLine, size: 18),
                   label: const Text('Editar'),
                 )
@@ -517,10 +550,10 @@ class _CopyState extends ConsumerState<_Copy> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () => setState(() {
-                              _editando = false;
+                            onPressed: () {
                               _texto.text = texto ?? '';
-                            }),
+                              _editar(false);
+                            },
                             child: const Text('Cancelar'),
                           ),
                         ),
@@ -530,11 +563,12 @@ class _CopyState extends ConsumerState<_Copy> {
                             onPressed: widget.ocupado
                                 ? null
                                 : () async {
-                                    await widget.onAccion(() async {
+                                    final guardado = await widget.onAccion(() async {
                                       await ref.read(campaignRepositoryProvider).editText(c.id, _texto.text, c.version);
                                       return 'Texto guardado.';
                                     });
-                                    if (mounted) setState(() => _editando = false);
+                                    // Si falla (409, red), el texto escrito se queda en el campo.
+                                    if (guardado && mounted) _editar(false);
                                   },
                             child: const Text('Guardar'),
                           ),
@@ -577,7 +611,7 @@ class _Versiones extends ConsumerWidget {
   const _Versiones({required this.campana, required this.onAccion});
 
   final Campaign campana;
-  final Future<void> Function(Future<String?> Function()) onAccion;
+  final Future<bool> Function(Future<String?> Function()) onAccion;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -614,7 +648,7 @@ class _VersionesSheet extends ConsumerWidget {
 
   final Campaign campana;
   final bool editable;
-  final Future<void> Function(Future<String?> Function()) onAccion;
+  final Future<bool> Function(Future<String?> Function()) onAccion;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
