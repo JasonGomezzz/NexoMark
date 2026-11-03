@@ -32,3 +32,6 @@ Runner/GeneratedPluginRegistrant.*
 !default.mode2v3
 !default.pbxuser
 !default.perspectivev3
+
+# Client ID de iOS de Google (lo genera tool/configurar_google_ios.sh)
+Flutter/Google.xcconfig

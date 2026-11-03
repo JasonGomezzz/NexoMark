@@ -1,1 +1,7 @@
 #include "Generated.xcconfig"
+
+// Google en iOS: el esquema invertido del client ID va en Google.xcconfig (fuera de git).
+// Lo crea tool/configurar_google_ios.sh. Sin él queda este valor inofensivo y el botón no aparece.
+GOOGLE_IOS_CLIENT_ID =
+GOOGLE_REVERSED_CLIENT_ID = nexomark-google-sin-configurar
+#include? "Google.xcconfig"

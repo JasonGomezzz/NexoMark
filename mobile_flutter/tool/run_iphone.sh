@@ -4,9 +4,11 @@
 # En depuración precarga el usuario de prueba del README (no existe en release).
 set -e
 cd "$(dirname "$0")/.."
+source tool/google_ios_define.sh
 ROL="${1:-marketero}"
 IP="${API_HOST:-$(ipconfig getifaddr en0)}"
 exec /Users/jason/dev/flutter/bin/flutter run -d 00008150-000A4DDE2E8B401C \
   --dart-define=API_HOST="$IP" \
   --dart-define=DEMO_EMAIL="$ROL@test.com" \
-  --dart-define=DEMO_PASSWORD='MarketMind2026!'
+  --dart-define=DEMO_PASSWORD='MarketMind2026!' \
+  "${GOOGLE_DEFINE[@]}"
