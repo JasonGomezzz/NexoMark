@@ -37,6 +37,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   Timer? _sondeo;
   bool _ocupado = false;
 
+  /// Tope de la espera (60 consultas cada 3 s = 3 min); después se deja de preguntar.
+  static const _maxConsultas = 60;
+  bool _esperaAgotada = false;
+
   @override
   void dispose() {
     _sondeo?.cancel();
@@ -46,17 +50,36 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   /// Mientras la IA genera (o se publica) se vuelve a pedir cada 3 s.
   void _vigilar(Campaign c, List<Publication> pubs) {
     final esperando = c.estado == EstadoCampana.pendienteIa || pubs.any((p) => p.estado == 'publicando');
-    if (esperando && _sondeo == null) {
-      _sondeo = Timer.periodic(const Duration(seconds: 3), (_) {
+    if (esperando && _sondeo == null && !_esperaAgotada) {
+      var consultas = 0;
+      _sondeo = Timer.periodic(const Duration(seconds: 3), (timer) {
+        if (++consultas > _maxConsultas) {
+          timer.cancel();
+          if (mounted) setState(() => _esperaAgotada = true);
+          return;
+        }
         ref.invalidate(campaignProvider(widget.id));
         ref.invalidate(campaignPublicationsProvider(widget.id));
       });
+    } else if (!esperando && _esperaAgotada) {
+      _esperaAgotada = false;
+      _sondeo = null;
     } else if (!esperando && _sondeo != null) {
       _sondeo!.cancel();
       _sondeo = null;
       HapticFeedback.mediumImpact();
       ref.invalidate(campaignListProvider);
     }
+  }
+
+  void _reconsultar() {
+    _sondeo?.cancel();
+    setState(() {
+      _sondeo = null;
+      _esperaAgotada = false;
+    });
+    ref.invalidate(campaignProvider(widget.id));
+    ref.invalidate(campaignPublicationsProvider(widget.id));
   }
 
   void _aviso(String mensaje) {
@@ -182,6 +205,21 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   onPressed: _ocupado ? null : () => _regenerar(c),
                   icon: const Icon(LucideIcons.refreshCw),
                   label: const Text('Regenerar · 1 crédito'),
+                ),
+              ],
+              if (_esperaAgotada) ...[
+                const SizedBox(height: 16),
+                InfoBanner(
+                  tone: InfoTone.warning,
+                  message: c.estado == EstadoCampana.pendienteIa
+                      ? 'La IA está tardando más de lo normal. Dejamos de consultar para no gastar batería.'
+                      : 'La publicación está tardando más de lo normal. Dejamos de consultar para no gastar batería.',
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: _reconsultar,
+                  icon: const Icon(LucideIcons.refreshCw, size: 18),
+                  label: const Text('Volver a consultar'),
                 ),
               ],
               const SizedBox(height: 20),

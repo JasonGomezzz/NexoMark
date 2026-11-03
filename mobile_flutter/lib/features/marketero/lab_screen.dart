@@ -88,6 +88,11 @@ class _LabScreenState extends ConsumerState<LabScreen> {
   Map<String, String> _erroresCampo = const {};
   Timer? _sondeo;
 
+  /// La espera tiene tope (60 consultas cada 3 s = 3 min): si n8n se cuelga,
+  /// se deja de preguntar y se ofrece volver a consultar.
+  static const _maxConsultas = 60;
+  bool _esperaAgotada = false;
+
   /// Medición voz vs. formulario: desde el primer toque del micrófono o la primera letra.
   DateTime? _inicioCaptura;
   void _marcarInicio() => _inicioCaptura ??= DateTime.now();
@@ -232,7 +237,14 @@ class _LabScreenState extends ConsumerState<LabScreen> {
   /// La IA trabaja en n8n: se consulta cada 3 s hasta que deja "pendiente_ia".
   void _vigilarGeneracion(int id) {
     _sondeo?.cancel();
-    _sondeo = Timer.periodic(const Duration(seconds: 3), (_) async {
+    if (_esperaAgotada) setState(() => _esperaAgotada = false);
+    var consultas = 0;
+    _sondeo = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (++consultas > _maxConsultas) {
+        timer.cancel();
+        if (mounted) setState(() => _esperaAgotada = true);
+        return;
+      }
       try {
         final c = await ref.read(campaignRepositoryProvider).get(id);
         if (!mounted) return;
@@ -280,6 +292,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       _porVoz = false;
       _inicioCaptura = null;
       _acumulado = Duration.zero;
+      _esperaAgotada = false;
       _error = null;
       _erroresCampo = const {};
     });
@@ -579,7 +592,9 @@ class _LabScreenState extends ConsumerState<LabScreen> {
               ? 'Revisa el texto y la imagen, y envíala a tu cliente.'
               : fallo
                   ? null
-                  : 'La IA escribe el texto y crea la imagen. Puedes salir: te espera en Generar.',
+                  : _esperaAgotada
+                      ? 'La IA está tardando más de lo normal. Puedes salir: la campaña te espera en Generar.'
+                      : 'La IA escribe el texto y crea la imagen. Puedes salir: te espera en Generar.',
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(Nexo.gutter, 20, Nexo.gutter, 0),
@@ -627,6 +642,14 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (!terminado && _esperaAgotada && c != null) ...[
+          OutlinedButton.icon(
+            onPressed: () => _vigilarGeneracion(c.id),
+            icon: const Icon(LucideIcons.refreshCw, size: 18),
+            label: const Text('Volver a consultar'),
+          ),
+          const SizedBox(height: 2),
+        ],
         if (terminado) ...[
           FilledButton.icon(
             onPressed: () => context.push('/m/campana/${c.id}', extra: c),
