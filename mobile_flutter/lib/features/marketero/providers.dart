@@ -9,11 +9,18 @@ final campaignStatsProvider = FutureProvider.autoDispose<CampaignStats>(
   (ref) => ref.watch(campaignRepositoryProvider).stats(),
 );
 
-/// Primera página de campañas (lista liviana, sin base64).
-final campaignListProvider = FutureProvider.autoDispose<List<Campaign>>((ref) async {
-  final page = await ref.watch(campaignRepositoryProvider).list();
-  return page.items;
+/// Primera página de campañas (lista liviana, sin base64) y si el servidor tiene más.
+/// La clave son los estados que filtra el servidor, separados por coma ("" = todas).
+final campaignListProvider =
+    FutureProvider.autoDispose.family<({List<Campaign> items, bool hayMas}), String>((ref, estados) {
+  return ref.watch(campaignRepositoryProvider).list(estados: estadosDesdeClave(estados));
 });
+
+/// Clave estable del filtro por estado para [campaignListProvider].
+String claveEstados(Set<EstadoCampana> estados) => (estados.map((e) => e.api).toList()..sort()).join(',');
+
+Set<EstadoCampana> estadosDesdeClave(String clave) =>
+    clave.isEmpty ? const {} : clave.split(',').map(EstadoCampana.desde).toSet();
 
 final campaignProvider = FutureProvider.autoDispose.family<Campaign, int>(
   (ref, id) => ref.watch(campaignRepositoryProvider).get(id),

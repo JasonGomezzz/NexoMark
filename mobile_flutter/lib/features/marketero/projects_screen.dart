@@ -58,6 +58,10 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
 
   bool get _esEstacion => widget.tramo != TramoCampanas.todas;
 
+  /// Lo que filtra el servidor: el estado elegido o los estados del tramo.
+  Set<EstadoCampana> get _estados => _filtro != null ? {_filtro!} : widget.tramo.estados;
+  String get _clave => claveEstados(_estados);
+
   @override
   void dispose() {
     _buscar.dispose();
@@ -69,10 +73,10 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
       _extra.clear();
       _pagina = 1;
     });
-    ref.invalidate(campaignListProvider);
+    ref.invalidate(campaignListProvider(_clave));
     ref.invalidate(campaignStatsProvider);
     try {
-      await ref.read(campaignListProvider.future);
+      await ref.read(campaignListProvider(_clave).future);
     } catch (_) {
       // El error se muestra en la lista.
     }
@@ -81,7 +85,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
   Future<void> _cargarMas() async {
     setState(() => _cargandoMas = true);
     try {
-      final page = await ref.read(campaignRepositoryProvider).list(page: _pagina + 1);
+      final page = await ref.read(campaignRepositoryProvider).list(page: _pagina + 1, estados: _estados);
       setState(() {
         _pagina++;
         _extra.addAll(page.items);
@@ -96,19 +100,28 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final lista = ref.watch(campaignListProvider);
-    // La primera página dice si hay más (20 por página en Django).
-    if (_pagina == 1) _hayMas = (lista.value?.length ?? 0) >= 20;
+    final lista = ref.watch(campaignListProvider(_clave));
+    // La primera página dice si hay más; las siguientes lo actualizan en _cargarMas.
+    if (_pagina == 1) _hayMas = lista.value?.hayMas ?? false;
     final cuerpo = <Widget>[
       if (!_esEstacion) ...[
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(Nexo.gutter, 4, Nexo.gutter, 8),
           sliver: SliverToBoxAdapter(child: _Buscador(controller: _buscar, onChanged: () => setState(() {}))),
         ),
-        SliverToBoxAdapter(child: _Filtros(valor: _filtro, onChanged: (v) => setState(() => _filtro = v))),
+        SliverToBoxAdapter(
+          child: _Filtros(
+            valor: _filtro,
+            onChanged: (v) => setState(() {
+              _filtro = v;
+              _extra.clear();
+              _pagina = 1;
+            }),
+          ),
+        ),
       ],
       ...lista.when(
-        data: (items) => _contenido(context, [...items, ..._extra]),
+        data: (page) => _contenido(context, [...page.items, ..._extra]),
         loading: () => [
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: Nexo.gutter),
@@ -154,7 +167,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
       if (q.isEmpty) return true;
       return c.titulo.toLowerCase().contains(q) || c.clienteNombre.toLowerCase().contains(q);
     }).toList();
-    if (visibles.isEmpty) {
+    if (visibles.isEmpty && !_hayMas) {
       return [
         SliverFillRemaining(
           hasScrollBody: false,
@@ -176,7 +189,7 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
           ),
         ),
       ),
-      if (_hayMas && _filtro == null && q.isEmpty)
+      if (_hayMas)
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(Nexo.gutter, 12, Nexo.gutter, 0),
           sliver: SliverToBoxAdapter(

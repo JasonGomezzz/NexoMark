@@ -23,8 +23,14 @@ class CampaignRepository {
   Campaign _campaign(Response<dynamic> r) => Campaign.fromJson(envelopeData(r)['campaign'] as Map<String, dynamic>);
 
   /// Lista liviana (sin imágenes en base64): la imagen se pide como miniatura aparte.
-  Future<({List<Campaign> items, bool hayMas})> list({int page = 1}) => _call(() async {
-        final r = await _dj.get<Map<String, dynamic>>('/api/campaigns/', queryParameters: {'vista': 'ligera', 'page': page});
+  /// [estados] filtra en el servidor (`?estado=a,b`), así el filtro no depende de la página cargada.
+  Future<({List<Campaign> items, bool hayMas})> list({int page = 1, Set<EstadoCampana> estados = const {}}) =>
+      _call(() async {
+        final r = await _dj.get<Map<String, dynamic>>('/api/campaigns/', queryParameters: {
+          'vista': 'ligera',
+          'page': page,
+          if (estados.isNotEmpty) 'estado': estados.map((e) => e.api).join(','),
+        });
         final body = r.data ?? const {};
         final results = (body['results'] as List? ?? const []).whereType<Map<String, dynamic>>();
         return (items: results.map(Campaign.fromJson).toList(), hayMas: body['next'] != null);
