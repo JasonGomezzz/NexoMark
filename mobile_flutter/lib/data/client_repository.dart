@@ -19,24 +19,27 @@ class ClientRepository {
     }
   }
 
-  Future<List<Campaign>> pending() => _call(() async {
-        final r = await _sp.get<dynamic>('/api/v1/campaigns/pending', queryParameters: {'page': 0, 'size': 30});
-        final content = envelopeData(r)['content'];
-        return (content is List ? content : const [])
-            .whereType<Map<String, dynamic>>()
-            .map(Campaign.fromJson)
-            .toList();
-      });
+  Future<List<Campaign>> pending() => _call(() => _todas('/api/v1/campaigns/pending'));
 
   /// Las ya decididas (aprobadas, rechazadas) para el historial del cliente.
-  Future<List<Campaign>> mine() => _call(() async {
-        final r = await _sp.get<dynamic>('/api/v1/campaigns/mine', queryParameters: {'page': 0, 'size': 30});
-        final content = envelopeData(r)['content'];
-        return (content is List ? content : const [])
-            .whereType<Map<String, dynamic>>()
-            .map(Campaign.fromJson)
-            .toList();
-      });
+  Future<List<Campaign>> mine() => _call(() => _todas('/api/v1/campaigns/mine'));
+
+  /// Spring pagina de 30 en 30: se piden las páginas hasta la última (`last`),
+  /// con un tope de [maxPaginas] para no quedar en bucle si la respuesta viene rara.
+  static const maxPaginas = 10;
+
+  Future<List<Campaign>> _todas(String ruta) async {
+    final todas = <Campaign>[];
+    for (var pagina = 0; pagina < maxPaginas; pagina++) {
+      final r = await _sp.get<dynamic>(ruta, queryParameters: {'page': pagina, 'size': 30});
+      final datos = envelopeData(r);
+      final content = datos['content'];
+      final items = (content is List ? content : const []).whereType<Map<String, dynamic>>().toList();
+      todas.addAll(items.map(Campaign.fromJson));
+      if (items.isEmpty || datos['last'] != false) break;
+    }
+    return todas;
+  }
 
   Future<Campaign> get(int id) => _call(() async {
         final r = await _sp.get<dynamic>('/api/v1/campaigns/$id');
