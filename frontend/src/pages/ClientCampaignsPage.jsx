@@ -12,7 +12,7 @@ import { getAuthItem } from '../services/session'
 const ESTADO_DE_ETAPA = { aprobar: 'pendiente_aprobacion', publicar: 'aprobado' }
 const TITULO_DE_ETAPA = {
   aprobar: ['Por aprobar', 'Revisa cada pieza: lo que apruebes es exactamente lo que se publica.'],
-  publicar: ['Aprobadas', 'Las campañas que aprobaste y dónde se publicaron.'],
+  publicar: ['Aprobadas', 'Las campañas que aprobaste. En Medir ves dónde se publicaron y cómo les va.'],
 }
 
 export default function ClientCampaignsPage() {
@@ -39,6 +39,7 @@ export default function ClientCampaignsPage() {
     setFilters((current) => ({ ...current, estado: ESTADO_DE_ETAPA[etapa] }))
     setPage(0)
     setLoading(true)
+    setError(false)
   }
 
   function updateFilter(key, value) {
@@ -155,6 +156,7 @@ export default function ClientCampaignsPage() {
             <option value="pendiente_aprobacion">Pendientes</option>
             <option value="aprobado">Aprobadas</option>
             <option value="rechazado">Rechazadas</option>
+            <option value="fracaso">Rechazadas dos veces (cerradas)</option>
           </select>
         </label>
         <details className="group w-full sm:w-auto">
