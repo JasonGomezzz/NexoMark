@@ -17,6 +17,7 @@ const PLATAFORMA_LABELS = {
   twitter: 'Twitter / X',
   linkedin: 'LinkedIn',
   google_ads: 'Google Ads',
+  tiktok: 'TikTok',
 }
 
 const PERIODS = [
@@ -35,6 +36,7 @@ const ESTADO_COLORS = {
   pendiente_aprobacion: 'var(--color-warning)',
   aprobado: 'var(--color-success)',
   rechazado: 'var(--color-error)',
+  fracaso: 'var(--color-on-error-container)',
 }
 
 
@@ -46,12 +48,17 @@ export default function AnalyticsPage() {
 
   // El reset de loading/error ocurre en el handler del selector (no en el
   // efecto): el efecto solo dispara el fetch y setea estado async.
+  // Con cambios rápidos de periodo, solo cuenta la respuesta del último pedido.
   useEffect(() => {
+    let vigente = true
     api
       .get('/api/admin/analytics/', { params: { period } })
-      .then((res) => setData(res.data.data))
-      .catch(() => setError('No se pudo cargar el analytics. Verifica tu sesión.'))
-      .finally(() => setLoading(false))
+      .then((res) => vigente && setData(res.data.data))
+      .catch(() => vigente && setError('No se pudo cargar el analytics. Verifica tu sesión.'))
+      .finally(() => vigente && setLoading(false))
+    return () => {
+      vigente = false
+    }
   }, [period])
 
   function handlePeriodChange(value) {
