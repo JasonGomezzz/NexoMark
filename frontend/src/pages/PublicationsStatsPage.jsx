@@ -115,6 +115,8 @@ export default function PublicationsStatsPage() {
   const cargando = !resumen && !error
   // Al cambiar de año se deja la vista anterior atenuada hasta que llegan los datos nuevos.
   const cambiandoAnio = Boolean(resumen) && resumen.anual?.anio !== anio
+  // Si el año nuevo no cargó, se deja de atenuar y se dice de qué año son los datos de abajo.
+  const atenuar = cambiandoAnio && !error
   const anios = resumen?.anual?.anios?.includes(anio) ? resumen.anual.anios : [anio, ...(resumen?.anual?.anios ?? [])]
   const conCliente = rol !== 'cliente'
   const conX = mostrarX({ xConfig, resumen, publicaciones })
@@ -172,7 +174,9 @@ export default function PublicationsStatsPage() {
       {error && (
         <div role="alert" className="flex flex-wrap items-center gap-3 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
           <AlertCircle className="h-4 w-4" aria-hidden="true" />
-          {error}
+          {cambiandoAnio
+            ? `No se pudieron cargar las estadísticas de ${anio}. Abajo siguen las de ${resumen.anual.anio}.`
+            : error}
           <button onClick={() => setRecarga((n) => n + 1)} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">
             Reintentar
           </button>
@@ -183,8 +187,8 @@ export default function PublicationsStatsPage() {
 
       {resumen && (
         <div
-          aria-busy={cambiandoAnio}
-          className={`space-y-8 transition-opacity duration-200 ${cambiandoAnio ? 'opacity-50' : ''}`}
+          aria-busy={atenuar}
+          className={`space-y-8 transition-opacity duration-200 ${atenuar ? 'opacity-50' : ''}`}
         >
           <section aria-labelledby="planchas-titulo">
             <h2 id="planchas-titulo" className="text-2xl font-extrabold text-on-surface">
