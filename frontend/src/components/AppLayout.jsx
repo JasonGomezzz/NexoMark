@@ -159,6 +159,14 @@ export default function AppLayout() {
     return () => window.removeEventListener('credits-updated', onCreditsUpdated)
   }, [])
 
+  // Cambio de nombre en Configuración: basta con volver a dibujar (getNombre lee lo guardado).
+  const [, setPerfilTick] = useState(0)
+  useEffect(() => {
+    const onPerfil = () => setPerfilTick((t) => t + 1)
+    window.addEventListener('perfil-actualizado', onPerfil)
+    return () => window.removeEventListener('perfil-actualizado', onPerfil)
+  }, [])
+
   useEffect(() => {
     if (!showCredits) return
     let cancelled = false

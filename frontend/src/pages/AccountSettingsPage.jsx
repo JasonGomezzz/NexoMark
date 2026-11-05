@@ -71,6 +71,8 @@ export default function AccountSettingsPage() {
       const { data } = await api.patch('/api/auth/me/', { nombre: nombre.trim() })
       setUser(data.data.user)
       setAuthItem('user_nombre', data.data.user.nombre)
+      // La barra lateral lee el nombre guardado: se le avisa para que lo vuelva a leer.
+      window.dispatchEvent(new Event('perfil-actualizado'))
       toast.success('Nombre actualizado')
     } catch (err) {
       const fieldError = err.response?.data?.data?.nombre?.[0]
