@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { ChartColumnIncreasing, ExternalLink, Loader2, Send } from 'lucide-react'
@@ -18,12 +18,17 @@ const TONOS = {
  * Las publicaciones en X se muestran en "Versión para X" (XVariantPanel) y los envíos a TikTok en
  * "Enviar a TikTok" (TikTokPanel): ninguna de las dos se publica al aprobar.
  */
-export default function PublicationsPanel({ campaignId, estadoCampana }) {
+export default function PublicationsPanel({ campaignId, estadoCampana, onCargadas }) {
   // null mientras carga: "sin cuentas de destino" solo se dice cuando se sabe.
   const [todas, setPublicaciones] = useState(null)
   const [falloCarga, setFalloCarga] = useState(false)
   const [publicando, setPublicando] = useState(null)
   const [recarga, setRecarga] = useState(0)
+  // El aviso al padre no debe volver a pedir la lista cada vez que el padre se redibuja.
+  const avisar = useRef(onCargadas)
+  useEffect(() => {
+    avisar.current = onCargadas
+  })
 
   useEffect(() => {
     let vigente = true
@@ -33,6 +38,7 @@ export default function PublicationsPanel({ campaignId, estadoCampana }) {
         if (!vigente) return
         setPublicaciones(lista)
         setFalloCarga(false)
+        avisar.current?.(lista)
       })
       .catch(() => vigente && setFalloCarga(true))
     return () => {

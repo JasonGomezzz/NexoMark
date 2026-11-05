@@ -57,6 +57,8 @@ export default function CampaignDetailPage() {
 
   const debounceRef = useRef(null)
   const pollAttemptsRef = useRef(0)
+  // Alguna cuenta destino ya tiene el post: el recorrido sella Publicar y pasa a Medir.
+  const [publicada, setPublicada] = useState(false)
   const draftKey = `campaign_${id}_draft`
 
   const fetchCampaign = useCallback(
@@ -305,7 +307,7 @@ export default function CampaignDetailPage() {
       </div>
 
       <div className="mb-12">
-        <CampaignStepper estado={campaign.estado} />
+        <CampaignStepper estado={campaign.estado} publicada={publicada} />
       </div>
 
       <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
@@ -385,7 +387,11 @@ export default function CampaignDetailPage() {
           </section>
 
           {/* Publicación en redes: estado por cuenta y "Publicar ahora / Reintentar" */}
-          <PublicationsPanel campaignId={campaign.id} estadoCampana={campaign.estado} />
+          <PublicationsPanel
+            campaignId={campaign.id}
+            estadoCampana={campaign.estado}
+            onCargadas={(lista) => setPublicada(lista.some((p) => p.estado === 'publicado'))}
+          />
 
           {/* TikTok: el marketero envía lo aprobado al buzón; no se muestra si TikTok no está configurado */}
           {campaign.estado === 'aprobado' && esMarketero && <TikTokPanel campaign={campaign} />}
