@@ -321,7 +321,17 @@ export default function ClientReviewPage() {
         </aside>
       </div>
 
-      <RejectModal open={showReject} busy={busy} onCancel={() => setShowReject(false)} onConfirm={handleReject} />
+      <RejectModal
+        open={showReject}
+        busy={busy}
+        onCancel={() => setShowReject(false)}
+        onConfirm={handleReject}
+        descripcion={
+          (campaign.rechazosClienteCount ?? 0) >= 1
+            ? 'Es el segundo rechazo: la campaña queda cerrada y no habrá otra versión. Tu comentario llega igual al marketero.'
+            : undefined
+        }
+      />
     </>
   )
 }
