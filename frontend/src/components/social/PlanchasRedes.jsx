@@ -8,8 +8,9 @@ import { cn } from '@/lib/utils'
 
 /**
  * Métricas como planchas de imprenta (dirección "Conforme"): una por red, lado
- * a lado. Cifras grandes del año, filas finas con el resto de métricas y barras
- * de 12 meses (me gusta o reacciones; en TikTok y X, publicaciones).
+ * a lado. Cifras grandes del año (con las de este mes), filas finas con el resto de
+ * métricas y barras de 12 meses: publicaciones y, donde la red las lee, me gusta o
+ * reacciones, con la cobertura (de cuántas publicaciones salen los totales).
  * - Lo que la red no informó dice «sin dato», nunca 0.
  * - Mes con publicaciones y 0 (o sin dato): raya en la base. Mes sin publicaciones o que aún no llega: nada.
  * - Red sin publicaciones en el año: no se dibujan barras vacías.
@@ -87,7 +88,9 @@ export function Planchas({ redes, resumen, puedeConectar }) {
         const filas = [...principales.slice(1), ...secundarias]
         const porMes = serieAnual(resumen.anual, red, 'publicaciones')
         const serie = sinLectura ? porMes : serieAnual(resumen.anual, red, 'me_gusta')
-        const sumaAnio = serie.reduce((acc, m) => acc + (typeof m.total === 'number' ? m.total : 0), 0)
+        const conDato = serie.filter((m) => typeof m.total === 'number')
+        const sumaAnio = conDato.reduce((acc, m) => acc + m.total, 0)
+        const esteAnio = indiceMesActual(anio) !== -1
         const tituloBarras = sinLectura ? (red === 'tiktok' ? 'Enviadas por mes' : 'Publicaciones por mes') : `${etiquetaGrande} por mes`
         return (
           <section
@@ -103,6 +106,9 @@ export function Planchas({ redes, resumen, puedeConectar }) {
               <div>
                 <dt className="text-[13px] text-on-surface-variant">{red === 'tiktok' ? 'Enviadas al buzón' : 'Publicaciones'}</dt>
                 <dd className="cifra mt-1 text-[44px] tabular-nums text-on-surface">{total}</dd>
+                {total > 0 && esteAnio && datos.publicaciones_mes != null && (
+                  <dd className="text-[13px] tabular-nums text-on-surface-variant">{datos.publicaciones_mes} este mes</dd>
+                )}
               </div>
               {!sinLectura && campoGrande && (
                 <div>
@@ -134,17 +140,30 @@ export function Planchas({ redes, resumen, puedeConectar }) {
                 ))}
               </dl>
             )}
+            {total > 0 && !sinLectura && (
+              <div className="mt-5">
+                <BarrasMes serie={porMes} publicaciones={porMes} anio={anio} color={COLOR[red]} titulo="Publicaciones por mes" />
+              </div>
+            )}
             {total > 0 && sumaAnio > 0 && (
               <div className="mt-5">
                 <BarrasMes serie={serie} publicaciones={porMes} anio={anio} color={COLOR[red]} titulo={tituloBarras} />
               </div>
             )}
-            {total > 0 && sumaAnio === 0 && !sinLectura && (
+            {/* Con lecturas en 0 se dice que no hay; sin lecturas, lo dice la cobertura (no es un cero). */}
+            {total > 0 && !sinLectura && conDato.length > 0 && sumaAnio === 0 && (
               <p className="mt-5 text-sm text-on-surface-variant">
                 Todavía no se registran {etiquetaGrande?.toLowerCase() ?? 'me gusta'} en {anio}.
               </p>
             )}
-            {total > 0 && datos.metricas_al && <p className="mt-3 text-[13px] text-on-surface-variant">Leídas de Meta {haceCuanto(datos.metricas_al)}</p>}
+            {total > 0 && !sinLectura && (
+              <p className="mt-3 text-[13px] text-on-surface-variant">
+                {datos.con_metricas
+                  ? `Totales de ${datos.con_metricas} de ${total} ${total === 1 ? 'publicación' : 'publicaciones'}` +
+                    (datos.metricas_al ? ` · leídos de Meta ${haceCuanto(datos.metricas_al)}` : '')
+                  : 'Meta todavía no entregó métricas de estas publicaciones.'}
+              </p>
+            )}
           </section>
         )
       })}
