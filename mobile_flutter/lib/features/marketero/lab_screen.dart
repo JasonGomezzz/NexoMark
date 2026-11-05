@@ -168,6 +168,8 @@ class _LabScreenState extends ConsumerState<LabScreen> {
             porVoz: _porVoz,
             capturaMs: capturaMs,
           );
+      // Si la persona salió de Dictar mientras se interpretaba, los campos ya no existen.
+      if (!mounted) return;
       _inicioCaptura = null;
       for (final campo in camposIntent) {
         var valor = intent.campos[campo] ?? '';
@@ -183,7 +185,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
         _etapa = _Etapa.campos;
       });
     } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _ocupado = false);
     }
@@ -210,6 +212,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
     });
     try {
       final campana = await ref.read(campaignRepositoryProvider).confirm(_intent!.id, _valores);
+      if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() {
         _campana = campana;
@@ -220,6 +223,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       unawaited(ref.read(sessionProvider.notifier).refreshUser());
       _vigilarGeneracion(campana.id);
     } on ApiException catch (e) {
+      if (!mounted) return;
       final porCampo = erroresPorCampo(e);
       setState(() {
         _erroresCampo = porCampo;
