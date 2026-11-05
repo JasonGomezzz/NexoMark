@@ -107,19 +107,30 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-5">
               <fieldset>
-                <legend className="text-sm font-medium text-on-surface">¿Cómo usarás NexoMark?</legend>
-                <div role="radiogroup" aria-label="Tipo de cuenta" className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {ROLES.map((r) => {
+                <legend id="tipo-cuenta" className="text-sm font-medium text-on-surface">¿Cómo usarás NexoMark?</legend>
+                <div role="radiogroup" aria-labelledby="tipo-cuenta" className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {ROLES.map((r, i) => {
                     const selected = rolSel === r.val
+                    const elegir = (val) => {
+                      setRolSel(val)
+                      setValue('rol', val)
+                    }
                     return (
                       <button
                         key={r.val}
                         type="button"
                         role="radio"
                         aria-checked={selected}
-                        onClick={() => {
-                          setRolSel(r.val)
-                          setValue('rol', r.val)
+                        // Grupo de radios: un solo tope de tabulación y flechas para cambiar.
+                        tabIndex={selected ? 0 : -1}
+                        onClick={() => elegir(r.val)}
+                        onKeyDown={(e) => {
+                          const paso = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]
+                          if (!paso) return
+                          e.preventDefault()
+                          const j = (i + paso + ROLES.length) % ROLES.length
+                          elegir(ROLES[j].val)
+                          e.currentTarget.parentElement.children[j]?.focus()
                         }}
                         className={cn(
                           'relative rounded-xl border p-4 text-left transition-[border-color,background-color] duration-150 active:scale-[0.99]',
