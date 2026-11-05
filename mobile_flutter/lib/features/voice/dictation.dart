@@ -187,6 +187,8 @@ class DictationController extends ChangeNotifier {
   }
 
   void _alResultado(SpeechRecognitionResult r) {
+    // El reconocedor puede entregar un último resultado después de cerrar la pantalla.
+    if (_cerrado) return;
     final texto = '$_base${r.recognizedWords}';
     onText(texto);
     if (r.finalResult) {
@@ -234,8 +236,18 @@ class DictationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Tras [dispose] el plugin aún puede llamar con el nivel, el estado o un error:
+  /// esos avisos se descartan en vez de fallar.
+  bool _cerrado = false;
+
+  @override
+  void notifyListeners() {
+    if (!_cerrado) super.notifyListeners();
+  }
+
   @override
   void dispose() {
+    _cerrado = true;
     _stt.cancel();
     super.dispose();
   }
