@@ -57,6 +57,8 @@ export default function CampaignDetailPage() {
 
   const debounceRef = useRef(null)
   const pollAttemptsRef = useRef(0)
+  // Tras ~2 min sin respuesta se deja de consultar: la pantalla ya no se actualiza sola.
+  const [esperaAgotada, setEsperaAgotada] = useState(false)
   // Alguna cuenta destino ya tiene el post: el recorrido sella Publicar y pasa a Medir.
   const [publicada, setPublicada] = useState(false)
   const draftKey = `campaign_${id}_draft`
@@ -100,6 +102,7 @@ export default function CampaignDetailPage() {
       if (pollAttemptsRef.current > 30) {
         window.clearInterval(timer)
         setRegenerating(false)
+        setEsperaAgotada(true)
         toast.error('La IA está tardando más de lo normal. Vuelve a abrir la campaña en unos minutos.')
         return
       }
@@ -195,6 +198,7 @@ export default function CampaignDetailPage() {
 
   async function handleRegenerate() {
     setRegenerating(true)
+    setEsperaAgotada(false)
     try {
       const { data } = await api.post(`/api/campaigns/${id}/regenerate/`)
       const c = data.data.campaign
@@ -329,7 +333,9 @@ export default function CampaignDetailPage() {
             {isGenerating && (
               <p role="status" className="mb-5 flex items-center gap-2 rounded-[10px] bg-primary-fixed px-4 py-3 text-sm text-on-primary-fixed">
                 <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
-                La IA está generando el nuevo contenido. Esta pantalla se actualiza sola.
+                {esperaAgotada
+                  ? 'La IA está tardando más de lo normal. Recarga la página en unos minutos para ver el resultado.'
+                  : 'La IA está generando el nuevo contenido. Esta pantalla se actualiza sola.'}
               </p>
             )}
             {campaign.estado === 'borrador' && campaign.ia_error_message && (
@@ -351,7 +357,7 @@ export default function CampaignDetailPage() {
                     <ImageOff className="h-8 w-8 text-outline" aria-hidden="true" />
                     <p className="text-sm font-medium text-on-surface">Sin imagen todavía</p>
                     {campaign.estado === 'generado' && (
-                      <p className="max-w-xs text-[13px]">El copy está listo, pero falta la imagen. Regenerar (1 crédito) vuelve a intentar copy e imagen.</p>
+                      <p className="max-w-xs text-[13px]">El copy está listo, pero la IA no entregó la imagen. Puedes enviarla así o dictar la campaña de nuevo.</p>
                     )}
                   </div>
                 )}
