@@ -388,8 +388,8 @@ export default function NewCampaignPage() {
 
       {resumenIntent?.advertencias?.length > 0 && (
         <ul className="mt-4 space-y-2">
-          {resumenIntent.advertencias.map((aviso) => (
-            <li key={aviso} className="flex items-start gap-2 rounded-[10px] bg-warning-container px-3 py-2.5 text-sm text-on-tertiary-container">
+          {resumenIntent.advertencias.map((aviso, i) => (
+            <li key={`${i}-${aviso}`} className="flex items-start gap-2 rounded-[10px] bg-warning-container px-3 py-2.5 text-sm text-on-tertiary-container">
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-tertiary" aria-hidden="true" />
               {aviso}
             </li>
