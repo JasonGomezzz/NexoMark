@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import axios from 'axios'
 import {
   refreshAccessToken, clearSession, attachSessionInterceptors, startSession, getAuthItem, setAuthItem,
-  logoutOnServer,
+  logoutOnServer, destinoTrasLogin,
 } from '../src/services/session.js'
 
 function memoryStorage(entries = []) {
@@ -115,4 +115,13 @@ test('cerrar sesión con el access vencido invalida también el refresh rotado',
   }
   await logoutOnServer(client)
   assert.deepEqual(enviados, ['old-refresh', 'new-refresh'])
+})
+
+test('tras entrar vuelve a la página pedida, solo si es interna', () => {
+  assert.equal(destinoTrasLogin('/review/12'), '/review/12')
+  assert.equal(destinoTrasLogin('/campaigns?etapa=aprobar'), '/campaigns?etapa=aprobar')
+  assert.equal(destinoTrasLogin(undefined), '/dashboard')
+  assert.equal(destinoTrasLogin('//evil.example/x'), '/dashboard')
+  assert.equal(destinoTrasLogin('https://evil.example'), '/dashboard')
+  assert.equal(destinoTrasLogin('/login'), '/dashboard')
 })

@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
 import { ArrowLeft, Zap, ShieldCheck } from 'lucide-react'
@@ -11,7 +11,7 @@ import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import GoogleAccess from '@/components/auth/GoogleAccess'
 import { useAuthBrandContent } from '../hooks/useAuthBrandContent'
-import { setAuthItem, startSession } from '../services/session'
+import { destinoTrasLogin, setAuthItem, startSession } from '../services/session'
 
 /**
  * Inicio de sesión: formulario a la izquierda, panel marino de marca a la derecha.
@@ -22,6 +22,8 @@ import { setAuthItem, startSession } from '../services/session'
 export default function LoginPage() {
   const { login, loading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const destino = destinoTrasLogin(location.state?.desde)
   const brandContent = useAuthBrandContent('login')
 
   const {
@@ -35,7 +37,7 @@ export default function LoginPage() {
   async function entrarConGoogle(sesion) {
     startSession(sesion, { remember: Boolean(getValues('remember')) })
     if (sesion.email) setAuthItem('user_email', sesion.email)
-    navigate('/dashboard', { replace: true })
+    navigate(destino, { replace: true })
   }
 
   async function onSubmit({ email, password, remember }) {
@@ -52,7 +54,7 @@ export default function LoginPage() {
       return
     }
 
-    navigate('/dashboard', { replace: true })
+    navigate(destino, { replace: true })
   }
 
   return (

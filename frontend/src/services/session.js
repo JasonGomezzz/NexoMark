@@ -80,6 +80,16 @@ export async function logoutOnServer(client) {
   }
 }
 
+/**
+ * Página a la que volver después de iniciar sesión (la que se pidió sin sesión).
+ * Solo rutas internas: nada de `//otro-sitio`, URLs absolutas ni volver al login.
+ */
+export function destinoTrasLogin(desde) {
+  if (typeof desde !== 'string' || !desde.startsWith('/') || desde.startsWith('//')) return '/dashboard'
+  if (/^\/(login|register)\b/.test(desde)) return '/dashboard'
+  return desde
+}
+
 // One rotation for Django, Spring and WebSocket in this tab. A late 401 that used
 // an old token reuses the newer access token instead of rotating refresh again.
 export function refreshAccessToken(rejectedToken) {

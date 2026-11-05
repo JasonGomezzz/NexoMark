@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, Outlet } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { RotateCw } from 'lucide-react'
 import api from '../services/api'
 import { clearSession, getAuthItem, setAuthItem } from '../services/session'
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
  */
 export default function PrivateRoute() {
   const hasToken = Boolean(getAuthItem('access_token'))
+  const location = useLocation()
   const [check, setCheck] = useState({ status: 'loading', user: null })
   const [attempt, setAttempt] = useState(0)
   const [slow, setSlow] = useState(false)
@@ -59,7 +60,10 @@ export default function PrivateRoute() {
     }
   }, [attempt])
 
-  if (!hasToken || check.status === 'invalid') return <Navigate to="/login" replace />
+  // Se recuerda la página pedida (p. ej. el enlace del correo a /review/12) para volver tras entrar.
+  if (!hasToken || check.status === 'invalid') {
+    return <Navigate to="/login" replace state={{ desde: `${location.pathname}${location.search}` }} />
+  }
 
   if (check.status === 'ready') {
     return (
