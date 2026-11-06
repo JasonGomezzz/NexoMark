@@ -677,5 +677,8 @@ int pasoDeEstado(EstadoCampana e, {bool publicada = false}) => switch (e) {
     };
 
 /// Fecha corta en español de Perú: "21 oct. 2026".
-String fechaCorta(DateTime? d) => d == null ? 'sin fecha' : DateFormat('d MMM y', 'es').format(d);
-String fechaHora(DateTime? d) => d == null ? 'sin fecha' : DateFormat("d MMM y, HH:mm", 'es').format(d);
+// Meses en minúscula, como se escriben en español; septiembre va «set», igual
+// que en las barras de Métricas.
+String _mesSet(String s) => s.replaceFirst('sept', 'set');
+String fechaCorta(DateTime? d) => d == null ? 'sin fecha' : _mesSet(DateFormat('d MMM y', 'es').format(d));
+String fechaHora(DateTime? d) => d == null ? 'sin fecha' : _mesSet(DateFormat("d MMM y, HH:mm", 'es').format(d));
