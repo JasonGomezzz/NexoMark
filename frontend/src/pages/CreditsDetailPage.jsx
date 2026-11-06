@@ -137,7 +137,7 @@ export default function CreditsDetailPage() {
                 </h2>
               </div>
               <p className="max-w-md text-sm text-on-surface-variant">
-                Cada crédito equivale a 1 generación o regeneración de IA exitosa. Al llegar a 0,
+                Generar o regenerar texto e imagen estándar cuesta 4 créditos. Con menos de 4,
                 la creación se bloquea hasta que se añadan créditos a tu cuenta.
               </p>
               <button
