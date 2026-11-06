@@ -53,9 +53,9 @@ logger = logging.getLogger(__name__)
 # frontend/src/lib/credits.js (PLANS). El cliente solo envía la key del
 # plan; el monto/créditos SIEMPRE se leen de aquí, nunca del body.
 CREDIT_PLAN_MAP = {
-    "basico": {"nombre": "Freelance", "precio": 79, "creditos": 100},
-    "pro": {"nombre": "Agencia", "precio": 199, "creditos": 400},
-    "elite": {"nombre": "Agencia Plus", "precio": 399, "creditos": 1000},
+    "basico": {"nombre": "Freelance", "precio": 59, "creditos": 100},
+    "pro": {"nombre": "Agencia", "precio": 149, "creditos": 400},
+    "elite": {"nombre": "Agencia Plus", "precio": 299, "creditos": 1000},
 }
 
 
@@ -836,6 +836,12 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     data={"planes_validos": list(CREDIT_PLAN_MAP.keys())},
                 ),
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if plan_key == "elite":
+            return Response(
+                api_response(False, "Agencia Plus estará disponible próximamente."),
+                status=status.HTTP_409_CONFLICT,
             )
 
         with transaction.atomic():

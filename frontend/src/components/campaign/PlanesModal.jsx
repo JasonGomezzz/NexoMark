@@ -128,14 +128,18 @@ export default function PlanesModal({ open, onClose }) {
                   </p>
                   <p className="mb-2 text-xs text-on-surface-variant">Al mes · sin IGV</p>
                   <p className="mb-6 text-sm font-medium text-primary">
-                    {plan.creditos} Créditos de IA
+                    {plan.creditos} créditos · hasta {plan.generaciones} generaciones
                   </p>
+                  {plan.proximamente && (
+                    <p className="mb-4 text-xs text-on-surface-variant">Próximamente · multiusuario e imagen HQ previstos</p>
+                  )}
                   <Button
                     variant={plan.popular ? 'default' : 'secondary'}
                     className="mt-auto w-full"
                     onClick={() => setCheckoutPlan(plan)}
+                    disabled={plan.proximamente}
                   >
-                    {plan.popular ? 'Seleccionar Plan' : 'Seleccionar'}
+                    {plan.proximamente ? 'Próximamente' : plan.popular ? 'Seleccionar Plan' : 'Seleccionar'}
                   </Button>
                 </div>
               ))}

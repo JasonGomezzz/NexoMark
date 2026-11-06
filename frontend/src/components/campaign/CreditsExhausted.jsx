@@ -55,7 +55,7 @@ export default function CreditsExhausted({ onClose }) {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-on-surface-variant">{plan.creditos} créditos</p>
+              <p className="text-xs text-on-surface-variant">{plan.creditos} créditos · hasta {plan.generaciones} generaciones</p>
             </div>
             <div className="text-right">
               <p className="text-lg font-bold tabular-nums text-on-surface">
@@ -67,8 +67,9 @@ export default function CreditsExhausted({ onClose }) {
                 variant={plan.popular ? 'default' : 'outline'}
                 className="mt-1"
                 onClick={() => setShowPlanes(true)}
+                disabled={plan.proximamente}
               >
-                Elegir plan
+                {plan.proximamente ? 'Próximamente' : 'Elegir plan'}
               </Button>
             </div>
           </div>

@@ -11,7 +11,7 @@ export const MSG_RESET =
   'Avísale a tu SuperAdmin: él restablece tu cuota a 100 desde el panel Usuarios.'
 
 export const PLANS = [
-  { key: 'basico', nombre: 'Freelance', precio: 79, creditos: '100', popular: false },
-  { key: 'pro', nombre: 'Agencia', precio: 199, creditos: '400', popular: true },
-  { key: 'elite', nombre: 'Agencia Plus', precio: 399, creditos: '1,000', popular: false },
+  { key: 'basico', nombre: 'Freelance', precio: 59, creditos: '100', generaciones: 25, popular: false },
+  { key: 'pro', nombre: 'Agencia', precio: 149, creditos: '400', generaciones: 100, popular: true },
+  { key: 'elite', nombre: 'Agencia Plus', precio: 299, creditos: '1,000', generaciones: 250, popular: false, proximamente: true },
 ]

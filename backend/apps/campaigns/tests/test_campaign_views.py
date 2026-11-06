@@ -456,12 +456,22 @@ class TestCampaignPurchaseCredits:
     def test_crea_registro_credit_purchase(self, api_client, user_marketero):
         from apps.campaigns.models import CreditPurchase
 
-        api_client.post(CREDITS_PURCHASE_URL, {"plan": "elite"}, format="json")
+        api_client.post(CREDITS_PURCHASE_URL, {"plan": "pro"}, format="json")
         compra = CreditPurchase.objects.get(usuario=user_marketero)
-        assert compra.creditos == 1000
-        assert compra.plan_nombre == "Agencia Plus"
-        assert compra.monto == 399
+        assert compra.creditos == 400
+        assert compra.plan_nombre == "Agencia"
+        assert compra.monto == 149
         assert compra.estado == "aprobado"
+
+    def test_agencia_plus_proximamente_no_cambia_saldo(self, api_client, user_marketero):
+        from apps.campaigns.models import CreditPurchase
+
+        saldo_inicial = user_marketero.tokens_disponibles
+        response = api_client.post(CREDITS_PURCHASE_URL, {"plan": "elite"}, format="json")
+        assert response.status_code == 409
+        user_marketero.refresh_from_db()
+        assert user_marketero.tokens_disponibles == saldo_inicial
+        assert not CreditPurchase.objects.filter(usuario=user_marketero).exists()
 
     def test_ignora_creditos_y_monto_enviados_por_el_cliente(self, api_client, user_marketero):
         """El cliente no debe poder auto-otorgarse créditos manipulando el body."""

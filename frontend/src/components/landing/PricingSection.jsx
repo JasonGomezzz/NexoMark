@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { PLANS as CREDIT_PLANS } from '@/lib/credits'
 
 /**
- * Precios por CUOTA DE TOKENS de IA (1 crédito = 1 generación).
+ * Cada generación estándar consume cuatro créditos.
  * Coherente con el backend: sin video AI, sin features inventadas.
  */
 const PLANS = [
@@ -16,6 +16,7 @@ const PLANS = [
     destacado: false,
     features: [
       { txt: `${CREDIT_PLANS[0].creditos} créditos de IA al mes`, ok: true },
+      { txt: 'Hasta 25 generaciones de texto e imagen', ok: true },
       { txt: 'Texto e imagen con IA según saldo', ok: true },
       { txt: '1 usuario marketero', ok: true },
       { txt: 'Analytics avanzado', ok: false },
@@ -29,6 +30,7 @@ const PLANS = [
     destacado: true,
     features: [
       { txt: `${CREDIT_PLANS[1].creditos} créditos de IA`, ok: true },
+      { txt: 'Hasta 100 generaciones de texto e imagen', ok: true },
       { txt: 'Copy e imágenes con IA', ok: true },
       { txt: 'Revisión y aprobación del cliente', ok: true },
       { txt: 'App de aprobación para clientes', ok: true },
@@ -37,16 +39,19 @@ const PLANS = [
   },
   {
     nombre: CREDIT_PLANS[2].nombre,
+    proximamente: true,
     precio: `S/ ${CREDIT_PLANS[2].precio}`,
     periodo: '/mes',
     destacado: false,
     features: [
       { txt: `${CREDIT_PLANS[2].creditos} créditos de IA`, ok: true },
+      { txt: 'Hasta 250 generaciones de texto e imagen', ok: true },
+      { txt: 'Multiusuario e imagen HQ previstos', ok: false },
       { txt: 'Estadísticas de publicaciones disponibles', ok: true },
       { txt: 'Historial de versiones', ok: true },
       { txt: 'Revisión y aprobación del cliente', ok: true },
     ],
-    cta: `Elegir ${CREDIT_PLANS[2].nombre}`,
+    cta: 'Próximamente',
   },
 ]
 
@@ -121,14 +126,16 @@ export default function PricingSection() {
                 </li>
               ))}
             </ul>
-            <Link to="/login" className="mt-auto w-full">
+            {plan.proximamente ? (
+              <Button disabled variant="outline" className="mt-auto w-full">Próximamente</Button>
+            ) : <Link to="/login" className="mt-auto w-full">
               <Button
                 variant={plan.destacado ? 'light' : 'outline'}
                 className="w-full"
               >
                 {plan.cta}
               </Button>
-            </Link>
+            </Link>}
           </motion.div>
         ))}
       </div>
