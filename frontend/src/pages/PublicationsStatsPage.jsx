@@ -288,7 +288,7 @@ function LineaDeEstado({ resumen }) {
     <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-on-surface-variant">
       {partes.map(([n, uno, varios, color]) => (
         <span key={uno}>
-          <strong className={`font-semibold tabular-nums ${color}`}>{n}</strong> {n === 1 ? uno : varios}
+          <strong className={`font-semibold tabular-nums ${color}`}>{n == null ? 'sin dato' : n.toLocaleString('es-PE')}</strong> {n === 1 ? uno : varios}
         </span>
       ))}
     </p>

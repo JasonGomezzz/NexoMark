@@ -23,6 +23,7 @@ const COLOR = {
   tiktok: 'var(--color-chart-tiktok)',
 }
 const COMPACTO = new Intl.NumberFormat('es-PE', { notation: 'compact', maximumFractionDigits: 1 })
+const ENTERO = new Intl.NumberFormat('es-PE')
 
 function BarrasMes({ serie, publicaciones, anio, color, titulo }) {
   const mesActual = indiceMesActual(anio)
@@ -105,9 +106,9 @@ export function Planchas({ redes, resumen, puedeConectar }) {
             <dl className="mt-5 flex flex-wrap gap-x-7 gap-y-3">
               <div>
                 <dt className="text-[13px] text-on-surface-variant">{red === 'tiktok' ? 'Enviadas al buzón' : 'Publicaciones'}</dt>
-                <dd className="cifra mt-1 text-[44px] tabular-nums text-on-surface">{total}</dd>
+                <dd className="cifra mt-1 text-[44px] tabular-nums text-on-surface">{ENTERO.format(total)}</dd>
                 {total > 0 && esteAnio && datos.publicaciones_mes != null && (
-                  <dd className="text-[13px] tabular-nums text-on-surface-variant">{datos.publicaciones_mes} este mes</dd>
+                  <dd className="text-[13px] tabular-nums text-on-surface-variant">{ENTERO.format(datos.publicaciones_mes)} este mes</dd>
                 )}
               </div>
               {!sinLectura && campoGrande && (
@@ -159,7 +160,7 @@ export function Planchas({ redes, resumen, puedeConectar }) {
             {total > 0 && !sinLectura && (
               <p className="mt-3 text-[13px] text-on-surface-variant">
                 {datos.con_metricas
-                  ? `Totales de ${datos.con_metricas} de ${total} ${total === 1 ? 'publicación' : 'publicaciones'}` +
+                  ? `Totales de ${ENTERO.format(datos.con_metricas)} de ${ENTERO.format(total)} ${total === 1 ? 'publicación' : 'publicaciones'}` +
                     (datos.metricas_al ? ` · leídos de Meta ${haceCuanto(datos.metricas_al)}` : '')
                   : 'Meta todavía no entregó métricas de estas publicaciones.'}
               </p>
