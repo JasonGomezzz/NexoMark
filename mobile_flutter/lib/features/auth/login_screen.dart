@@ -46,6 +46,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Rol _rol = Rol.marketero;
   bool _verPassword = false;
   bool _enviando = false;
+  // Cuál de las dos entradas está en curso: el indicador va en su propio botón.
+  bool _conGoogle = false;
   bool _googleListo = false;
   String? _error;
   String? _bienvenida;
@@ -106,6 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _google() async {
     setState(() {
       _enviando = true;
+      _conGoogle = true;
       _error = null;
     });
     final google = GoogleAuth(ref.read(authRepositoryProvider));
@@ -131,7 +134,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } finally {
-      if (mounted) setState(() => _enviando = false);
+      if (mounted) {
+        setState(() {
+          _enviando = false;
+          _conGoogle = false;
+        });
+      }
     }
   }
 
@@ -276,7 +284,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 18),
             FilledButton(
               onPressed: _enviando ? null : _enviar,
-              child: _enviando
+              child: _enviando && !_conGoogle
                   ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                   : Text(_registro ? 'Crear cuenta' : 'Entrar'),
             ),
@@ -302,7 +310,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: _enviando ? null : _google,
-                icon: const _GoogleG(),
+                icon: _conGoogle
+                    ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
+                    : const _GoogleG(),
                 label: Text(_registro ? 'Registrarse con Google como ${_rol == Rol.marketero ? 'marketero' : 'cliente'}' : 'Continuar con Google'),
               ),
             ],
