@@ -93,7 +93,7 @@ export default function SocialConnectionsCard() {
       )}
 
       {cargando ? (
-        <ul role="status" aria-label="Cargando cuentas" className="mb-5 divide-y divide-outline-variant rounded-lg border border-outline-variant">
+        <ul aria-busy="true" aria-label="Cargando cuentas" className="mb-5 divide-y divide-outline-variant rounded-lg border border-outline-variant">
           {[0, 1].map((i) => (
             <li key={i} className="flex items-center gap-3 px-4 py-3">
               <span className="esqueleto h-9 w-9 rounded-full" />

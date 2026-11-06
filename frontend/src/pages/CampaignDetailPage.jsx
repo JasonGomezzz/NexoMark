@@ -730,7 +730,7 @@ function SubmitModal({ preview, clienteEmail, onConfirm, onCancel }) {
           <legend className="mb-1 font-display text-lg font-extrabold text-on-surface">¿Dónde se publica al aprobarla?</legend>
           <p className="mb-3 text-[13px] text-on-surface-variant">Se publica sola en las cuentas que marques, apenas el cliente la apruebe.</p>
           {destinos === null ? (
-            <ul role="status" aria-label="Cargando cuentas" className="space-y-2">
+            <ul aria-busy="true" aria-label="Cargando cuentas" className="space-y-2">
               {[0, 1].map((i) => (
                 <li key={i} className="esqueleto h-14 rounded-[10px]" />
               ))}

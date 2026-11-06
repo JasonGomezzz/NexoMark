@@ -132,10 +132,10 @@ export default function ClientDashboardPage() {
         {!loading && pending.length === 0 ? (
           <p className="mt-2 text-[15px] text-on-surface-variant">Todo al día. Cuando tu agencia te envíe una campaña, aparecerá aquí y te avisaremos.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
+          <ul aria-busy={loading} aria-label={loading ? 'Cargando campañas' : undefined} className="mt-4 divide-y divide-hairline border-y border-hairline">
             {loading &&
               [0, 1, 2].map((i) => (
-                <li key={`esqueleto-${i}`} role="status" aria-label="Cargando campañas" className="flex items-center gap-4 py-4 sm:px-2">
+                <li key={`esqueleto-${i}`} aria-hidden="true" className="flex items-center gap-4 py-4 sm:px-2">
                   <span className="esqueleto h-16 w-16 shrink-0 rounded-[10px]" />
                   <span className="flex-1 space-y-2">
                     <span className="esqueleto block h-4 w-3/5 rounded" />
