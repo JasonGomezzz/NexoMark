@@ -38,7 +38,7 @@ export default function RegisterPage() {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm({ defaultValues: { rol: 'marketero' } })
+  } = useForm({ mode: 'onTouched', defaultValues: { rol: 'marketero' } })
 
   // Estado local en vez de watch(): el React Compiler puede optimizar el componente.
   const [rolSel, setRolSel] = useState('marketero')
@@ -173,6 +173,7 @@ export default function RegisterPage() {
                 label="Correo electrónico"
                 autoComplete="email"
                 placeholder="nombre@empresa.com"
+                hint="Con este correo inicias sesión."
                 error={errors.email?.message}
                 {...register('email', {
                   required: 'Escribe tu correo',

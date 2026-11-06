@@ -31,7 +31,7 @@ export default function LoginPage() {
     handleSubmit,
     getValues,
     formState: { errors },
-  } = useForm()
+  } = useForm({ mode: 'onTouched' })
 
   // Google responde con los mismos JWT que /api/auth/token/.
   async function entrarConGoogle(sesion) {

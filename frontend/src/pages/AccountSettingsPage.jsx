@@ -10,6 +10,7 @@ import ProfilePhoto from '@/components/account/ProfilePhoto'
 import EmailChange, { SinContrasena } from '@/components/account/EmailChange'
 import GoogleLink from '@/components/account/GoogleLink'
 import { setAuthItem } from '../services/session'
+import AuthField from '@/components/auth/AuthField'
 
 /**
  * Configuración de cuenta, sobre los endpoints reales de Django:
@@ -40,6 +41,9 @@ export default function AccountSettingsPage() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  // Campos que el usuario ya dejó: recién ahí se dice qué falta (no mientras escribe).
+  const [tocados, setTocados] = useState({})
+  const tocar = (campo) => () => setTocados((t) => ({ ...t, [campo]: true }))
   const [savingPassword, setSavingPassword] = useState(false)
   const { theme, setTheme } = useTheme()
 
@@ -98,6 +102,7 @@ export default function AccountSettingsPage() {
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
+      setTocados({})
     } catch (err) {
       const data = err.response?.data?.data
       const fieldError = data?.current_password?.[0] || data?.new_password?.[0]
@@ -134,8 +139,11 @@ export default function AccountSettingsPage() {
   const tokens = user.tokens_disponibles ?? 0
   const pct = Math.min(100, Math.round((tokens / QUOTA_DEFAULT) * 100))
   const nombreCambiado = nombre.trim() !== (user.nombre || '') && nombre.trim().length >= 2
+  const errorNueva = tocados.nueva && newPassword.length < 8 ? 'Usa al menos 8 caracteres.' : undefined
+  const errorConfirmar =
+    tocados.confirmar && confirmPassword !== newPassword ? 'No coincide con la nueva contraseña.' : undefined
   const passwordValido =
-    currentPassword.length > 0 && newPassword.length >= 8 && confirmPassword.length > 0
+    currentPassword.length > 0 && newPassword.length >= 8 && confirmPassword === newPassword
 
   const inputCls =
     'w-full rounded-lg border border-outline-variant px-3 py-2.5 text-sm text-on-surface outline-none transition placeholder:text-outline focus:border-transparent focus:ring-2 focus:ring-primary'
@@ -210,42 +218,41 @@ export default function AccountSettingsPage() {
               </h3>
               {user.has_password ? (
                 <form onSubmit={handleChangePassword} className="mt-4 space-y-4">
-                  <label className="block sm:max-w-sm">
-                    <span className="mb-1.5 block text-sm font-medium text-on-surface">Contraseña actual</span>
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      autoComplete="current-password"
-                      required
-                      className={inputCls}
-                    />
-                  </label>
+                  <AuthField
+                    id="password-actual"
+                    type="password"
+                    label="Contraseña actual"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                    className="sm:max-w-sm"
+                  />
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-medium text-on-surface">Nueva contraseña</span>
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        autoComplete="new-password"
-                        minLength={8}
-                        required
-                        className={inputCls}
-                      />
-                      <p className="mt-1 text-[13px] text-on-surface-variant">Mínimo 8 caracteres.</p>
-                    </label>
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-medium text-on-surface">Confirmar nueva contraseña</span>
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        autoComplete="new-password"
-                        required
-                        className={inputCls}
-                      />
-                    </label>
+                    <AuthField
+                      id="password-nueva"
+                      type="password"
+                      label="Nueva contraseña"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      onBlur={tocar('nueva')}
+                      autoComplete="new-password"
+                      minLength={8}
+                      required
+                      hint="Mínimo 8 caracteres."
+                      error={errorNueva}
+                    />
+                    <AuthField
+                      id="password-confirmar"
+                      type="password"
+                      label="Confirmar nueva contraseña"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onBlur={tocar('confirmar')}
+                      autoComplete="new-password"
+                      required
+                      error={errorConfirmar}
+                    />
                   </div>
                   <Button type="submit" size="sm" variant="outline" disabled={!passwordValido || savingPassword}>
                     {savingPassword ? 'Actualizando…' : 'Actualizar contraseña'}
