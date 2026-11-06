@@ -7,6 +7,7 @@ import StatusBadge from '@/components/StatusBadge'
 import { getAuthItem } from '../services/session'
 import { conteosDeLinea, etapaDeEstado, urlDeEtapa } from '@/components/linea/estaciones'
 import { cn } from '@/lib/utils'
+import { etiquetaPlataforma } from '@/lib/etiquetas'
 
 /**
  * Campañas por paso de la orden de trabajo (Marketero/SuperAdmin). Consume Django con
@@ -242,10 +243,12 @@ export default function CampaignListPage() {
                   >
                     {c.titulo}
                   </Link>
-                  <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-on-surface-variant">
-                    <span>{c.cliente_nombre || 'Cliente sin dato'}</span>
-                    <span className="capitalize">{c.plataforma?.replace('_', ' ')}</span>
-                    <span className="tabular-nums">{new Date(c.fecha_creacion).toLocaleDateString('es-PE')}</span>
+                  <p className="mt-1 text-[13px] text-on-surface-variant">
+                    {/* Lo secundario en una línea: cliente · plataforma · fecha ("5 nov. 2026", mes en minúscula). */}
+                    {c.cliente_nombre || 'Cliente sin dato'} · {etiquetaPlataforma(c.plataforma)} ·{' '}
+                    <span className="tabular-nums">
+                      {new Date(c.fecha_creacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
                   </p>
                 </div>
                 <div className="hidden md:block">

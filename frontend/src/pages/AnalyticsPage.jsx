@@ -4,6 +4,7 @@ import { AlertCircle } from 'lucide-react'
 import api from '../services/api'
 import MedicionVozFormulario from '@/components/analytics/MedicionVozFormulario'
 import { STATES } from '@/lib/campaignStates'
+import { etiquetaPlataforma } from '@/lib/etiquetas'
 
 /**
  * Analytics del SuperAdmin (diseño NexoMark). Consume Django /api/admin/analytics/.
@@ -11,14 +12,6 @@ import { STATES } from '@/lib/campaignStates'
  * Gráficos con datos REALES del backend (no inventa series que no existen).
  * Colores de estado alineados con StatusBadge / DESIGN.md.
  */
-const PLATAFORMA_LABELS = {
-  instagram: 'Instagram',
-  facebook: 'Facebook',
-  twitter: 'Twitter / X',
-  linkedin: 'LinkedIn',
-  google_ads: 'Google Ads',
-  tiktok: 'TikTok',
-}
 
 const PERIODS = [
   { value: 'week', label: 'Semana' },
@@ -230,7 +223,7 @@ export default function AnalyticsPage() {
               <Barras
                 rows={data.campanas_por_plataforma.map((r) => ({
                   clave: r.plataforma,
-                  etiqueta: PLATAFORMA_LABELS[r.plataforma] ?? r.plataforma,
+                  etiqueta: etiquetaPlataforma(r.plataforma),
                   total: r.total,
                 }))}
               />

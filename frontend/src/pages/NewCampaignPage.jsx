@@ -11,38 +11,7 @@ import VoiceBriefCard from '@/components/campaign/VoiceBriefCard'
 import useBriefDictado from '../hooks/useBriefDictado'
 import { camposParaFormulario } from '../services/voiceIntent'
 import { cn } from '@/lib/utils'
-
-const INDUSTRIAS = [
-  { value: 'tecnologia', label: 'Tecnología' },
-  { value: 'salud', label: 'Salud' },
-  { value: 'educacion', label: 'Educación' },
-  { value: 'retail', label: 'Retail' },
-  { value: 'gastronomia', label: 'Gastronomía' },
-  { value: 'moda', label: 'Moda' },
-  { value: 'finanzas', label: 'Finanzas' },
-  { value: 'entretenimiento', label: 'Entretenimiento' },
-  { value: 'otro', label: 'Otro' },
-]
-
-// Valores EXACTOS de CampaignTono/CampaignPlataforma del backend —
-// un valor fuera de choices devuelve 400.
-const TONOS = [
-  { value: 'profesional', label: 'Profesional' },
-  { value: 'casual', label: 'Casual' },
-  { value: 'urgente', label: 'Urgente' },
-  { value: 'inspiracional', label: 'Inspiracional' },
-  { value: 'humoristico', label: 'Humorístico' },
-  { value: 'persuasivo', label: 'Persuasivo' },
-]
-
-const PLATAFORMAS = [
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'twitter', label: 'Twitter / X' },
-  { value: 'linkedin', label: 'LinkedIn' },
-  { value: 'google_ads', label: 'Google Ads' },
-  { value: 'tiktok', label: 'TikTok' },
-]
+import { INDUSTRIAS, PLATAFORMAS, TONOS } from '@/lib/etiquetas'
 
 // Opciones que el formulario acepta: lo que interprete la IA fuera de estas
 // listas no se vuelca y queda para que el usuario lo elija.

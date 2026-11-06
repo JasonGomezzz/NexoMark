@@ -7,6 +7,7 @@ import XPendientesCliente from '@/components/social/XPendientesCliente'
 import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import { campaignSentAt, relativeTimeFrom } from '../utils/date'
 import { getAuthItem } from '../services/session'
+import { etiquetaIndustria, etiquetaPlataforma } from '@/lib/etiquetas'
 
 // La estación de la línea fija el estado: Aprobar = pendientes, Publicar = aprobadas.
 const ESTADO_DE_ETAPA = { aprobar: 'pendiente_aprobacion', publicar: 'aprobado' }
@@ -232,7 +233,7 @@ export default function ClientCampaignsPage() {
               <div className="min-w-0 flex-1">
                 <h2 className="line-clamp-2 font-semibold leading-snug text-on-surface">{campaign.titulo}</h2>
                 <p className="truncate text-sm text-on-surface-variant">
-                  {campaign.clienteNombre || 'Cliente'} · {campaign.plataforma || '—'} · {campaign.industria || '—'}
+                  {campaign.clienteNombre || 'Cliente'} · {etiquetaPlataforma(campaign.plataforma)} · {etiquetaIndustria(campaign.industria)}
                 </p>
                 <p className="mt-1 text-[13px] font-medium text-primary">
                   Enviada {relativeTimeFrom(campaignSentAt(campaign))}
