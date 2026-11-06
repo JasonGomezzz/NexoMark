@@ -98,13 +98,15 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     final campana = ref.watch(_reviewProvider(widget.id));
     return MesaScaffold(
       appBar: AppBar(title: const Text('Revisar campaña')),
-      body: campana.when(
-        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-        error: (e, _) => Padding(
-          padding: const EdgeInsets.all(16),
-          child: ErrorBanner(message: toApiException(e).message, onRetry: () => ref.invalidate(_reviewProvider(widget.id))),
+      body: Llegada(
+        child: campana.when(
+          loading: () => const _RevisionSkeleton(),
+          error: (e, _) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: ErrorBanner(message: toApiException(e).message, onRetry: () => ref.invalidate(_reviewProvider(widget.id))),
+          ),
+          data: (c) => _contenido(context, c),
         ),
-        data: (c) => _contenido(context, c),
       ),
       // Decidir queda fijo en la zona del pulgar mientras se lee la campaña.
       bottomNavigationBar: switch (campana.value) {
@@ -160,6 +162,30 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
           const SizedBox(height: 16),
           InfoBanner(message: 'Pediste: «${c.feedbackRechazo}»', tone: InfoTone.warning),
         ],
+      ],
+    );
+  }
+}
+
+/// Forma de la revisión (pieza, estado, título, texto) mientras carga.
+class _RevisionSkeleton extends StatelessWidget {
+  const _RevisionSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(Nexo.gutter, 4, Nexo.gutter, 32),
+      children: const [
+        AspectRatio(aspectRatio: 1, child: Skeleton(height: double.infinity, radius: Nexo.radiusSurface)),
+        SizedBox(height: 16),
+        Align(alignment: Alignment.centerLeft, child: Skeleton(width: 120, height: 26, radius: 99)),
+        SizedBox(height: 10),
+        Skeleton(width: 240, height: 24),
+        SizedBox(height: 8),
+        Skeleton(width: 170, height: 12),
+        SizedBox(height: 16),
+        Skeleton(height: 140, radius: Nexo.radiusSurface),
       ],
     );
   }

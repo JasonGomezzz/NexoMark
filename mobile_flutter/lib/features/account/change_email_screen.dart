@@ -105,7 +105,20 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
       appBar: AppBar(title: const Text('Cambiar correo')),
       body: SafeArea(
         child: _cargando
-            ? const Center(child: CircularProgressIndicator.adaptive())
+            // La forma de la pantalla: correo actual, dos campos y el botón.
+            ? ListView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                children: const [
+                  Skeleton(height: 72, radius: Nexo.radiusSurface),
+                  SizedBox(height: 16),
+                  Skeleton(height: 56, radius: Nexo.radiusField),
+                  SizedBox(height: 12),
+                  Skeleton(height: 56, radius: Nexo.radiusField),
+                  SizedBox(height: 52),
+                  Skeleton(height: 52, radius: Nexo.radiusField),
+                ],
+              )
             : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [

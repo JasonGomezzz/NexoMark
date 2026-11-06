@@ -39,6 +39,15 @@ abstract final class Motion {
   /// Vuelta del aro «escuchando · mm:ss» del micrófono (lineal, solo mientras escucha).
   static const aroMicrofono = Duration(seconds: 24);
 
+  /// Una carga más corta que esto no muestra esqueleto: evita el parpadeo.
+  static const esperaEsqueleto = Duration(milliseconds: 300);
+
+  /// Fundido con el que llega el contenido real (o aparece el esqueleto).
+  static const llegada = Duration(milliseconds: 150);
+
+  /// Pulso del esqueleto (ida y vuelta), suave y sin brillo que corre.
+  static const pulso = Duration(milliseconds: 1800);
+
   /// Separación entre elementos que entran juntos.
   static const stagger = Duration(milliseconds: 50);
 

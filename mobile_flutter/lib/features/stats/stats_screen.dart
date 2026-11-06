@@ -639,7 +639,18 @@ class _DetallePublicacion extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           detalle.when(
-            loading: () => const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator.adaptive())),
+            // Las filas de métricas (44 de alto, como las reales) mientras llegan.
+            loading: () => Column(
+              children: [
+                for (var i = 0; i < 6; i++) ...[
+                  if (i > 0) Divider(color: context.nexo.hairline),
+                  const SizedBox(
+                    height: 44,
+                    child: Row(children: [Skeleton(width: 110, height: 12), Spacer(), Skeleton(width: 48, height: 18)]),
+                  ),
+                ],
+              ],
+            ),
             error: (e, _) => ErrorBanner(message: toApiException(e).message),
             data: (d) {
               final m = d.publicacion.ultimaMetrica ?? const Metric();

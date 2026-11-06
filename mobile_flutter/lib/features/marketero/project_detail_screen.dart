@@ -129,16 +129,18 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             ),
         ],
       ),
-      body: campana.when(
-        loading: () => widget.inicial == null ? const _DetalleSkeleton() : _cuerpo(context, widget.inicial!, pubs),
-        error: (e, _) => Padding(
-          padding: const EdgeInsets.all(16),
-          child: ErrorBanner(
-            message: toApiException(e).message,
-            onRetry: () => ref.invalidate(campaignProvider(widget.id)),
+      body: Llegada(
+        child: campana.when(
+          loading: () => widget.inicial == null ? const _DetalleSkeleton() : _cuerpo(context, widget.inicial!, pubs),
+          error: (e, _) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: ErrorBanner(
+              message: toApiException(e).message,
+              onRetry: () => ref.invalidate(campaignProvider(widget.id)),
+            ),
           ),
+          data: (c) => _cuerpo(context, c, pubs),
         ),
-        data: (c) => _cuerpo(context, c, pubs),
       ),
       // La acción principal va fija abajo, en la zona del pulgar.
       bottomNavigationBar: c != null && c.estado == EstadoCampana.generado
@@ -655,7 +657,15 @@ class _VersionesSheet extends ConsumerWidget {
       initialChildSize: 0.6,
       maxChildSize: 0.92,
       builder: (context, scroll) => versiones.when(
-        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
+        loading: () => ListView(
+          controller: scroll,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          children: [
+            Text('Versiones', style: context.text.titleLarge),
+            const SizedBox(height: 12),
+            for (var i = 0; i < 3; i++) const Padding(padding: EdgeInsets.only(bottom: 10), child: Skeleton(height: 88, radius: Nexo.radiusSurface)),
+          ],
+        ),
         error: (e, _) => Padding(padding: const EdgeInsets.all(16), child: ErrorBanner(message: toApiException(e).message)),
         data: (lista) => ListView(
           controller: scroll,
@@ -773,7 +783,14 @@ class _DestinosSheetState extends ConsumerState<_DestinosSheet> {
             if (_error != null)
               ErrorBanner(message: _error!)
             else if (destinos == null)
-              const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator.adaptive()))
+              // Forma de dos cuentas (ícono y nombre) mientras llegan los destinos.
+              const Column(
+                children: [
+                  Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Skeleton(height: 32)),
+                  Divider(),
+                  Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Skeleton(height: 32)),
+                ],
+              )
             else if (destinos.isEmpty)
               const InfoBanner(
                 message: 'El cliente todavía no conectó Instagram ni Facebook. Puedes enviarla igual; se aprobará sin publicar.',

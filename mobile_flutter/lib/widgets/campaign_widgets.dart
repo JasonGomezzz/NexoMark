@@ -184,26 +184,37 @@ class CampaignCard extends StatelessWidget {
 class CampaignCardSkeleton extends StatelessWidget {
   const CampaignCardSkeleton({super.key});
 
+  // Mismas medidas que [CampaignCard] (imagen de 64 en una caja de 72, título,
+  // una línea de datos y la píldora): al llegar la lista nada salta.
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 12),
+    final t = context.text;
+    final escala = MediaQuery.textScalerOf(context);
+    // Alto de una línea de ese estilo, con la letra que eligió la persona.
+    double alto(TextStyle? s) => escala.scale(s?.fontSize ?? 14) * (s?.height ?? 1.3);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Padding(padding: EdgeInsets.only(right: 8), child: Skeleton(width: 64, height: 64, radius: Nexo.radiusField)),
-          SizedBox(width: 14),
+          const SizedBox(
+            width: 72,
+            height: 72,
+            child: Align(alignment: Alignment.topLeft, child: Skeleton(width: 64, height: 64, radius: Nexo.radiusField)),
+          ),
+          const SizedBox(width: 6),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Skeleton(width: 180, height: 14),
-                SizedBox(height: 8),
-                Skeleton(width: 110, height: 12),
-                SizedBox(height: 12),
-                Skeleton(width: 90, height: 22, radius: 99),
+                SizedBox(height: alto(t.titleMedium), child: const Align(alignment: Alignment.centerLeft, child: Skeleton(width: 180, height: 14))),
+                const SizedBox(height: 2),
+                SizedBox(height: alto(t.bodySmall), child: const Align(alignment: Alignment.centerLeft, child: Skeleton(width: 130, height: 11))),
+                const SizedBox(height: 8),
+                const Skeleton(width: 90, height: 22, radius: 99),
               ],
             ),
           ),
+          const SizedBox(width: 28),
         ],
       ),
     );

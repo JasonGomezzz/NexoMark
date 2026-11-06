@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -134,9 +135,11 @@ class CountUp extends StatelessWidget {
   }
 }
 
-/// Bloque gris con un brillo que lo recorre: "cargando" con la forma del
-/// contenido que viene. Movimiento constante → curva lineal. Con
-/// "reducir movimiento" queda quieto.
+/// Bloque con la forma del contenido que viene. Ocupa su lugar desde el primer
+/// cuadro (nada salta), pero no se ve si la carga dura menos de 300 ms: así una
+/// respuesta rápida no parpadea. Después aparece con un fundido de 150 ms y
+/// pulsa suave (sin brillo que corre). Todos los bloques pulsan al mismo
+/// compás, porque la fase sale del reloj. Con "reducir movimiento" queda quieto.
 class Skeleton extends StatefulWidget {
   const Skeleton({super.key, this.width, this.height = 16, this.radius = 8});
 
@@ -149,21 +152,34 @@ class Skeleton extends StatefulWidget {
 }
 
 class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+  late final AnimationController _c = AnimationController(vsync: this, duration: Motion.pulso);
+  Timer? _espera;
+  bool _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _espera = Timer(Motion.esperaEsqueleto, () {
+      if (mounted) setState(() => _visible = true);
+    });
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (Motion.reduced(context)) {
       _c.stop();
+      _c.value = 0;
     } else if (!_c.isAnimating) {
+      final ms = Motion.pulso.inMilliseconds;
+      _c.value = (DateTime.now().millisecondsSinceEpoch % ms) / ms;
       _c.repeat();
     }
   }
 
   @override
   void dispose() {
+    _espera?.cancel();
     _c.dispose();
     super.dispose();
   }
@@ -172,25 +188,48 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final base = scheme.surfaceContainerHigh;
-    final shine = scheme.surfaceContainerLow;
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, _) {
-        final x = -1.5 + 3 * _c.value;
-        return Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.radius),
-            gradient: LinearGradient(
-              begin: Alignment(x - 1, 0),
-              end: Alignment(x + 1, 0),
-              colors: [base, shine, base],
-              stops: const [0.25, 0.5, 0.75],
+    final suave = Color.lerp(base, scheme.surfaceContainerLow, 0.7)!;
+    return AnimatedOpacity(
+      opacity: _visible ? 1 : 0,
+      duration: Motion.of(context, Motion.llegada),
+      curve: Motion.easeOut,
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (context, _) {
+          // Ida y vuelta con forma de seno: sin cortes al reiniciar el ciclo.
+          final t = 0.5 - 0.5 * math.cos(2 * math.pi * _c.value);
+          return Container(
+            width: widget.width,
+            height: widget.height,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.radius),
+              color: Color.lerp(base, suave, t),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Llega el contenido real: cambia del esqueleto (u otro estado) al contenido
+/// con un fundido de 150 ms, sin desplazamiento. Cambia solo cuando el tipo de
+/// widget cambia (esqueleto → lista), no en cada actualización de datos.
+class Llegada extends StatelessWidget {
+  const Llegada({super.key, required this.child, this.alignment = Alignment.topCenter});
+
+  final Widget child;
+  final AlignmentGeometry alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: Motion.of(context, Motion.llegada),
+      switchInCurve: Motion.easeOut,
+      switchOutCurve: Motion.easeOut,
+      layoutBuilder: (current, previous) => Stack(alignment: alignment, children: [...previous, ?current]),
+      transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+      child: child,
     );
   }
 }
