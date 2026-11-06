@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { ArrowLeft, Check, Lightbulb, Loader2, Wand2, TriangleAlert } from 'lucide-react'
 import api from '../services/api'
@@ -53,20 +53,22 @@ const OPCIONES_FORMULARIO = {
 }
 
 // Los 7 campos, en el orden del formulario y de la "próxima estación".
+// `ayuda`: por qué se pide o qué formato lleva (va debajo; el error la reemplaza).
+// `max`: límite del servidor, con contador visible.
 const CAMPOS = [
-  { campo: 'titulo', label: 'Título' },
-  { campo: 'cliente_nombre', label: 'Cliente' },
-  { campo: 'cliente_email', label: 'Correo del cliente' },
+  { campo: 'titulo', label: 'Título', ayuda: 'Lo ve el cliente al revisar la campaña.', max: 200 },
+  { campo: 'cliente_nombre', label: 'Cliente', ayuda: 'La marca o el negocio para el que es la campaña.' },
+  { campo: 'cliente_email', label: 'Correo del cliente', ayuda: 'Ahí recibe la campaña para aprobarla.' },
   { campo: 'industria', label: 'Industria' },
   { campo: 'tono', label: 'Tono' },
-  { campo: 'plataforma', label: 'Plataforma' },
-  { campo: 'prompt', label: 'Instrucciones para la IA' },
+  { campo: 'plataforma', label: 'Plataforma', ayuda: 'Orienta el largo y el estilo del copy. Dónde se publica se elige al enviarla.' },
+  { campo: 'prompt', label: 'Instrucciones para la IA', ayuda: 'Objetivo, público, lo que hay que destacar y lo que no debe aparecer.', max: 2000 },
 ]
 
 function FieldError({ id, message }) {
   if (!message) return null
   return (
-    <p id={id} role="alert" className="mt-1 text-[13px] font-medium text-error">
+    <p id={id} role="alert" className="text-[13px] font-medium text-error">
       {message}
     </p>
   )
@@ -121,13 +123,20 @@ export default function NewCampaignPage() {
     reset,
     setValue,
     getValues,
+    control,
     formState: { errors },
   } = useForm({
+    // El error aparece al salir del campo (no mientras se escribe) y luego se corrige en vivo.
+    mode: 'onTouched',
     defaultValues: {
       prompt: location.state?.prompt || '',
       tono: location.state?.tono || '',
     },
   })
+
+  // Contadores de los campos con límite (titulo, prompt).
+  const [tituloActual, promptActual] = useWatch({ control, name: ['titulo', 'prompt'] })
+  const largos = { titulo: tituloActual, prompt: promptActual }
 
   // Polling del modo REAL: la generación es asíncrona (Django responde 202 con
   // estado pendiente_ia y n8n tarda 8-30 s). Consultamos la campaña cada 4 s
@@ -398,14 +407,16 @@ export default function NewCampaignPage() {
       )}
 
       <div className="mt-5 space-y-4">
-        {CAMPOS.map(({ campo, label }) => {
+        {CAMPOS.map(({ campo, label, ayuda, max }) => {
           const err = errors[campo]?.message
           const errId = `${campo}-error`
+          const ayudaId = `${campo}-ayuda`
+          const largo = max ? (largos[campo] || '').length : 0
           const comun = {
             id: campo,
             disabled: submitting,
             'aria-invalid': err ? 'true' : undefined,
-            'aria-describedby': err ? errId : undefined,
+            'aria-describedby': err ? errId : ayuda ? ayudaId : undefined,
           }
           return (
             <div key={campo}>
@@ -485,7 +496,7 @@ export default function NewCampaignPage() {
               {campo === 'prompt' && (
                 <textarea
                   rows={5}
-                  placeholder="Objetivo, público, lo que hay que destacar y lo que no debe aparecer."
+                  placeholder="Ej.: 2×1 para universitarios los martes; destacar el precio; sin nombrar a la competencia."
                   className={cn(inputCls(err), 'h-auto resize-y py-2.5 leading-relaxed')}
                   {...comun}
                   {...register('prompt', {
@@ -495,7 +506,25 @@ export default function NewCampaignPage() {
                   })}
                 />
               )}
-              <FieldError id={errId} message={err} />
+              <div className="mt-1 flex items-start justify-between gap-3">
+                {err ? (
+                  <FieldError id={errId} message={err} />
+                ) : (
+                  ayuda && (
+                    <p id={ayudaId} className="text-[13px] text-on-surface-variant">
+                      {ayuda}
+                    </p>
+                  )
+                )}
+                {max && (
+                  <span
+                    aria-hidden="true"
+                    className={cn('ml-auto shrink-0 text-[13px] tabular-nums', largo > max ? 'font-semibold text-error' : 'text-on-surface-variant')}
+                  >
+                    {largo}/{max}
+                  </span>
+                )}
+              </div>
             </div>
           )
         })}
