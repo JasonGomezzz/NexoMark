@@ -128,11 +128,23 @@ ThemeData buildTheme(Brightness brightness, {TargetPlatform? platform}) {
       style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
     ),
     inputDecorationTheme: InputDecorationTheme(
+      // La etiqueta nunca desaparece dentro del campo: queda arriba siempre,
+      // y el placeholder (si hay) es solo un ejemplo.
+      floatingLabelBehavior: FloatingLabelBehavior.always,
       filled: true,
       fillColor: scheme.surfaceContainerLowest,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       labelStyle: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-      floatingLabelStyle: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+      floatingLabelStyle: WidgetStateTextStyle.resolveWith(
+        (states) => (textTheme.bodySmall ?? const TextStyle()).copyWith(
+          color: states.contains(WidgetState.error)
+              ? scheme.error
+              : states.contains(WidgetState.focused)
+                  ? scheme.primary
+                  : scheme.onSurfaceVariant,
+          fontWeight: states.contains(WidgetState.focused) ? FontWeight.w600 : null,
+        ),
+      ),
       hintStyle: textTheme.bodyMedium?.copyWith(color: scheme.outline),
       helperStyle: textTheme.bodySmall,
       errorStyle: textTheme.bodySmall?.copyWith(color: scheme.error),

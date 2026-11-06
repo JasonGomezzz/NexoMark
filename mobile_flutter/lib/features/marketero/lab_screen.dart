@@ -52,6 +52,19 @@ const _etiquetaCampo = {
   'prompt': 'Instrucciones para la IA',
 };
 
+/// Lo que se revisa al salir de un campo de la ficha (el servidor vuelve a
+/// validar todo al generar). Vacío no es error aquí: la ficha ya marca «falta».
+@visibleForTesting
+String? validarCampoFicha(String clave, String valor) {
+  final v = valor.trim();
+  if (v.isEmpty) return null;
+  return switch (clave) {
+    'cliente_email' when !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v) => 'Revisa el correo: debe verse como nombre@empresa.com.',
+    'prompt' when v.length < 10 => 'Escribe al menos 10 caracteres para que la IA tenga de dónde partir.',
+    _ => null,
+  };
+}
+
 /// Errores por campo del sobre de Django: vienen en `data.errors` o en `data`.
 Map<String, String> erroresPorCampo(ApiException e) {
   final fuente = e.data['errors'] is Map ? e.data['errors'] as Map : e.data;
@@ -478,17 +491,42 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       return actual == (intent.campos[clave] ?? '').trim() ? _Origen.ia : _Origen.tuyo;
     }
 
-    Widget texto(String clave, {TextInputType? teclado, int minLines = 1, int maxLines = 1, String? ayuda}) => TextField(
-          controller: _campos[clave],
-          keyboardType: teclado,
-          autocorrect: teclado != TextInputType.emailAddress,
-          minLines: minLines,
-          maxLines: maxLines,
-          onChanged: (_) => setState(() => _erroresCampo = {..._erroresCampo}..remove(clave)),
-          decoration: InputDecoration(
-            hintText: 'Escríbelo aquí',
-            helperText: ayuda,
-            errorText: _erroresCampo[clave],
+    // La etiqueta va fuera (en la fila); el placeholder es solo un ejemplo y la
+    // ayuda dice para qué se pide. El error aparece al salir del campo, no
+    // mientras se escribe, y se borra en cuanto se corrige.
+    Widget texto(
+      String clave, {
+      required String ejemplo,
+      String? ayuda,
+      TextInputType? teclado,
+      int minLines = 1,
+      int maxLines = 1,
+      int? maximo,
+    }) =>
+        Focus(
+          skipTraversal: true,
+          onFocusChange: (dentro) {
+            if (dentro) return;
+            final error = validarCampoFicha(clave, _campos[clave]!.text);
+            if (error != null) setState(() => _erroresCampo = {..._erroresCampo, clave: error});
+          },
+          child: TextField(
+            controller: _campos[clave],
+            keyboardType: teclado,
+            autocorrect: teclado != TextInputType.emailAddress,
+            minLines: minLines,
+            maxLines: maxLines,
+            maxLength: maximo,
+            onChanged: (_) {
+              if (_erroresCampo.containsKey(clave)) setState(() => _erroresCampo = {..._erroresCampo}..remove(clave));
+            },
+            decoration: InputDecoration(
+              hintText: ejemplo,
+              helperText: ayuda,
+              errorText: _erroresCampo[clave],
+              // Contador solo donde hay límite; se lee como «12 de 200».
+              counterText: maximo == null ? '' : null,
+            ),
           ),
         );
 
@@ -505,9 +543,20 @@ class _LabScreenState extends ConsumerState<LabScreen> {
         );
 
     final filas = <(String, Widget)>[
-      ('titulo', texto('titulo', maxLines: 2)),
-      ('cliente_nombre', texto('cliente_nombre')),
-      ('cliente_email', texto('cliente_email', teclado: TextInputType.emailAddress, ayuda: 'Aquí le llega la campaña para aprobar: el correo de su cuenta de cliente.')),
+      (
+        'titulo',
+        texto('titulo', maxLines: 2, maximo: 200, ejemplo: 'Ej.: 2×1 en capuchinos los martes', ayuda: 'Para encontrarla en tus listas; no se publica.'),
+      ),
+      ('cliente_nombre', texto('cliente_nombre', ejemplo: 'Ej.: Café Aurora', ayuda: 'Para saber de quién es la campaña.')),
+      (
+        'cliente_email',
+        texto(
+          'cliente_email',
+          teclado: TextInputType.emailAddress,
+          ejemplo: 'nombre@empresa.com',
+          ayuda: 'Ahí recibe la campaña para aprobarla: el correo de su cuenta de cliente.',
+        ),
+      ),
       ('industria', fichas('industria', industrias)),
       ('tono', fichas('tono', tonos)),
       (
@@ -523,7 +572,17 @@ class _LabScreenState extends ConsumerState<LabScreen> {
           iconos: true,
         ),
       ),
-      ('prompt', texto('prompt', minLines: 3, maxLines: 8)),
+      (
+        'prompt',
+        texto(
+          'prompt',
+          minLines: 3,
+          maxLines: 8,
+          maximo: 2000,
+          ejemplo: 'Ej.: dos capuchinos vistos desde arriba sobre madera, luz de mañana',
+          ayuda: 'La IA escribe el texto y crea la imagen a partir de esto.',
+        ),
+      ),
     ];
     final faltan = filas.where((f) => origen(f.$1) == _Origen.falta).length;
 
