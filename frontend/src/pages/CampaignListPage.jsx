@@ -21,6 +21,7 @@ const ETAPAS = {
   publicar: { titulo: 'En Publicar', desc: 'Aprobadas por el cliente: se publican en las cuentas elegidas.' },
 }
 const ORDEN = ['dictar', 'generar', 'aprobar', 'publicar', 'medir']
+const ENTERO = new Intl.NumberFormat('es-PE')
 
 /** Cinco casillas mínimas: en qué paso de la orden va la campaña. */
 function MiniRecorrido({ estado }) {
@@ -147,7 +148,7 @@ export default function CampaignListPage() {
             {etapa ? ETAPAS[etapa].titulo : 'Todas las campañas'}
           </h1>
           <p className="mt-2 text-[15px] text-on-surface-variant">
-            {etapa ? ETAPAS[etapa].desc : count > 0 ? `${count} ${count === 1 ? 'campaña' : 'campañas'} en total.` : 'Todavía no hay campañas.'}
+            {etapa ? ETAPAS[etapa].desc : count > 0 ? `${ENTERO.format(count)} ${count === 1 ? 'campaña' : 'campañas'} en total.` : 'Todavía no hay campañas.'}
           </p>
         </div>
         {role === 'marketero' && (
@@ -239,22 +240,33 @@ export default function CampaignListPage() {
                 <div className="min-w-0 flex-1">
                   <Link
                     to={`/campaigns/${c.id}`}
+                    title={c.titulo}
                     className="line-clamp-2 font-semibold leading-snug text-on-surface after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-[10px] focus-visible:after:ring-2 focus-visible:after:ring-primary"
                   >
                     {c.titulo}
                   </Link>
                   <p className="mt-1 text-[13px] text-on-surface-variant">
-                    {/* Lo secundario en una línea: cliente · plataforma · fecha ("5 nov. 2026", mes en minúscula). */}
-                    {c.cliente_nombre || 'Cliente sin dato'} · {etiquetaPlataforma(c.plataforma)} ·{' '}
+                    {/* Lo secundario: el cliente se corta si es muy largo (con el nombre completo al pasar
+                        el puntero); plataforma y fecha ("5 nov. 2026", mes en minúscula) nunca se cortan. */}
+                    <span className="block truncate" title={c.cliente_nombre || undefined}>
+                      {c.cliente_nombre || 'Cliente sin dato'}
+                    </span>
                     <span className="tabular-nums">
+                      {etiquetaPlataforma(c.plataforma)} ·{' '}
                       {new Date(c.fecha_creacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                    {/* En móvil el estado va bajo el texto: a su lado dejaba una columna de una palabra. */}
+                    <span className="mt-2 block sm:hidden">
+                      <StatusBadge estado={c.estado} />
                     </span>
                   </p>
                 </div>
                 <div className="hidden md:block">
                   <MiniRecorrido estado={c.estado} />
                 </div>
-                <StatusBadge estado={c.estado} />
+                <span className="hidden shrink-0 sm:block">
+                  <StatusBadge estado={c.estado} />
+                </span>
                 {role === 'marketero' && ['borrador', 'generado'].includes(c.estado) ? (
                   <button
                     type="button"
