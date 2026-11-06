@@ -313,23 +313,6 @@ html[data-theme='dark'] select option {
   }
 }
 
-/* Generando: un tramo turquesa (el tren) recorre la vía de Generar a Aprobar.
-   Movimiento continuo → lineal. Quieto con "reducir movimiento". */
-.generando-tramo {
-  container-type: inline-size;
-}
-.generando-tren {
-  animation: tren 1.8s linear infinite;
-}
-@keyframes tren {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(100cqw);
-  }
-}
-
 /* Entradas que evitan un cambio brusco (sin JavaScript, con @starting-style):
    una parada nueva del dictado, el formulario que propone la IA y las hojas
    modales. Salida rápida, nada desde escala 0; "reducir movimiento" las anula. */

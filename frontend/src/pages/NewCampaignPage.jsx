@@ -298,7 +298,7 @@ export default function NewCampaignPage() {
     )
   }
   if (submitting || result?.campaign?.estado === 'pendiente_ia') {
-    return <GeneratingState onCancel={handleReset} />
+    return <GeneratingState titulo={getValues('titulo')} onCancel={handleReset} />
   }
   if (result?.demora) {
     return (
