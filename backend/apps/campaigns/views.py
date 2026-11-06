@@ -214,16 +214,8 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
-        from apps.authentication.models import User
-        from .client_accounts import check_client_slot
-        from .models import ClientRelationship
-        with transaction.atomic():
-            owner = User.objects.select_for_update().get(pk=request.user.pk)
-            client = User.objects.get(email__iexact=serializer.validated_data['cliente_email'], rol='cliente')
-            relation = check_client_slot(owner, client.pk)
-            if not relation:
-                ClientRelationship.objects.create(marketero=owner, cliente=client)
-            campaign: Campaign = serializer.save(estado=CampaignStatus.BORRADOR, marketero=request.user)
+        from .creation import create_campaign_draft
+        campaign = create_campaign_draft(serializer, request.user)
 
         # Recargar user para reflejar cambios de tokens hechos en el servicio
         request.user.refresh_from_db()

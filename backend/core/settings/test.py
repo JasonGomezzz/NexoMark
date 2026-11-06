@@ -28,6 +28,7 @@ CACHES = {
 #    entre tests con fixture clear_cache, así cada request parte de 0 ──
 REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {  # noqa: F405
     "register": "1000/min",
+    "intent_interpret": "1000/min",
     "login": "1000/min",
     "anon": "1000/min",
     "user": "1000/min",

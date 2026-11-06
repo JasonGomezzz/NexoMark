@@ -12,9 +12,6 @@ class CampaignRepository {
 
   final ApiClient _api;
   Dio get _dj => _api.django;
-  int _nextDraft = 0;
-  final _drafts = <int, Campaign?>{};
-  final _uncertain = <int>{};
 
   Future<T> _call<T>(Future<T> Function() body) async {
     try {
@@ -61,66 +58,38 @@ class CampaignRepository {
 
   // ── Voz → campaña ────────────────────────────────────────
 
-  /// Borrador local, sin IA de extracción ni consumo de créditos. El backend
-  /// actual no expone /api/intents/: el usuario completa los campos explícitos.
+  /// Interpreta el texto dictado o escrito sin consumir créditos del producto.
   Future<CampaignIntent> interpret(
     String texto, {
     required bool porVoz,
     int? capturaMs,
   }) => _call(() async {
-    final id = ++_nextDraft;
-    _drafts[id] = null;
-    return CampaignIntent(
-      id: id,
-      estado: 'borrador',
-      campos: {'prompt': texto.trim()},
-      faltantes: camposIntent.where((key) => key != 'prompt').toList(),
-      advertencias: const [
-        'El brief se conserva como instrucciones. Completa los datos de la campaña; no se han extraído con IA.',
-      ],
+    final r = await _dj.post<dynamic>(
+      '/api/intents/interpret/',
+      data: {
+        'texto': texto.trim(),
+        'origen': porVoz ? 'voz' : 'formulario',
+        'captura_ms': capturaMs,
+      },
+    );
+    return CampaignIntent.fromJson(
+      envelopeData(r)['intent'] as Map<String, dynamic>,
     );
   });
 
-  /// Confirmar crea la campaña y la manda a generar (1 crédito). Repetirlo devuelve la misma.
+  /// El servidor confirma una sola campaña por intención y cobra 4 créditos.
   Future<Campaign> confirm(int intentId, Map<String, String?> campos) => _call(
-    () async {
-      if (!_drafts.containsKey(intentId)) {
-        throw ApiException('El borrador ya no existe. Vuelve al formulario.');
-      }
-      final existing = _drafts[intentId];
-      if (existing != null) return get(existing.id);
-      if (_uncertain.contains(intentId)) {
-        throw ApiException(
-          'No se confirmó la creación. Revisa Proyectos antes de volver a crear la campaña para evitar duplicados.',
-        );
-      }
-      _uncertain.add(intentId);
-      try {
-        // POST /campaigns ya genera contenido: no llamar /generate otra vez.
-        final r = await _dj.post<dynamic>(
-          '/api/campaigns/',
-          data: {
-            ...campos,
-            'plataformas': [campos['plataforma']],
-          },
-        );
-        final campaign = _campaign(r);
-        _drafts[intentId] = campaign;
-        _uncertain.remove(intentId);
-        return campaign;
-      } on DioException catch (error) {
-        if (error.response != null && (error.response?.statusCode ?? 0) < 500) {
-          _uncertain.remove(intentId);
-        }
-        rethrow;
-      }
-    },
+    () async => _campaign(
+      await _dj.post<dynamic>(
+        '/api/intents/$intentId/confirm/',
+        data: {'campos': campos},
+      ),
+    ),
   );
 
-  Future<void> discard(int intentId) async {
-    _drafts.remove(intentId);
-    _uncertain.remove(intentId);
-  }
+  Future<void> discard(int intentId) => _call(() async {
+    await _dj.post<dynamic>('/api/intents/$intentId/discard/');
+  });
 
   // ── Edición y generación ─────────────────────────────────
 

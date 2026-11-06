@@ -40,6 +40,7 @@ urlpatterns = [
     path('api/health/', health, name='health'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.authentication.urls')),
+    path('api/intents/', include('apps.campaigns.intent_urls')),
     path('api/campaigns/', include('apps.campaigns.urls')),
     path('api/admin/analytics/', AdminAnalyticsView.as_view(), name='admin-analytics'),
     path('api/admin/users/', AdminUsersListView.as_view(), name='admin-users-list'),

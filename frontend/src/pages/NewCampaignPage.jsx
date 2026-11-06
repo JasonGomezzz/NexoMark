@@ -11,6 +11,8 @@ import ErrorState from '@/components/campaign/ErrorState'
 import CreditsExhausted from '@/components/campaign/CreditsExhausted'
 import PlatformIcon from '@/components/campaign/PlatformIcon'
 import { VoiceDictationButton } from '@/components/voice/GeminiVoiceControls'
+import VoiceBriefFields from '@/components/campaign/VoiceBriefFields'
+import { camposParaFormulario } from '@/services/voiceIntent'
 
 const INDUSTRIAS = [
   { value: 'tecnologia', label: 'Tecnología' },
@@ -59,6 +61,8 @@ export default function NewCampaignPage() {
   const [result, setResult] = useState(null) // { campaign, warning }
   const [serverError, setServerError] = useState('')
   const [noCredits, setNoCredits] = useState(false)
+  const [intentId, setIntentId] = useState(null)
+  const [interpreting, setInterpreting] = useState(false)
 
   // Prellenado desde la Guía de prompts (state del router; no persiste al recargar)
   const {
@@ -76,6 +80,24 @@ export default function NewCampaignPage() {
     },
   })
   const cursorPositionsRef = useRef({})
+
+  function applyInterpretedFields(intent) {
+    const { valores } = camposParaFormulario(intent.campos_finales, {
+      industria: INDUSTRIAS.map((item) => item.value),
+      tono: TONOS.map((item) => item.value),
+      plataforma: PLATAFORMAS.map((item) => item.value),
+    })
+    delete valores.plataforma
+    const selected = (intent.campos_finales.plataformas || []).filter(
+      (value) => PLATAFORMAS.some((platform) => platform.value === value),
+    )
+    if (selected.length) valores.plataformas = selected
+    for (const [field, value] of Object.entries(valores)) {
+      setValue(field, value, { shouldDirty: true, shouldValidate: true })
+    }
+    setIntentId(intent.id)
+    setServerError('')
+  }
 
   function insertTranscript(fieldName, transcript) {
     const current = getValues(fieldName) || ''
@@ -142,13 +164,24 @@ export default function NewCampaignPage() {
   }, [result?.campaign?.id, result?.campaign?.estado])
 
   async function onSubmit(formData) {
+    if (submitting || interpreting) return
+    const existingCampaign = result?.campaign
+    if (existingCampaign && existingCampaign.estado !== 'borrador') return
     setSubmitting(true)
     setServerError('')
     setNoCredits(false)
     setResult(null)
 
     try {
-      const { data } = await api.post('/api/campaigns/', formData)
+      let response
+      if (existingCampaign) {
+        response = await api.post(`/api/campaigns/${existingCampaign.id}/generate/`)
+      } else if (intentId) {
+        response = await api.post(`/api/intents/${intentId}/confirm/`, { campos: formData })
+      } else {
+        response = await api.post('/api/campaigns/', formData)
+      }
+      const { data } = response
       const campaign = data.data.campaign
       setResult({
         campaign,
@@ -174,7 +207,7 @@ export default function NewCampaignPage() {
         // Campaña guardada como borrador pero IA falló
         setResult({ campaign: body?.data?.campaign, warning: body?.message })
       } else {
-        setServerError('Error inesperado. Intenta de nuevo.')
+        setServerError(body?.message || 'Error inesperado. Intenta de nuevo.')
       }
     } finally {
       setSubmitting(false)
@@ -185,6 +218,7 @@ export default function NewCampaignPage() {
     setResult(null)
     setServerError('')
     setNoCredits(false)
+    setIntentId(null)
     reset()
   }
 
@@ -208,6 +242,7 @@ export default function NewCampaignPage() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* ── Panel de configuración ── */}
         <div className="min-w-0 flex-1">
+          <VoiceBriefFields disabled={submitting || Boolean(result)} onInterpreted={applyInterpretedFields} onBusy={setInterpreting} />
           <form
             onSubmit={handleSubmit(onSubmit)}
             noValidate
@@ -405,7 +440,7 @@ export default function NewCampaignPage() {
               </p>
             )}
 
-            <Button type="submit" size="lg" disabled={submitting} className="w-full">
+            <Button type="submit" size="lg" disabled={submitting || interpreting || Boolean(result)} className="w-full">
               <Bot aria-hidden="true" className="h-5 w-5" />
               {submitting ? 'Generando con IA…' : 'Generar campaña con IA'}
             </Button>

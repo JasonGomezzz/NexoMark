@@ -528,3 +528,90 @@ class CreditPurchase(models.Model):
 
     def __str__(self) -> str:
         return f"Compra {self.plan_nombre} — {self.usuario_id} ({self.creditos} créditos)"
+
+
+class IntentOrigen(models.TextChoices):
+    """Cómo llegó el brief: dictado por voz o escrito a mano."""
+    VOZ = "voz", "Voz"
+    FORMULARIO = "formulario", "Formulario"
+
+
+class IntentEstado(models.TextChoices):
+    BORRADOR = "borrador", "Borrador"
+    CONFIRMADO = "confirmado", "Confirmado"
+    DESCARTADO = "descartado", "Descartado"
+
+
+class CampaignIntent(models.Model):
+    """
+    Intención de campaña previa a la generación.
+
+    Guarda el brief (dictado o escrito), lo que la IA entendió y lo que el
+    usuario dejó finalmente. Interpretar NO crea una campaña ni consume
+    crédito; eso ocurre al confirmar. Vive en el servidor para poder
+    retomarla desde otro dispositivo y para medir voz frente a formulario
+    (tiempo hasta confirmar y campos corregidos).
+    """
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="intenciones",
+    )
+    origen = models.CharField(
+        max_length=20,
+        choices=IntentOrigen.choices,
+        default=IntentOrigen.VOZ,
+    )
+    transcripcion = models.TextField(
+        help_text="Texto dictado o escrito por el usuario. Nunca audio.",
+    )
+    campos_interpretados = models.JSONField(
+        default=dict,
+        help_text="Campos que propuso la IA, ya validados contra el dominio. No se modifican.",
+    )
+    campos_finales = models.JSONField(
+        default=dict,
+        help_text="Campos tras las correcciones del usuario; con ellos se crea la campaña.",
+    )
+    advertencias = models.JSONField(
+        default=list,
+        help_text="Valores que la IA propuso y el dominio no reconoce.",
+    )
+    estado = models.CharField(
+        max_length=20,
+        choices=IntentEstado.choices,
+        default=IntentEstado.BORRADOR,
+        db_index=True,
+    )
+    campaign = models.OneToOneField(
+        Campaign,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="intencion",
+    )
+
+    # ── Medición (tesis): proveedor y uso reportado. Null = no reportado. ──
+    modelo_ia = models.CharField(max_length=80, blank=True, default="")
+    uso_ia = models.JSONField(null=True, blank=True)
+    interpretacion_ms = models.PositiveIntegerField(null=True, blank=True)
+    # Medición voz vs. formulario (tesis): lo que tardó la persona en dictar o
+    # escribir el brief, desde el primer toque del micrófono o la primera tecla
+    # hasta pulsar "Interpretar". Lo informa el cliente; null si no lo envía.
+    captura_ms = models.PositiveIntegerField(null=True, blank=True)
+    schema_version = models.PositiveSmallIntegerField(default=1)
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    confirmado_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "campaign_intents"
+        ordering = ["-fecha_creacion"]
+        indexes = [
+            models.Index(fields=["usuario", "estado"], name="idx_intent_usuario_estado"),
+        ]
+
+    def __str__(self) -> str:
+        return f"Intención {self.pk} [{self.estado}] — {self.origen}"

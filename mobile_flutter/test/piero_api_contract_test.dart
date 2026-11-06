@@ -52,34 +52,44 @@ void main() {
     api.spring.close();
   });
 
-  test('brief remains local and creation generates exactly once', () async {
-    final repo = CampaignRepository(api);
-    final draft = await repo.interpret(
-      'Campaña con instrucciones dictadas',
-      porVoz: true,
-    );
-    expect(adapter.calls, isEmpty);
-    expect(draft.campos['prompt'], contains('dictadas'));
-    expect(draft.campos['cliente_email'], isNull);
-    adapter.reply = (_) => {
-      'campaign': {
-        'id': 7,
+  test(
+    'brief is interpreted by the backend before reviewed confirmation',
+    () async {
+      final repo = CampaignRepository(api);
+      adapter.reply = (_) => {
+        'intent': {
+          'id': 12,
+          'estado': 'borrador',
+          'campos_finales': {'prompt': 'Campaña con instrucciones dictadas'},
+          'campos_faltantes': ['cliente_email'],
+          'advertencias': [],
+        },
+      };
+      final draft = await repo.interpret(
+        'Campaña con instrucciones dictadas',
+        porVoz: true,
+        capturaMs: 1500,
+      );
+      expect(adapter.calls.single.path, '/api/intents/interpret/');
+      expect(adapter.calls.single.data['origen'], 'voz');
+      expect(adapter.calls.single.data['captura_ms'], 1500);
+      expect(draft.id, 12);
+      expect(draft.campos['prompt'], contains('dictadas'));
+      adapter.reply = (_) => {
+        'campaign': {'id': 7, 'estado': 'pendiente_ia', 'version': 2},
+      };
+      final campaign = await repo.confirm(draft.id, {
         'titulo': 'Prueba',
-        'estado': 'pendiente_ia',
-        'version': 2,
-      },
-    };
-    final campaign = await repo.confirm(draft.id, {
-      'titulo': 'Prueba',
-      'plataforma': 'instagram',
-    });
-    expect(campaign.id, 7);
-    expect(adapter.calls.single.path, '/api/campaigns/');
-    expect(adapter.calls.single.data['plataformas'], ['instagram']);
-    await repo.confirm(draft.id, {});
-    expect(adapter.calls.where((r) => r.method == 'POST').length, 1);
-    expect(adapter.calls.last.path, '/api/campaigns/7/');
-  });
+        'plataforma': 'instagram',
+      });
+      expect(campaign.id, 7);
+      expect(adapter.calls.last.path, '/api/intents/12/confirm/');
+      expect(adapter.calls.last.data['campos']['plataforma'], 'instagram');
+      expect(adapter.calls.where((r) => r.path == '/api/campaigns/'), isEmpty);
+      await repo.discard(draft.id);
+      expect(adapter.calls.last.path, '/api/intents/12/discard/');
+    },
+  );
 
   test(
     'submit never requests automatic publishing and passes saved version',
@@ -196,26 +206,21 @@ void main() {
     expect(const NexoMarkApp(), isNotNull);
   });
 
-  test(
-    'ambiguous create response cannot trigger a second charged request',
-    () async {
-      final repo = CampaignRepository(api);
-      final draft = await repo.interpret(
-        'Instrucciones para la campaña',
-        porVoz: false,
-      );
-      adapter.reply = (_) => {};
+  test('confirmation retries target the same server intent', () async {
+    final repo = CampaignRepository(api);
+    adapter.reply = (_) => {};
+    for (var attempt = 0; attempt < 2; attempt++) {
       await expectLater(
-        repo.confirm(draft.id, {'plataforma': 'facebook'}),
+        repo.confirm(12, {'plataforma': 'facebook'}),
         throwsA(isA<ApiException>()),
       );
-      await expectLater(
-        repo.confirm(draft.id, {'plataforma': 'facebook'}),
-        throwsA(isA<ApiException>()),
-      );
-      expect(adapter.calls.length, 1);
-    },
-  );
+    }
+    expect(adapter.calls.length, 2);
+    expect(
+      adapter.calls.every((r) => r.path == '/api/intents/12/confirm/'),
+      true,
+    );
+  });
 
   test('current user avatar does not require absent avatar_version', () {
     final user = AppUser.fromJson({

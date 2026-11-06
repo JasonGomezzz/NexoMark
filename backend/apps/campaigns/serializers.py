@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from apps.authentication.models import User, UserRole
 
-from .models import Campaign, CampaignPlataforma, CampaignStatus, CampaignTono, CampaignVersion
+from .models import CampaignIntent, IntentOrigen, Campaign, CampaignPlataforma, CampaignStatus, CampaignTono, CampaignVersion
 
 # TODO: mover a TextChoices en models.py (Sprint refactor)
 INDUSTRIA_CHOICES = [
@@ -290,3 +290,70 @@ class CampaignVersionSerializer(serializers.ModelSerializer):
 
     def get_tiene_imagen(self, obj: CampaignVersion) -> bool:
         return bool(obj.imagen_b64)
+
+
+INTENT_CAMPOS = [
+    "titulo", "cliente_nombre", "cliente_email",
+    "industria", "tono", "plataforma", "prompt",
+]
+
+
+class IntentInterpretSerializer(serializers.Serializer):
+    """Entrada de POST /api/intents/interpret/: el brief ya transcrito."""
+
+    texto = serializers.CharField(min_length=10, max_length=2000, trim_whitespace=True)
+    origen = serializers.ChoiceField(choices=IntentOrigen.choices, default=IntentOrigen.VOZ)
+    # Milisegundos que tardó en dictar o escribir el brief (opcional; tope 1 hora).
+    captura_ms = serializers.IntegerField(min_value=0, max_value=3_600_000, required=False, allow_null=True)
+
+
+class IntentCamposSerializer(serializers.Serializer):
+    """
+    Correcciones del usuario sobre los campos interpretados.
+
+    Solo comprueba forma (claves conocidas, texto o null). Las reglas del
+    dominio se aplican al confirmar, con CampaignSerializer.
+    """
+
+    campos = serializers.DictField()
+
+    def validate_campos(self, value: dict) -> dict:
+        desconocidas = sorted(set(value) - set(INTENT_CAMPOS) - {"plataformas"})
+        if desconocidas:
+            raise serializers.ValidationError(
+                f"Campos no permitidos: {', '.join(desconocidas)}."
+            )
+        text = serializers.CharField(allow_null=True, allow_blank=True, max_length=2000)
+        cleaned = {}
+        for key, item in value.items():
+            if key == "plataformas":
+                cleaned[key] = serializers.ListField(
+                    child=serializers.ChoiceField(choices=CampaignPlataforma.choices),
+                    max_length=len(CampaignPlataforma.values),
+                ).run_validation(item)
+            else:
+                item = text.run_validation(item)
+                cleaned[key] = item or None
+        if "plataformas" in cleaned:
+            selected = cleaned["plataformas"]
+            cleaned["plataforma"] = selected[0] if selected else None
+        elif "plataforma" in cleaned:
+            cleaned["plataformas"] = [cleaned["plataforma"]] if cleaned["plataforma"] else []
+        return cleaned
+
+
+class CampaignIntentSerializer(serializers.ModelSerializer):
+    campos_faltantes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CampaignIntent
+        fields = [
+            "id", "origen", "transcripcion", "campos_interpretados",
+            "campos_finales", "campos_faltantes", "advertencias", "estado",
+            "campaign", "fecha_creacion", "confirmado_at",
+        ]
+        read_only_fields = fields
+
+    def get_campos_faltantes(self, obj: CampaignIntent) -> list[str]:
+        """Campos que el usuario todavía debe completar antes de confirmar."""
+        return [c for c in INTENT_CAMPOS if not (obj.campos_finales or {}).get(c)]

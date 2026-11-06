@@ -244,7 +244,8 @@ class _LabScreenState extends ConsumerState<LabScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    final sinCreditos = user?.sinCreditos ?? false;
+    final sinCreditos =
+        user?.rol == Rol.marketero && (user?.tokensDisponibles ?? 0) < 4;
     final paso = switch (_etapa) {
       _Etapa.brief => 0,
       _Etapa.campos => 0,
@@ -314,7 +315,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'El dictado se convierte en instrucciones. Completa los datos antes de generar; este paso no gasta créditos.',
+          'La IA propone los datos desde tu idea. Revísalos antes de generar; interpretar no consume créditos del producto.',
           style: context.text.bodySmall,
           textAlign: TextAlign.center,
         ),
@@ -441,7 +442,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
                 )
               : const Icon(Icons.bolt_rounded),
           label: Text(
-            _ocupado ? 'Enviando a la IA…' : 'Confirmar y generar · 1 crédito',
+            _ocupado ? 'Enviando a la IA…' : 'Confirmar y generar · 4 créditos',
           ),
         ),
         const SizedBox(height: 8),
@@ -494,7 +495,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
                         key: const ValueKey('fallo'),
                         tone: InfoTone.warning,
                         message:
-                            '${c.iaErrorMessage ?? 'La IA no pudo generar la campaña.'} Se devolvió el crédito; puedes regenerarla desde Proyectos.',
+                            '${c.iaErrorMessage ?? 'La IA no pudo generar la campaña.'} Se devolvieron los créditos; puedes regenerarla desde Proyectos.',
                       )
                     : const Column(
                         key: ValueKey('esqueleto'),
@@ -559,7 +560,7 @@ class _SinCreditos extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Puedes preparar el brief y ver tu historial, pero generar necesita 1 crédito.',
+            'Puedes preparar el brief y ver tu historial, pero generar necesita 4 créditos.',
             style: context.text.bodySmall?.copyWith(
               color: context.nexo.warning,
             ),
