@@ -202,8 +202,8 @@ export default function CampaignListPage() {
         <ul className="divide-y divide-hairline border-y border-hairline" aria-label="Cargando campañas">
           {[...Array(6)].map((_, i) => (
             <li key={i} className="flex items-center gap-4 py-5">
-              <div className="h-4 flex-1 animate-pulse rounded bg-surface-container-high" />
-              <div className="h-6 w-24 animate-pulse rounded-full bg-surface-container-high" />
+              <div className="h-4 flex-1 rounded esqueleto" />
+              <div className="h-6 w-24 rounded-full esqueleto" />
             </li>
           ))}
         </ul>

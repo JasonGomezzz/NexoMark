@@ -93,7 +93,17 @@ export default function SocialConnectionsCard() {
       )}
 
       {cargando ? (
-        <Loader2 className="h-5 w-5 animate-spin text-on-surface-variant" />
+        <ul role="status" aria-label="Cargando cuentas" className="mb-5 divide-y divide-outline-variant rounded-lg border border-outline-variant">
+          {[0, 1].map((i) => (
+            <li key={i} className="flex items-center gap-3 px-4 py-3">
+              <span className="esqueleto h-9 w-9 rounded-full" />
+              <span className="flex-1 space-y-1.5">
+                <span className="esqueleto block h-3.5 w-40 max-w-full rounded" />
+                <span className="esqueleto block h-3 w-20 rounded" />
+              </span>
+            </li>
+          ))}
+        </ul>
       ) : conexiones.length === 0 ? (
         <p className="mb-5 rounded-lg bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
           Todavía no hay cuentas conectadas.

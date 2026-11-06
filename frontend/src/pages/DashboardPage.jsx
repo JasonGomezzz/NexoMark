@@ -124,7 +124,12 @@ export default function DashboardPage() {
                 className="group mt-4 block rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
               >
                 <span className="flex items-baseline gap-3">
-                  <span className="cifra text-[44px] tabular-nums text-on-surface">{loading ? '…' : (conteos[id] ?? 'sin dato')}</span>
+                  {loading ? (
+                    // Mismo alto que la cifra: al llegar el número no se mueve nada.
+                    <span aria-label="Cargando" className="esqueleto inline-block h-[44px] w-12 rounded-[8px]" />
+                  ) : (
+                    <span className="cifra text-[44px] tabular-nums text-on-surface">{conteos[id] ?? 'sin dato'}</span>
+                  )}
                   <span className="font-display text-xl font-extrabold text-on-surface group-hover:text-primary">{n}</span>
                 </span>
                 <span className="mt-1 block max-w-xs text-[15px] text-on-surface-variant">{desc}</span>

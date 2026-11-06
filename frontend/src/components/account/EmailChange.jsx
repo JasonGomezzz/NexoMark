@@ -148,7 +148,7 @@ export default function EmailChange({ usuario }) {
       </div>
 
       {pendiente === undefined && (
-        <div className="mt-4 h-10 animate-pulse rounded-lg bg-surface-container-high" aria-hidden="true" />
+        <div className="mt-4 h-10 rounded-lg esqueleto" aria-hidden="true" />
       )}
 
       {falloCarga && (

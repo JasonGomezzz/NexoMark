@@ -126,8 +126,8 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
 
       {cargando ? (
         <div className="mt-4 space-y-2">
-          <div className="h-14 animate-pulse rounded-lg bg-surface-container-high" />
-          <div className="h-14 animate-pulse rounded-lg bg-surface-container-high" />
+          <div className="h-14 rounded-lg esqueleto" />
+          <div className="h-14 rounded-lg esqueleto" />
         </div>
       ) : error ? (
         <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">

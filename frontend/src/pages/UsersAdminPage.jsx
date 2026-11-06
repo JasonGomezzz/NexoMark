@@ -161,8 +161,8 @@ export default function UsersAdminPage() {
               key={i}
               className="flex items-center gap-4 border-b border-hairline py-4 last:border-0"
             >
-              <div className="h-4 flex-1 animate-pulse rounded bg-surface-container-high" />
-              <div className="h-6 w-20 animate-pulse rounded-full bg-surface-container-high" />
+              <div className="h-4 flex-1 rounded esqueleto" />
+              <div className="h-6 w-20 rounded-full esqueleto" />
             </div>
           ))}
         </div>

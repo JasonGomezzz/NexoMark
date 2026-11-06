@@ -110,9 +110,9 @@ export default function AccountSettingsPage() {
   if (loading) {
     return (
       <div className="max-w-3xl space-y-4">
-        <div className="h-10 w-64 animate-pulse rounded bg-surface-container-high" />
-        <div className="h-72 animate-pulse rounded-[10px] bg-surface-container-high" />
-        <div className="h-96 animate-pulse rounded-[10px] bg-surface-container-high" />
+        <div className="h-10 w-64 rounded esqueleto" />
+        <div className="h-72 rounded-[10px] esqueleto" />
+        <div className="h-96 rounded-[10px] esqueleto" />
       </div>
     )
   }

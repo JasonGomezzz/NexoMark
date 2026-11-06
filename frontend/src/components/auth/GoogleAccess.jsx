@@ -187,7 +187,7 @@ export default function GoogleAccess({ proposito = 'login', rol, rolEtiqueta, on
         <div
           aria-hidden="true"
           style={{ width: ancho }}
-          className="absolute inset-y-0 left-1/2 -translate-x-1/2 animate-pulse rounded-[4px] bg-surface-container-high"
+          className="absolute inset-y-0 left-1/2 -translate-x-1/2 rounded-[4px] esqueleto"
         />
         <div
           ref={contenedor}

@@ -92,7 +92,7 @@ export default function VersionHistoryPanel({
           <History className="h-4 w-4 text-outline" />
         </div>
         {loading ? (
-          <div className="h-8 animate-pulse rounded bg-surface-container-high" />
+          <div className="h-8 rounded esqueleto" />
         ) : error ? (
           <p className="text-[13px] text-error">No se pudo cargar el historial.</p>
         ) : versions.length === 0 ? (

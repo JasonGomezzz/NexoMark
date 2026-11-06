@@ -361,6 +361,37 @@ html[data-theme='dark'] select option {
   }
 }
 
+/* Esqueleto de carga: la forma de lo que viene, sin spinner.
+   - Ocupa su lugar desde el inicio (nada salta al llegar el contenido), pero no se
+     ve antes de 300 ms: una carga rápida no parpadea.
+   - Entra con un fundido de 150 ms y late suave cambiando de tono, sin brillo que
+     corre (un brillo constante hace sentir lenta la app).
+   - Con "reducir movimiento" queda quieto (regla global de abajo). */
+.esqueleto {
+  background-color: var(--color-surface-container-high);
+  animation:
+    esqueleto-aparece 150ms var(--ease-out) 300ms both,
+    esqueleto-late 1.4s ease-in-out 450ms infinite alternate;
+}
+@keyframes esqueleto-aparece {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes esqueleto-late {
+  to {
+    background-color: var(--color-surface-container-low);
+  }
+}
+
+/* El contenido que reemplaza al esqueleto entra con un fundido corto. */
+.entra-suave {
+  transition: opacity 150ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+  }
+}
+
 /* El sello del micrófono: su aro gira despacio mientras escucha (lineal,
    movimiento continuo). Quieto con "reducir movimiento". */
 .sello-gira {

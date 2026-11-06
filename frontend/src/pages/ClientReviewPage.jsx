@@ -114,9 +114,9 @@ export default function ClientReviewPage() {
 
   if (loading) {
     return (
-      <div className="grid animate-pulse gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="aspect-[4/5] max-w-xl rounded-[14px] bg-surface-container-high" />
-        <div className="hidden h-80 rounded-[14px] bg-surface-container-high lg:block" />
+      <div role="status" aria-label="Cargando la campaña" className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="esqueleto aspect-[4/5] max-w-xl rounded-[14px]" />
+        <div className="esqueleto hidden h-80 rounded-[14px] lg:block" />
       </div>
     )
   }

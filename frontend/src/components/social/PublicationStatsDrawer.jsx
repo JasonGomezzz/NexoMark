@@ -331,16 +331,16 @@ function Esqueleto() {
     <div className="space-y-6">
       {[0, 1, 2].map((i) => (
         <div key={i} className="flex gap-4">
-          <div className="h-7 w-7 animate-pulse rounded-full bg-surface-container-high" />
-          <div className="h-10 flex-1 animate-pulse rounded bg-surface-container-high" />
+          <div className="h-7 w-7 rounded-full esqueleto" />
+          <div className="h-10 flex-1 rounded esqueleto" />
         </div>
       ))}
       <div className="grid grid-cols-3 gap-4">
         {[0, 1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-14 animate-pulse rounded bg-surface-container-high" />
+          <div key={i} className="h-14 rounded esqueleto" />
         ))}
       </div>
-      <div className="aspect-video animate-pulse rounded-2xl bg-surface-container-high" />
+      <div className="aspect-video rounded-2xl esqueleto" />
     </div>
   )
 }

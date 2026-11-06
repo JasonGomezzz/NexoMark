@@ -103,7 +103,7 @@ export default function MedicionVozFormulario() {
         </p>
       )}
 
-      {!datos && !error && <div className="h-48 animate-pulse rounded-lg bg-surface-container-high" />}
+      {!datos && !error && <div className="h-48 rounded-lg esqueleto" />}
 
       {datos && (
         <>

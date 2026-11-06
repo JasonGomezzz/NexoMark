@@ -453,10 +453,10 @@ function Esqueleto() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {[0, 1].map((i) => (
-          <div key={i} className="h-72 animate-pulse rounded-[14px] bg-surface-container-high" />
+          <div key={i} className="h-72 rounded-[14px] esqueleto" />
         ))}
       </div>
-      <div className="h-48 animate-pulse rounded-[14px] bg-surface-container-high" />
+      <div className="h-48 rounded-[14px] esqueleto" />
     </div>
   )
 }

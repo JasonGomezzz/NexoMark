@@ -649,15 +649,36 @@ function MetaRow({ label, children }) {
   )
 }
 
+/** La forma del detalle mientras carga: título, recorrido de 5 casillas, la pieza y su panel. */
 function LoadingSkeleton() {
   return (
-    <div className="flex animate-pulse gap-6">
-      <div className="w-72 space-y-3">
-        {[...Array(7)].map((_, i) => (
-          <div key={i} className="h-6 rounded bg-surface-container-high" />
-        ))}
+    <div role="status" aria-label="Cargando la campaña">
+      <div className="mb-8">
+        <div className="esqueleto mb-4 h-4 w-40 rounded" />
+        <div className="esqueleto h-9 w-full max-w-2xl rounded-[8px]" />
+        <div className="esqueleto mt-2 h-9 w-2/3 max-w-xl rounded-[8px]" />
+        <div className="esqueleto mt-4 h-6 w-24 rounded-full" />
+        <div className="mt-6 flex max-w-xl justify-between">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="esqueleto h-8 w-8 rounded-[7px]" />
+          ))}
+        </div>
       </div>
-      <div className="h-72 flex-1 rounded bg-surface-container-high" />
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
+          <div className="esqueleto aspect-square rounded-[14px]" />
+          <div className="space-y-3">
+            {['w-full', 'w-11/12', 'w-full', 'w-4/5', 'w-2/3'].map((ancho, i) => (
+              <div key={i} className={`esqueleto h-4 rounded ${ancho}`} />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div className="esqueleto h-6 w-1/2 rounded" />
+          <div className="esqueleto h-12 w-full rounded-[10px]" />
+          <div className="esqueleto h-12 w-full rounded-[10px]" />
+        </div>
+      </div>
     </div>
   )
 }
@@ -709,7 +730,11 @@ function SubmitModal({ preview, clienteEmail, onConfirm, onCancel }) {
           <legend className="mb-1 font-display text-lg font-extrabold text-on-surface">¿Dónde se publica al aprobarla?</legend>
           <p className="mb-3 text-[13px] text-on-surface-variant">Se publica sola en las cuentas que marques, apenas el cliente la apruebe.</p>
           {destinos === null ? (
-            <p className="text-sm text-on-surface-variant">Cargando cuentas…</p>
+            <ul role="status" aria-label="Cargando cuentas" className="space-y-2">
+              {[0, 1].map((i) => (
+                <li key={i} className="esqueleto h-14 rounded-[10px]" />
+              ))}
+            </ul>
           ) : destinos.length === 0 ? (
             <p className="rounded-[10px] bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
               Ni el cliente ni tú tienen cuentas conectadas: se enviará sin publicación automática. Se conectan en

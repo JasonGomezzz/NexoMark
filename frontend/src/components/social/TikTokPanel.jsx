@@ -199,7 +199,7 @@ export default function TikTokPanel({ campaign }) {
           <fieldset className="mt-5">
             <legend className="mb-2 text-sm font-medium text-on-surface">Cuenta de TikTok</legend>
             {cuentas === null ? (
-              <div className="h-14 animate-pulse rounded-lg bg-surface-container-high" aria-hidden="true" />
+              <div className="h-14 rounded-lg esqueleto" aria-hidden="true" />
             ) : cuentas.length === 0 ? (
               <p className="rounded-lg bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
                 Ni tú ni el cliente conectaron una cuenta de TikTok. Se conecta en{' '}

@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
       {loading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-[10px] bg-surface-container-high" />
+            <div key={i} className="h-28 rounded-[10px] esqueleto" />
           ))}
         </div>
       )}
