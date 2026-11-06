@@ -108,9 +108,14 @@ class StatePill extends StatelessWidget {
               ),
               const SizedBox(width: 6),
             ],
-            Text(
-              estado.etiqueta,
-              style: context.text.labelMedium?.copyWith(color: colores.fg),
+            // Con letra grande o pantalla angosta se acorta en vez de desbordar.
+            Flexible(
+              child: Text(
+                estado.etiqueta,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.text.labelMedium?.copyWith(color: colores.fg),
+              ),
             ),
           ],
         ),

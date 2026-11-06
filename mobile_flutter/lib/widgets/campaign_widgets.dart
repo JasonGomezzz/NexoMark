@@ -223,7 +223,12 @@ class CampaignCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final meta = subtitle ?? (campaign.clienteNombre.isEmpty ? 'Sin cliente' : campaign.clienteNombre);
+    // Lo secundario va en una sola línea, separado con « · ».
+    final meta = subtitle ??
+        [
+          campaign.clienteNombre.isEmpty ? 'Sin cliente' : campaign.clienteNombre,
+          if (campaign.fechaCreacion != null) fechaCorta(campaign.fechaCreacion),
+        ].join(' · ');
     return Semantics(
       button: true,
       label: '${campaign.titulo}. ${campaign.estado.etiqueta}. $meta',
@@ -253,7 +258,7 @@ class CampaignCard extends StatelessWidget {
                   children: [
                     Text(campaign.titulo, style: context.text.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-                    Text(meta, style: context.text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Text(meta, style: context.text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 8),
                     Row(
                       children: [
