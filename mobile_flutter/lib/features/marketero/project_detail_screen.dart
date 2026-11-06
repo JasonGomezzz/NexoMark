@@ -44,6 +44,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   static const _maxConsultas = 60;
   bool _esperaAgotada = false;
 
+  /// Cuándo se pidió la generación desde esta pantalla (para el reloj de espera).
+  DateTime? _generandoDesde;
+
   @override
   void dispose() {
     _sondeo?.cancel();
@@ -247,6 +250,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               const SizedBox(height: 20),
               _Copy(
                 campana: c,
+                generandoDesde: _generandoDesde,
                 ocupado: _ocupado,
                 onAccion: _accion,
                 onEditando: (v) => setState(() => _editandoCopy = v),
@@ -319,6 +323,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     if (ok) {
       await _accion(() async {
         await ref.read(campaignRepositoryProvider).regenerate(c.id);
+        _generandoDesde = DateTime.now();
         unawaited(ref.read(sessionProvider.notifier).refreshUser());
         return 'Generando una versión nueva…';
       });
@@ -339,6 +344,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       final repo = ref.read(campaignRepositoryProvider);
       final actualizada = await repo.editPrompt(c.id, prompt, c.version);
       await repo.regenerate(actualizada.id);
+      _generandoDesde = DateTime.now();
       unawaited(ref.read(sessionProvider.notifier).refreshUser());
       return 'Generando una versión nueva con el ajuste…';
     });
@@ -481,9 +487,16 @@ class _Estrellas extends StatelessWidget {
 
 /// Texto de la campaña: leer, editar (con bloqueo optimista) o mejorar con IA (gratis).
 class _Copy extends ConsumerStatefulWidget {
-  const _Copy({required this.campana, required this.ocupado, required this.onAccion, required this.onEditando});
+  const _Copy({
+    required this.campana,
+    required this.ocupado,
+    required this.onAccion,
+    required this.onEditando,
+    this.generandoDesde,
+  });
 
   final Campaign campana;
+  final DateTime? generandoDesde;
   final bool ocupado;
   final Future<bool> Function(Future<String?> Function()) onAccion;
 
@@ -578,12 +591,22 @@ class _CopyState extends ConsumerState<_Copy> {
                 )
               : NexoCard(
                   child: SwapIn(
-                    child: texto == null
-                        ? Text(
-                            c.estado == EstadoCampana.pendienteIa ? 'La IA está escribiendo…' : 'Todavía no hay texto.',
-                            key: const ValueKey('vacio'),
-                            style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
+                    child: texto == null && c.estado == EstadoCampana.pendienteIa
+                        ? Column(
+                            key: const ValueKey('en-camino'),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const LineasCopy(),
+                              const SizedBox(height: 16),
+                              EsperaGeneracion(desde: widget.generandoDesde),
+                            ],
                           )
+                        : texto == null
+                            ? Text(
+                                'Todavía no hay texto.',
+                                key: const ValueKey('vacio'),
+                                style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
+                              )
                         : SelectableText(texto, key: ValueKey(texto.hashCode), style: context.text.bodyLarge),
                   ),
                 ),

@@ -514,13 +514,82 @@ html[data-theme='dark'] select option {
   }
 }
 
-/* Respeta a quien prefiere menos movimiento */
+/* "Reducir movimiento": menos desplazamiento, no menos información.
+   No se apaga todo de golpe (eso dejaba un spinner quieto y ya no decía que algo
+   se estaba procesando). Cada animación tiene su alternativa: lo que se desplaza,
+   escala o gira queda en su sitio; los cambios de estado se siguen viendo con
+   fundidos cortos o con un latido suave de opacidad. Los colores (hover, casillas)
+   no se tocan porque no mueven nada. Los cajones de motion/react se resuelven en
+   src/lib/movimiento.js. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+  /* Entradas: solo el fundido, sin subir desde 6–16 px. */
+  .entra,
+  .entra-lenta,
+  .entra-hoja {
+    transition-property: opacity;
+  }
+
+  /* "Te escucho": el aro late en opacidad, sin agrandarse. */
+  .escucha-anillo {
+    animation-name: escucha-suave;
+    animation-duration: 2.4s;
+  }
+
+  /* El aro de texto del micrófono no gira; el reloj «escuchando · mm:ss» ya dice que graba. */
+  .sello-gira {
+    animation: none;
+  }
+
+  /* El esqueleto aparece igual (sin parpadeo antes de 300 ms) pero no late. */
+  .esqueleto {
+    animation: esqueleto-aparece 150ms var(--ease-out) 300ms both;
+  }
+
+  /* Cursor del dictado fijo: sigue marcando dónde termina lo provisional. */
+  .caret-blink {
+    animation: none;
+  }
+
+  /* Portada: la imagen ya está descubierta y la barra de la demo salta a su valor. */
+  .shutter-in,
+  .shutter-in img {
+    animation: none;
+  }
+  .flow-progress {
+    transition: none;
+  }
+
+  /* Indicador de carga en botones: late en vez de girar, para seguir diciendo "procesando". */
+  .animate-spin {
+    animation: procesando 1.2s ease-in-out infinite alternate;
+  }
+
+  /* Flecha de "ir a" en el inicio: el subrayado de color basta, no se desplaza. */
+  .group:hover .group-hover\:translate-x-0\.5 {
+    translate: none;
+  }
+
+  /* Botones: sin achicarse al presionar (el cambio de color ya responde). */
+  .active\:scale-\[0\.97\]:active,
+  .active\:scale-\[0\.96\]:active,
+  .active\:scale-\[0\.99\]:active {
+    scale: none;
+  }
+}
+@keyframes escucha-suave {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes procesando {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.35;
   }
 }

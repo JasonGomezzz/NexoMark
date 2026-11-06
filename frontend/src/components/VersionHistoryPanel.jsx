@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { cajon } from '@/lib/movimiento'
 import toast from 'react-hot-toast'
 import { History, X, ImageOff, GitCompareArrows, RotateCcw } from 'lucide-react'
 import api from '../services/api'
@@ -24,6 +25,7 @@ export default function VersionHistoryPanel({
   textoActual = '',
 }) {
   const [versions, setVersions] = useState([])
+  const reducir = useReducedMotion()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [open, setOpen] = useState(false)
@@ -117,10 +119,7 @@ export default function VersionHistoryPanel({
             aria-label="Historial de versiones"
           >
             <motion.aside
-              initial={{ transform: 'translateX(100%)' }}
-              animate={{ transform: 'translateX(0%)' }}
-              exit={{ transform: 'translateX(100%)' }}
-              transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+              {...cajon('derecha', reducir)}
               className={cn(
                 'flex h-full w-full flex-col overflow-hidden border-l border-outline-variant bg-background shadow-2xl',
                 compared ? 'max-w-3xl' : 'max-w-md',

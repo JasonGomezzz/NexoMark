@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { cajon } from '@/lib/movimiento'
 import {
   BarChart3,
   Coins,
@@ -129,6 +130,7 @@ function Creditos({ tokens, onClick, compacto = false }) {
 
 export default function AppLayout() {
   const { logout, getNombre } = useAuth()
+  const reducir = useReducedMotion()
   const navigate = useNavigate()
   const location = useLocation()
   const verified = useVerifiedUser()
@@ -337,10 +339,7 @@ export default function AppLayout() {
               aria-modal="true"
               aria-label="Menú principal"
               className="absolute inset-y-0 left-0 flex w-[min(19rem,86vw)] flex-col gap-5 overflow-y-auto bg-cama px-3 pb-5 text-on-navy shadow-2xl"
-              initial={{ transform: 'translateX(-100%)' }}
-              animate={{ transform: 'translateX(0%)' }}
-              exit={{ transform: 'translateX(-100%)' }}
-              transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+              {...cajon('izquierda', reducir)}
             >
               <div className="flex h-14 items-center justify-between pl-2">
                 <BrandLogo tone="navy" className="text-base" />

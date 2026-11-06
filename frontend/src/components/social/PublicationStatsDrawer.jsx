@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
+import { cajon } from '@/lib/movimiento'
 import { AlertCircle, CircleCheck, ExternalLink, ImageOff, Send, X } from 'lucide-react'
 import RedIcon from './RedIcon'
 import PublicationBadge from './PublicationBadge'
@@ -19,6 +20,7 @@ function fecha(iso) {
  */
 export default function PublicationStatsDrawer({ publicacionId, onClose, onActualizada }) {
   const [datos, setDatos] = useState(null)
+  const reducir = useReducedMotion()
   const [error, setError] = useState(null)
   const cerrar = useRef(null)
   const panel = useRef(null)
@@ -66,10 +68,7 @@ export default function PublicationStatsDrawer({ publicacionId, onClose, onActua
         role="dialog"
         aria-modal="true"
         aria-labelledby="detalle-publicacion-titulo"
-        initial={{ transform: 'translateX(100%)' }}
-        animate={{ transform: 'translateX(0%)' }}
-        exit={{ transform: 'translateX(100%)' }}
-        transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+        {...cajon('derecha', reducir)}
         className="flex h-full w-full max-w-xl flex-col overflow-hidden bg-surface-container-lowest shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -102,17 +103,111 @@ class _SinImagen extends StatelessWidget {
   }
 }
 
+/// La imagen todavía no existe: el marco de la pieza, quieto (ni esqueleto ni
+/// spinner). Si hay espacio, dice qué va a aparecer ahí.
 class _Generando extends StatelessWidget {
   const _Generando();
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        const Skeleton(height: double.infinity, radius: 0),
-        Center(child: Icon(LucideIcons.sparkles, color: context.colors.primary)),
-      ],
+    return ColoredBox(
+      color: context.colors.surfaceContainerLow,
+      child: LayoutBuilder(
+        builder: (context, box) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(LucideIcons.sparkles, color: context.colors.primary, size: box.maxWidth > 160 ? 28 : 20),
+              if (box.maxWidth > 160) ...[
+                const SizedBox(height: 8),
+                Text('Aquí va la imagen', style: context.text.bodySmall),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Líneas quietas con la forma del copy que viene. No pulsan: la IA tarda de
+/// 8 a 30 s y algo que late tanto rato cansa; el avance lo cuenta el reloj.
+class LineasCopy extends StatelessWidget {
+  const LineasCopy({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = context.colors.surfaceContainerHigh;
+    Widget linea(double factor) => FractionallySizedBox(
+          widthFactor: factor,
+          alignment: Alignment.centerLeft,
+          child: Container(height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6))),
+        );
+    return ExcludeSemantics(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [linea(1), const SizedBox(height: 12), linea(0.92), const SizedBox(height: 12), linea(0.55)],
+      ),
+    );
+  }
+}
+
+/// Cuánto lleva la generación y cuánto suele tardar. No inventa pasos: el
+/// servidor solo dice "pendiente_ia". Sin [desde] (se abrió a mitad de camino)
+/// no se muestra un reloj que mentiría.
+class EsperaGeneracion extends StatefulWidget {
+  const EsperaGeneracion({super.key, this.desde});
+
+  final DateTime? desde;
+
+  @override
+  State<EsperaGeneracion> createState() => _EsperaGeneracionState();
+}
+
+class _EsperaGeneracionState extends State<EsperaGeneracion> {
+  Timer? _reloj;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.desde != null) {
+      _reloj = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _reloj?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final desde = widget.desde;
+    final lleva = desde == null ? null : DateTime.now().difference(desde);
+    final reloj = lleva == null ? null : '${lleva.inMinutes}:${(lleva.inSeconds % 60).toString().padLeft(2, '0')}';
+    final pasado = lleva != null && lleva.inSeconds > 30;
+    return Semantics(
+      label: 'Generando. Suele tardar entre 8 y 30 segundos.',
+      excludeSemantics: true,
+      // Wrap: con letra grande la segunda parte baja de línea en vez de desbordar.
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 2,
+        crossAxisAlignment: WrapCrossAlignment.end,
+        children: [
+          Text(
+            reloj == null ? 'Generando' : 'Generando · $reloj',
+            style: context.text.titleSmall?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+          ),
+          Text(
+            pasado ? 'tarda más de lo habitual (8 a 30 s)' : 'suele tardar entre 8 y 30 s',
+            style: context.text.bodySmall,
+          ),
+        ],
+      ),
     );
   }
 }

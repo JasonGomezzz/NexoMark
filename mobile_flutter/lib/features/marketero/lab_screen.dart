@@ -92,6 +92,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
   /// se deja de preguntar y se ofrece volver a consultar.
   static const _maxConsultas = 60;
   bool _esperaAgotada = false;
+  DateTime? _generandoDesde;
 
   /// Medición voz vs. formulario: desde el primer toque del micrófono o la primera letra.
   DateTime? _inicioCaptura;
@@ -217,6 +218,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
       setState(() {
         _campana = campana;
         _etapa = _Etapa.generando;
+        _generandoDesde = DateTime.now();
       });
       ref.invalidate(campaignListProvider);
       ref.invalidate(campaignStatsProvider);
@@ -620,15 +622,13 @@ class _LabScreenState extends ConsumerState<LabScreen> {
                             tone: InfoTone.warning,
                             message: '${c.iaErrorMessage ?? 'La IA no pudo generar la campaña.'} Se devolvió el crédito; puedes regenerarla desde Generar.',
                           )
-                        : const Column(
-                            key: ValueKey('esqueleto'),
+                        : Column(
+                            key: const ValueKey('en-camino'),
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Skeleton(height: 16),
-                              SizedBox(height: 10),
-                              Skeleton(height: 16),
-                              SizedBox(height: 10),
-                              Skeleton(width: 180, height: 16),
+                              const LineasCopy(),
+                              const SizedBox(height: 16),
+                              EsperaGeneracion(desde: _generandoDesde),
                             ],
                           ),
               ),
