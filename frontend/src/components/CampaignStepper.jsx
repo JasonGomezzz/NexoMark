@@ -40,49 +40,58 @@ function recorrido(estado, publicada) {
 
 export default function CampaignStepper({ estado, publicada = false }) {
   const { actual, detalle, rechazo, fin } = recorrido(estado, publicada)
+  const pasoActual = PASOS[Math.min(actual, PASOS.length - 1)]
   return (
-    <ol className="grid grid-cols-5 gap-2 sm:gap-3" aria-label="Orden de trabajo de esta campaña">
-      {PASOS.map(({ id, label, icono: Icono }, i) => {
-        const hecha = i < actual
-        const esActual = i === actual
-        const rechazada = (rechazo && id === 'aprobar') || (fin && esActual)
-        return (
-          <li key={id} className="flex min-w-0 flex-col gap-2" aria-current={esActual ? 'step' : undefined}>
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  'casilla h-10 w-10 rounded-[9px]',
-                  rechazada && 'border-0 bg-error text-on-error',
-                  !rechazada && esActual && 'casilla-actual',
-                  !rechazada && hecha && 'border-0 bg-primary-fixed text-primary',
-                  !rechazada && !hecha && !esActual && 'casilla-pliego',
+    <div>
+      <ol className="grid grid-cols-5 gap-2 sm:gap-3" aria-label="Orden de trabajo de esta campaña">
+        {PASOS.map(({ id, label, icono: Icono }, i) => {
+          const hecha = i < actual
+          const esActual = i === actual
+          const rechazada = (rechazo && id === 'aprobar') || (fin && esActual)
+          return (
+            <li key={id} className="flex min-w-0 flex-col gap-2" aria-current={esActual ? 'step' : undefined}>
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    'casilla h-10 w-10 rounded-[9px]',
+                    rechazada && 'border-0 bg-error text-on-error',
+                    !rechazada && esActual && 'casilla-actual',
+                    !rechazada && hecha && 'border-0 bg-primary-fixed text-primary',
+                    !rechazada && !hecha && !esActual && 'casilla-pliego',
+                  )}
+                  aria-hidden="true"
+                >
+                  {rechazada ? (
+                    <X className="h-4 w-4" strokeWidth={2.75} />
+                  ) : hecha ? (
+                    <Check className="h-4 w-4" strokeWidth={2.75} />
+                  ) : (
+                    <Icono className="h-[18px] w-[18px]" strokeWidth={esActual ? 2.25 : 1.75} />
+                  )}
+                </span>
+                {i < PASOS.length - 1 && (
+                  <span aria-hidden="true" className={cn('hidden h-px flex-1 sm:block', hecha ? 'bg-primary' : 'bg-outline-variant')} />
                 )}
-                aria-hidden="true"
-              >
-                {rechazada ? (
-                  <X className="h-4 w-4" strokeWidth={2.75} />
-                ) : hecha ? (
-                  <Check className="h-4 w-4" strokeWidth={2.75} />
-                ) : (
-                  <Icono className="h-[18px] w-[18px]" strokeWidth={esActual ? 2.25 : 1.75} />
-                )}
+              </div>
+              {/* En móvil las cinco etiquetas no caben (≈51 px por columna): quedan para el lector
+                  de pantalla y el paso actual se lee completo en la línea de abajo. */}
+              <span className={cn('sr-only truncate font-display text-[15px] leading-tight sm:not-sr-only',  esActual || rechazada ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
+                {label}
               </span>
-              {i < PASOS.length - 1 && (
-                <span aria-hidden="true" className={cn('hidden h-px flex-1 sm:block', hecha ? 'bg-primary' : 'bg-outline-variant')} />
+              {(esActual || (rechazada && rechazo)) && (
+                <span className={cn('hidden text-[13px] sm:block', rechazada ? 'font-semibold text-error' : 'text-on-surface-variant')}>
+                  {rechazada && rechazo ? rechazo : detalle}
+                </span>
               )}
-            </div>
-            <span className={cn('truncate font-display text-[13px] leading-tight sm:text-[15px]', esActual || rechazada ? 'font-extrabold text-on-surface' : 'font-semibold text-on-surface-variant')}>
-              {label}
-            </span>
-            {(esActual || (rechazada && rechazo)) && (
-              <span className={cn('hidden text-[13px] sm:block', rechazada ? 'font-semibold text-error' : 'text-on-surface-variant')}>
-                {rechazada && rechazo ? rechazo : detalle}
-              </span>
-            )}
-            <span className="sr-only">{hecha ? 'hecha' : esActual ? `actual: ${detalle}` : rechazada ? 'rechazada' : 'pendiente'}</span>
-          </li>
-        )
-      })}
-    </ol>
+              <span className="sr-only">{hecha ? 'hecha' : esActual ? `actual: ${detalle}` : rechazada ? 'rechazada' : 'pendiente'}</span>
+            </li>
+          )
+        })}
+      </ol>
+      <p aria-hidden="true" className="mt-2 font-display text-[15px] leading-tight text-on-surface sm:hidden">
+        <span className={cn('font-extrabold', (rechazo || fin) && 'text-error')}>{rechazo ? 'Aprobar' : pasoActual.label}</span>
+        <span className="text-on-surface-variant"> · {rechazo || detalle}</span>
+      </p>
+    </div>
   )
 }
