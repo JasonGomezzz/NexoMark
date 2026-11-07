@@ -36,9 +36,9 @@ REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [  # noqa: F405
 ]
 
 # ─────────────────────────────────────────────
-# EMAIL — en dev, todo va a consola
+# EMAIL — en dev va a consola salvo que .env pida SMTP (Resend) a propósito
 # ─────────────────────────────────────────────
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 
 # ─────────────────────────────────────────────
 # LOGGING — detallado en desarrollo
