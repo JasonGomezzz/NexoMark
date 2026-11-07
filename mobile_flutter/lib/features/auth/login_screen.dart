@@ -175,7 +175,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 24),
                 children: [
-                  const Entrance(child: _FlowDemo()),
+                  const Entrance(child: FlowDemo()),
                   const SizedBox(height: 6),
                   Entrance(
                     index: 1,
@@ -442,16 +442,16 @@ class _RolSelector extends StatelessWidget {
   }
 }
 
-/// Momento firma (una vez al abrir): el recorrido Dictar → … → Medir avanza
-/// solo, como el FlowDemo de la web. Explica el producto; no llama a la API.
-class _FlowDemo extends StatefulWidget {
-  const _FlowDemo();
+/// El recorrido Dictar → … → Medir avanza solo y se repite, como el FlowDemo
+/// de la web. Con "reducir movimiento" queda quieto en Medir. Explica el producto; no llama a la API.
+class FlowDemo extends StatefulWidget {
+  const FlowDemo({super.key});
 
   @override
-  State<_FlowDemo> createState() => _FlowDemoState();
+  State<FlowDemo> createState() => _FlowDemoState();
 }
 
-class _FlowDemoState extends State<_FlowDemo> {
+class _FlowDemoState extends State<FlowDemo> {
   static const _frases = [
     'Dictas: «Súbeme una foto con 2×1 en capuchinos».',
     'La IA escribe el texto y crea la imagen.',
@@ -459,6 +459,8 @@ class _FlowDemoState extends State<_FlowDemo> {
     'Se publica sola en Instagram y Facebook.',
     'Ves me gusta, comentarios y alcance.',
   ];
+  /// Tics de 1,5 s que se queda en Medir antes de volver a empezar (3 s).
+  static const _pausaFinal = 2;
   int _paso = 0;
   Timer? _timer;
 
@@ -471,9 +473,15 @@ class _FlowDemoState extends State<_FlowDemo> {
       _timer = Timer(Duration.zero, () {});
       return;
     }
+    // Se repite: al llegar a Medir descansa un momento y vuelve a Dictar, para
+    // que quien llega a mitad del recorrido lo vea completo.
+    var pausa = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 1500), (t) {
-      if (!mounted || _paso >= _frases.length - 1) return t.cancel();
-      setState(() => _paso++);
+      if (!mounted) return t.cancel();
+      if (_paso < _frases.length - 1) return setState(() => _paso++);
+      if (++pausa < _pausaFinal) return;
+      pausa = 0;
+      setState(() => _paso = 0);
     });
   }
 
