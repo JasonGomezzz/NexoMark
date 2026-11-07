@@ -14,6 +14,7 @@ import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../auth/google_auth.dart';
 import 'avatar_provider.dart';
+import 'cerrar_sesion.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -99,7 +100,7 @@ class AccountScreen extends ConsumerWidget {
               ]),
               const SizedBox(height: 24),
               OutlinedButton.icon(
-                onPressed: () => ref.read(sessionProvider.notifier).logout(),
+                onPressed: () => cerrarSesionConAviso(context, ref),
                 icon: Icon(LucideIcons.logOut, color: context.colors.error),
                 label: Text('Cerrar sesión', style: TextStyle(color: context.colors.error)),
                 style: OutlinedButton.styleFrom(side: BorderSide(color: context.colors.error.withValues(alpha: 0.5))),

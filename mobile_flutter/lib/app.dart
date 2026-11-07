@@ -8,6 +8,7 @@ import 'core/preferences.dart';
 import 'core/providers.dart';
 import 'core/session/splash_gate.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/motion.dart';
 import 'data/models.dart';
 import 'features/account/account_screen.dart';
 import 'features/account/change_email_screen.dart';
@@ -71,7 +72,19 @@ GoRouter _buildRouter(WidgetRef ref) {
     routes: [
       GoRoute(path: '/cargando', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/inicio', builder: (_, _) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      // Al cerrar sesión (o al vencer) el inicio llega con un fundido: no es "avanzar"
+      // a otra pantalla, es volver a la puerta de entrada.
+      GoRoute(
+        path: '/login',
+        pageBuilder: (_, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const LoginScreen(),
+          transitionDuration: Motion.salida,
+          transitionsBuilder: (context, animation, _, child) => Motion.reduced(context)
+              ? child
+              : FadeTransition(opacity: CurvedAnimation(parent: animation, curve: Motion.easeOut), child: child),
+        ),
+      ),
       GoRoute(path: '/olvide', builder: (_, state) => ForgotPasswordScreen(email: state.extra as String?)),
       GoRoute(path: '/admin/inicio', builder: (_, _) => const AdminNoticeScreen()),
       // Marketero: la línea completa.

@@ -48,6 +48,9 @@ abstract final class Motion {
   /// Pulso del esqueleto (ida y vuelta), suave y sin brillo que corre.
   static const pulso = Duration(milliseconds: 1800);
 
+  /// Volver al inicio de sesión al cerrar sesión: fundido, sin deslizar.
+  static const salida = Duration(milliseconds: 300);
+
   /// Separación entre elementos que entran juntos.
   static const stagger = Duration(milliseconds: 50);
 
