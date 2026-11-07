@@ -118,8 +118,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await _entrar(await google.completar(intento));
       } on ApiException catch (e) {
         if (e.flag('link_required') && mounted) {
-          final user = await _vincular(google, intento, e.message);
-          if (user != null) await _entrar(user);
+          final resultado = await _vincular(google, intento, e.message);
+          if (resultado is AppUser) {
+            await _entrar(resultado);
+          } else if (resultado == _olvide && mounted) {
+            unawaited(context.push('/olvide', extra: intento.email));
+          }
         } else if (e.flag('registration_required')) {
           setState(() {
             _registro = true;
@@ -144,8 +148,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   /// El correo de Google ya tiene cuenta: se vincula solo con la contraseña de NexoMark.
-  Future<AppUser?> _vincular(GoogleAuth google, GoogleAttempt intento, String mensaje) {
-    return showModalBottomSheet<AppUser>(
+  /// Devuelve el usuario si se vinculó, o [_olvide] si la persona no recuerda la contraseña.
+  Future<Object?> _vincular(GoogleAuth google, GoogleAttempt intento, String mensaje) {
+    return showModalBottomSheet<Object>(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
@@ -573,6 +578,9 @@ class _GoogleG extends StatelessWidget {
   }
 }
 
+/// Respuesta de la hoja de vincular cuando se elige "¿Olvidaste tu contraseña?".
+const _olvide = #olvide;
+
 class _VincularGoogleSheet extends StatefulWidget {
   const _VincularGoogleSheet({required this.google, required this.intento, required this.mensaje});
 
@@ -637,6 +645,11 @@ class _VincularGoogleSheetState extends State<_VincularGoogleSheet> {
             child: _enviando
                 ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
                 : const Text('Vincular y entrar'),
+          ),
+          const SizedBox(height: 4),
+          TextButton(
+            onPressed: _enviando ? null : () => Navigator.of(context).pop(_olvide),
+            child: const Text('¿Olvidaste tu contraseña?'),
           ),
         ],
       ),

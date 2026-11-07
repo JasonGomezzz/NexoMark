@@ -72,7 +72,7 @@ GoRouter _buildRouter(WidgetRef ref) {
       GoRoute(path: '/cargando', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/inicio', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
-      GoRoute(path: '/olvide', builder: (_, _) => const ForgotPasswordScreen()),
+      GoRoute(path: '/olvide', builder: (_, state) => ForgotPasswordScreen(email: state.extra as String?)),
       GoRoute(path: '/admin/inicio', builder: (_, _) => const AdminNoticeScreen()),
       // Marketero: la línea completa.
       StatefulShellRoute.indexedStack(

@@ -13,10 +13,13 @@ import '../../widgets/nexo_widgets.dart';
 /// Google. El enlace llega al correo y se abre en la web (/reset-password).
 /// La respuesta es la misma exista o no la cuenta.
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
-  const ForgotPasswordScreen({super.key, this.crear = false});
+  const ForgotPasswordScreen({super.key, this.crear = false, this.email});
 
   /// true desde Cuenta → Seguridad en una cuenta creada con Google.
   final bool crear;
+
+  /// Correo ya conocido (por ejemplo, el de Google al vincular).
+  final String? email;
 
   @override
   ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -32,7 +35,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   void initState() {
     super.initState();
     final user = ref.read(currentUserProvider);
-    if (user != null) _email.text = user.email;
+    final email = widget.email ?? user?.email;
+    if (email != null) _email.text = email;
   }
 
   @override

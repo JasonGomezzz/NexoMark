@@ -10,9 +10,12 @@ import '../../data/models.dart';
 /// Intento de "Continuar con Google" que puede necesitar un segundo paso
 /// (confirmar la contraseña de NexoMark para vincular una cuenta existente).
 class GoogleAttempt {
-  GoogleAttempt(this.challenge, this.idToken);
+  GoogleAttempt(this.challenge, this.idToken, {this.email});
   final GoogleChallenge challenge;
   final String idToken;
+
+  /// Correo de la cuenta de Google elegida: solo para rellenar "Recuperar contraseña".
+  final String? email;
 }
 
 class GoogleCancelled implements Exception {}
@@ -45,7 +48,7 @@ class GoogleAuth {
       if (idToken == null) {
         throw ApiException('Google no devolvió tu identidad. Vuelve a intentarlo.');
       }
-      return GoogleAttempt(challenge, idToken);
+      return GoogleAttempt(challenge, idToken, email: result.user.email);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) throw GoogleCancelled();
       throw ApiException(switch (e.code) {
