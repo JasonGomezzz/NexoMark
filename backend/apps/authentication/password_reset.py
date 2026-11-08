@@ -12,7 +12,7 @@ Adaptado de la rama de Piero (cd8483ba, 26d19738):
   caducidad (PASSWORD_RESET_TIMEOUT) y marca de uso.
 - Restablecer la contraseña sube `token_version`: se invalidan todos los JWT
   (Django y Spring) y, con VersionedTokenRefreshSerializer, también el refresh.
-- El correo sale por el backend de Django (`send_mail`): consola en desarrollo,
+- El correo sale por el backend de Django (texto + HTML con el logo adjunto): consola en desarrollo,
   locmem en tests y SMTP de Resend en producción (ver EMAIL_* en settings).
   No pasa por n8n: no hace falta tocar el workflow ni exponer el enlace en un
   webhook sin autenticación.
@@ -23,14 +23,17 @@ import logging
 import math
 import secrets
 import threading
+from email.mime.image import MIMEImage
+from pathlib import Path
 from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.db import connections, transaction
+from django.template.loader import render_to_string
 from django.utils import timezone
 from rest_framework import serializers, status
 from rest_framework.exceptions import Throttled
@@ -79,23 +82,52 @@ def crear_token(user: User) -> str:
     return token
 
 
+ASUNTO = "Restablece tu contraseña — NexoMark IA"
+ASUNTO_CREAR = "Crea tu contraseña — NexoMark IA"
+LOGO_CID = "logo-nexomark"
+LOGO_PATH = Path(settings.BASE_DIR) / "templates" / "emails" / "nexomark-icon.png"
+
+
 def enviar_correo(user: User, token: str) -> None:
     # Fragmento (#): el token no llega a logs del servidor web ni al Referer.
     url = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password#{urlencode({'token': token})}"
     minutos = max(1, settings.PASSWORD_RESET_TIMEOUT // 60)
-    send_mail(
-        subject="Restablece tu contraseña — NexoMark IA",
-        message=(
-            f"Hola {user.nombre}:\n\n"
-            f"Abre este enlace para elegir una nueva contraseña:\n\n{url}\n\n"
-            f"Vence en {minutos} minutos y solo sirve una vez. Al cambiarla se "
-            "cerrarán tus sesiones abiertas.\n\n"
-            "Si no lo solicitaste, ignora este correo: tu contraseña no cambia."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=False,
+    # Cuenta creada con Google y sin contraseña: el mismo enlace sirve para crearla.
+    crear = not user.has_usable_password()
+    asunto = ASUNTO_CREAR if crear else ASUNTO
+    texto = (
+        f"Hola {user.nombre}:\n\n"
+        f"Abre este enlace para {'crear tu contraseña' if crear else 'elegir una nueva contraseña'}:\n\n{url}\n\n"
+        f"Vence en {minutos} minutos y solo sirve una vez. Al cambiarla se "
+        "cerrarán tus sesiones abiertas.\n\n"
+        "Si no lo solicitaste, ignora este correo: tu contraseña no cambia."
     )
+    html = render_to_string(
+        "emails/restablecer_contrasena.html",
+        {
+            "asunto": asunto,
+            "nombre": user.nombre or "",
+            "email": user.email,
+            "url": url,
+            "minutos": minutos,
+            "crear": crear,
+            "logo_cid": LOGO_CID,
+        },
+    )
+    correo = EmailMultiAlternatives(
+        subject=asunto,
+        body=texto,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
+    )
+    correo.attach_alternative(html, "text/html")
+    # El logo viaja dentro del correo (cid): no depende de una URL pública.
+    correo.mixed_subtype = "related"
+    logo = MIMEImage(LOGO_PATH.read_bytes(), _subtype="png")
+    logo.add_header("Content-ID", f"<{LOGO_CID}>")
+    logo.add_header("Content-Disposition", "inline", filename="nexomark.png")
+    correo.attach(logo)
+    correo.send(fail_silently=False)
 
 
 def procesar_solicitud(email: str) -> bool:

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>{{ asunto }}</title>
+<!-- Apple Mail e iOS cargan la fuente; Gmail usa la de respaldo. -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  a { color: #087B75; }
+  @media (max-width: 620px) {
+    .pliego-relleno { padding: 28px 20px 24px !important; }
+    .mesa-relleno { padding: 18px 20px !important; }
+    .titulo { font-size: 26px !important; }
+    .boton { width: 100% !important; }
+    .boton a { display: block !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#14283F;-webkit-text-size-adjust:100%;">
+<!-- Texto de vista previa en la bandeja (oculto en el cuerpo). -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+  {% if crear %}Elige la contraseña de tu cuenta de NexoMark.{% else %}Elige una contraseña nueva para entrar a NexoMark.{% endif %} El enlace vence en {{ minutos }} minutos y sirve una sola vez.
+</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#14283F;">
+  <tr>
+    <td align="center" style="padding:28px 12px 36px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+
+        <!-- La mesa: logo y nombre sobre el marino. -->
+        <tr>
+          <td class="mesa-relleno" style="padding:4px 4px 22px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="vertical-align:middle;padding-right:12px;">
+                  <img src="cid:{{ logo_cid }}" width="40" height="40" alt="" style="display:block;border:0;border-radius:10px;">
+                </td>
+                <td style="vertical-align:middle;font-family:'Bricolage Grotesque','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:21px;font-weight:800;letter-spacing:-0.02em;color:#F3FAFB;">
+                  NexoMark
+                </td>
+                <td style="vertical-align:middle;padding-left:8px;">
+                  <span style="display:inline-block;padding:2px 7px;border-radius:7px;background:#17B8AD;color:#0B1929;font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;font-weight:600;line-height:16px;">IA</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- El pliego. -->
+        <tr>
+          <td style="background:#F7FBFB;border-radius:18px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="pliego-relleno" style="padding:40px 40px 32px;font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#14283F;">
+
+                  <h1 class="titulo" style="margin:0 0 14px;font-family:'Bricolage Grotesque','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.025em;color:#14283F;">
+                    {% if crear %}Crea tu contraseña de NexoMark{% else %}Elige una contraseña nueva{% endif %}
+                  </h1>
+                  <p style="margin:0 0 26px;font-size:15px;line-height:1.55;color:#425C67;">
+                    Hola {{ nombre }}: {% if crear %}tu cuenta entra con Google. Con una contraseña también podrás entrar con tu correo.{% else %}pediste cambiar la contraseña con la que entras a NexoMark.{% endif %}
+                  </p>
+
+                  <!-- Botón principal (44 px, radio 10, primary). -->
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="boton">
+                    <tr>
+                      <td align="center" bgcolor="#087B75" style="border-radius:10px;">
+                        <a href="{{ url }}" target="_blank" style="display:inline-block;padding:12px 26px;font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:20px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:10px;">
+                          {% if crear %}Crear contraseña{% else %}Elegir contraseña nueva{% endif %}
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Ficha: los datos del enlace, con hilos como en la orden de trabajo. -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:32px 0 0;border-top:1px solid #9FB8BE;">
+                    <tr>
+                      <td style="padding:11px 0;border-bottom:1px solid #C9DADD;font-size:13px;line-height:18px;color:#425C67;width:96px;vertical-align:top;">Cuenta</td>
+                      <td style="padding:11px 0;border-bottom:1px solid #C9DADD;font-size:13px;line-height:18px;color:#14283F;font-weight:600;word-break:break-all;">{{ email }}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:11px 0;border-bottom:1px solid #C9DADD;font-size:13px;line-height:18px;color:#425C67;vertical-align:top;">Vence</td>
+                      <td style="padding:11px 0;border-bottom:1px solid #C9DADD;font-size:13px;line-height:18px;color:#14283F;font-weight:600;">en {{ minutos }} minutos</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:11px 0;border-bottom:1px solid #C9DADD;font-size:13px;line-height:18px;color:#425C67;vertical-align:top;">Uso</td>
+                      <td style="padding:11px 0;border-bottom:1px solid #C9DADD;font-size:13px;line-height:18px;color:#14283F;font-weight:600;">una sola vez · cierra tus sesiones abiertas</td>
+                    </tr>
+                  </table>
+
+                  <p style="margin:22px 0 6px;font-size:13px;line-height:1.45;color:#425C67;">
+                    Si el botón no abre, copia este enlace en el navegador:
+                  </p>
+                  <p style="margin:0;font-size:13px;line-height:1.45;word-break:break-all;">
+                    <a href="{{ url }}" target="_blank" style="color:#087B75;text-decoration:underline;">{{ url }}</a>
+                  </p>
+
+                  <!-- Seguridad: bloque tintado, sin borde de acento. -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;">
+                    <tr>
+                      <td style="background:#EDF5F5;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.5;color:#425C67;">
+                        <strong style="color:#14283F;font-weight:600;">¿No lo pediste tú?</strong> Ignora este correo: tu contraseña no cambia y nadie entra sin este enlace.
+                      </td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Pie sobre la mesa. -->
+        <tr>
+          <td style="padding:20px 8px 0;font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#BDCFD7;">
+            NexoMark IA · de la idea dictada al post publicado.<br>
+            Recibes este correo porque se pidió {% if crear %}crear{% else %}restablecer{% endif %} la contraseña de {{ email }}.
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

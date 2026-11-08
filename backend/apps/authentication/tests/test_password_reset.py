@@ -185,3 +185,37 @@ class TestHilo:
             assert hecho.wait(2)
         assert hilos[0] is not threading.main_thread()
         assert hilos[0].daemon
+
+
+class TestCorreoHtml:
+    """El correo lleva versión HTML con la identidad NexoMark y el logo adjunto."""
+
+    def test_html_con_el_mismo_enlace_y_logo_inline(self, solicitar, user_marketero):
+        solicitar(user_marketero.email)
+        correo = mail.outbox[-1]
+        html, tipo = correo.alternatives[0]
+        assert tipo == "text/html"
+        token = _token_del_correo()
+        assert f"#token={token}" in html
+        assert "Elegir contraseña nueva" in html
+        assert user_marketero.email in html
+        assert "cid:logo-nexomark" in html
+        logos = [a for a in correo.attachments if getattr(a, "get", None) and a.get("Content-ID") == "<logo-nexomark>"]
+        assert len(logos) == 1
+
+    def test_escapa_el_nombre(self, solicitar, user_marketero):
+        user_marketero.nombre = "<b>Ana</b>"
+        user_marketero.save(update_fields=["nombre"])
+        solicitar(user_marketero.email)
+        html = mail.outbox[-1].alternatives[0][0]
+        assert "<b>Ana</b>" not in html
+        assert "&lt;b&gt;Ana&lt;/b&gt;" in html
+
+    def test_cuenta_de_google_sin_contrasena_pide_crearla(self, solicitar, user_marketero):
+        user_marketero.set_unusable_password()
+        user_marketero.google_subject = "google-123"
+        user_marketero.save()
+        solicitar(user_marketero.email)
+        correo = mail.outbox[-1]
+        assert correo.subject == "Crea tu contraseña — NexoMark IA"
+        assert "Crea tu contraseña de NexoMark" in correo.alternatives[0][0]
