@@ -57,7 +57,11 @@ ENV DB_NAME=$DB_NAME
 ENV DB_USER=$DB_USER
 ENV DB_PASSWORD=$DB_PASSWORD
 ENV DB_HOST=$DB_HOST
-RUN python manage.py collectstatic --noinput --settings=core.settings.prod
+# prod.py exige estos dos secretos al importar; aquí van solo para este comando
+# (no quedan en la imagen) y en runtime se usan los reales de Render.
+RUN INTERNAL_EVENT_TOKEN=build-only-not-used-in-runtime \
+    N8N_WEBHOOK_TOKEN=build-only-not-used-in-runtime-0000000000 \
+    python manage.py collectstatic --noinput --settings=core.settings.prod
 
 # Puerto expuesto
 EXPOSE 8000
