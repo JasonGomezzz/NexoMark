@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,11 +27,14 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Objects;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class SecurityConfigTest {
@@ -40,8 +44,16 @@ class SecurityConfigTest {
 
     @BeforeEach
     void setUp() {
+        start(Map.of());
+    }
+
+    private void start(Map<String, Object> properties) {
+        if (context != null) {
+            context.close();
+        }
         context = new AnnotationConfigWebApplicationContext();
         context.setServletContext(new MockServletContext());
+        context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("test", properties));
         context.register(TestConfiguration.class);
         context.refresh();
         mvc = MockMvcBuilders.webAppContextSetup(Objects.requireNonNull(context))
@@ -68,6 +80,27 @@ class SecurityConfigTest {
     void authenticatedUserWithoutRoleStillGets403() throws Exception {
         mvc.perform(get("/api/v1/test").header("Authorization", "Bearer " + token("marketero", 300)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void localViteOriginIsAllowedByDefaultAndUnknownOriginIsRejected() throws Exception {
+        mvc.perform(preflight("http://localhost:5173")).andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
+        mvc.perform(preflight("https://otro-sitio.example")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void productionOriginComesFromEnvironment() throws Exception {
+        start(Map.of("CORS_ALLOWED_ORIGINS", "https://nexomark.vercel.app"));
+        mvc.perform(preflight("https://nexomark.vercel.app")).andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://nexomark.vercel.app"));
+        mvc.perform(preflight("http://localhost:5173")).andExpect(status().isForbidden());
+    }
+
+    private org.springframework.test.web.servlet.RequestBuilder preflight(String origin) {
+        return options("/api/v1/test").header("Origin", origin)
+                .header("Access-Control-Request-Method", "GET")
+                .header("Access-Control-Request-Headers", "authorization");
     }
 
     private String token(String role, int seconds) {
