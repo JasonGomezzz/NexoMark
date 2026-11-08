@@ -4,7 +4,8 @@ import 'package:flutter/widgets.dart';
 /// Reglas: transform y opacidad; nada aparece desde escala 0 (se parte de
 /// 0.95, siempre con opacidad); la interfaz se queda entre 150 y 300 ms; lo
 /// que se usa decenas de veces al día (pestañas, filtros, filas) no se anima;
-/// con "reducir movimiento" todo queda en su estado final.
+/// con "reducir movimiento" nada se desplaza, escala ni gira, pero los cambios
+/// de estado se siguen viendo con fundidos cortos (igual que la web).
 abstract final class Motion {
   /// Entrar o aparecer.
   static const easeOut = Cubic(0.23, 1, 0.32, 1);
@@ -45,8 +46,8 @@ abstract final class Motion {
   /// Fundido con el que llega el contenido real (o aparece el esqueleto).
   static const llegada = Duration(milliseconds: 150);
 
-  /// Pulso del esqueleto (ida y vuelta), suave y sin brillo que corre.
-  static const pulso = Duration(milliseconds: 1800);
+  /// Pulso del esqueleto (ida y vuelta): 1,4 s por tramo, como `esqueleto-late` de la web.
+  static const pulso = Duration(milliseconds: 2800);
 
   /// Volver al inicio de sesión al cerrar sesión: fundido, sin deslizar.
   static const salida = Duration(milliseconds: 300);
@@ -61,6 +62,7 @@ abstract final class Motion {
       (MediaQuery.maybeDisableAnimationsOf(context) ?? false) ||
       (View.maybeOf(context)?.platformDispatcher.accessibilityFeatures.reduceMotion ?? false);
 
-  /// Duración efectiva: cero si el sistema pide no animar.
+  /// Duración efectiva de algo que se mueve: cero si el sistema pide no animar.
+  /// Un fundido de opacidad no mueve nada: usa su duración tal cual.
   static Duration of(BuildContext context, Duration d) => reduced(context) ? Duration.zero : d;
 }

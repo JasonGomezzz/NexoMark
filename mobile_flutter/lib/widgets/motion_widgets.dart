@@ -55,7 +55,7 @@ class _PressableState extends State<Pressable> {
 
 /// Entrada única al aparecer: sube 12 px y pasa de transparente a visible,
 /// escalonada por [index] (50 ms). Evita que todo llegue de golpe. No se
-/// repite al reconstruir y con "reducir movimiento" aparece directo.
+/// repite al reconstruir; con "reducir movimiento" solo se funde, sin subir.
 class Entrance extends StatefulWidget {
   const Entrance({super.key, required this.child, this.index = 0, this.offset = 12});
 
@@ -78,10 +78,6 @@ class _EntranceState extends State<Entrance> with SingleTickerProviderStateMixin
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
-    if (Motion.reduced(context)) {
-      _c.value = 1;
-      return;
-    }
     // Un tope: en listas largas los últimos no deben esperar más de 400 ms.
     final delay = Motion.stagger * widget.index.clamp(0, 8);
     _timer = Timer(delay, () {
@@ -98,12 +94,13 @@ class _EntranceState extends State<Entrance> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final sube = Motion.reduced(context) ? 0.0 : widget.offset;
     return AnimatedBuilder(
       animation: _t,
       child: widget.child,
       builder: (context, child) => Opacity(
         opacity: _t.value,
-        child: Transform.translate(offset: Offset(0, widget.offset * (1 - _t.value)), child: child),
+        child: Transform.translate(offset: Offset(0, sube * (1 - _t.value)), child: child),
       ),
     );
   }
@@ -139,7 +136,8 @@ class CountUp extends StatelessWidget {
 /// cuadro (nada salta), pero no se ve si la carga dura menos de 300 ms: así una
 /// respuesta rápida no parpadea. Después aparece con un fundido de 150 ms y
 /// pulsa suave (sin brillo que corre). Todos los bloques pulsan al mismo
-/// compás, porque la fase sale del reloj. Con "reducir movimiento" queda quieto.
+/// compás, porque la fase sale del reloj. Con "reducir movimiento" aparece con
+/// el mismo fundido pero no late (como `.esqueleto` en la web).
 class Skeleton extends StatefulWidget {
   const Skeleton({super.key, this.width, this.height = 16, this.radius = 8});
 
@@ -191,7 +189,7 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
     final suave = Color.lerp(base, scheme.surfaceContainerLow, 0.7)!;
     return AnimatedOpacity(
       opacity: _visible ? 1 : 0,
-      duration: Motion.of(context, Motion.llegada),
+      duration: Motion.llegada,
       curve: Motion.easeOut,
       child: AnimatedBuilder(
         animation: _c,
@@ -213,8 +211,9 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
 }
 
 /// Llega el contenido real: cambia del esqueleto (u otro estado) al contenido
-/// con un fundido de 150 ms, sin desplazamiento. Cambia solo cuando el tipo de
-/// widget cambia (esqueleto → lista), no en cada actualización de datos.
+/// con un fundido de 150 ms, sin desplazamiento (también con "reducir
+/// movimiento"). Cambia solo cuando el tipo de widget cambia (esqueleto →
+/// lista), no en cada actualización de datos.
 class Llegada extends StatelessWidget {
   const Llegada({super.key, required this.child, this.alignment = Alignment.topCenter});
 
@@ -224,7 +223,7 @@ class Llegada extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: Motion.of(context, Motion.llegada),
+      duration: Motion.llegada,
       switchInCurve: Motion.easeOut,
       switchOutCurve: Motion.easeOut,
       layoutBuilder: (current, previous) => Stack(alignment: alignment, children: [...previous, ?current]),
@@ -236,6 +235,7 @@ class Llegada extends StatelessWidget {
 
 /// Cambia de contenido con un fundido corto y un leve desplazamiento
 /// vertical: para estados que cambian solos (polling) sin que el texto salte.
+/// Con "reducir movimiento" queda solo el fundido.
 class SwapIn extends StatelessWidget {
   const SwapIn({super.key, required this.child, this.duration = Motion.fast});
 
@@ -244,20 +244,24 @@ class SwapIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reducido = Motion.reduced(context);
     return AnimatedSwitcher(
-      duration: Motion.of(context, duration),
+      duration: duration,
       switchInCurve: Motion.easeOut,
       switchOutCurve: Motion.easeOut,
       layoutBuilder: (current, previous) => Stack(
         alignment: Alignment.centerLeft,
         children: [...previous, ?current],
       ),
+      // Con "reducir movimiento" solo el fundido: el texto no sube.
       transitionBuilder: (child, animation) => FadeTransition(
         opacity: animation,
-        child: SlideTransition(
-          position: Tween(begin: const Offset(0, 0.25), end: Offset.zero).animate(animation),
-          child: child,
-        ),
+        child: reducido
+            ? child
+            : SlideTransition(
+                position: Tween(begin: const Offset(0, 0.25), end: Offset.zero).animate(animation),
+                child: child,
+              ),
       ),
       child: child,
     );

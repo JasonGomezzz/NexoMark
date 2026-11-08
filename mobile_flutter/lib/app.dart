@@ -80,9 +80,9 @@ GoRouter _buildRouter(WidgetRef ref) {
           key: state.pageKey,
           child: const LoginScreen(),
           transitionDuration: Motion.salida,
-          transitionsBuilder: (context, animation, _, child) => Motion.reduced(context)
-              ? child
-              : FadeTransition(opacity: CurvedAnimation(parent: animation, curve: Motion.easeOut), child: child),
+          // Es un fundido (nada se mueve): se mantiene con "reducir movimiento".
+          transitionsBuilder: (context, animation, _, child) =>
+              FadeTransition(opacity: CurvedAnimation(parent: animation, curve: Motion.easeOut), child: child),
         ),
       ),
       GoRoute(path: '/olvide', builder: (_, state) => ForgotPasswordScreen(email: state.extra as String?)),

@@ -24,11 +24,14 @@ void main() {
     expect(_opacidad(tester), 1);
   });
 
-  testWidgets('con reducir movimiento aparece igual, pero quieto', (tester) async {
+  testWidgets('con reducir movimiento aparece con el mismo fundido, pero no late', (tester) async {
     tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(reduceMotion: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await tester.pumpWidget(_app(const Skeleton(width: 120, height: 20)));
-    await tester.pump(const Duration(milliseconds: 310));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(_opacidad(tester), 0);
+    await tester.pump(const Duration(milliseconds: 60));
+    await tester.pump(const Duration(milliseconds: 160));
     expect(_opacidad(tester), 1);
     expect(tester.hasRunningAnimations, isFalse);
   });
