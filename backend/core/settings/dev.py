@@ -18,6 +18,27 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.0.2.2", "host.docker.internal"]
 # Django debe correr con `runserver 0.0.0.0:8000`; solo en desarrollo.
 ALLOWED_HOSTS += config("DEV_HOSTS_EXTRA", cast=Csv(), default="")
 
+
+def _ip_en_la_red() -> str | None:
+    """IP del Mac en la red actual, para no editar .env cada vez que cambia la Wi-Fi.
+
+    Conectar un socket UDP no envía nada: solo elige la interfaz de salida.
+    Se calcula al arrancar (o al recargar) el servidor.
+    """
+    import socket
+
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("10.255.255.255", 1))
+            ip = s.getsockname()[0]
+    except OSError:
+        return None
+    return None if ip.startswith("127.") else ip
+
+
+if _ip := _ip_en_la_red():
+    ALLOWED_HOSTS.append(_ip)
+
 # ─────────────────────────────────────────────
 # APPS EXTRA solo en dev
 # ─────────────────────────────────────────────
