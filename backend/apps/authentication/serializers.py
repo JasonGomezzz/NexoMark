@@ -258,6 +258,19 @@ class UserResponseSerializer(serializers.ModelSerializer):
     avatar_version = serializers.SerializerMethodField()
     has_password = serializers.SerializerMethodField()
     google_connected = serializers.SerializerMethodField()
+    costo_generacion = serializers.SerializerMethodField()
+    generaciones_disponibles = serializers.SerializerMethodField()
+
+    def get_costo_generacion(self, obj: User) -> int:
+        """Créditos por generación de texto + imagen (fuente: services.credit_service)."""
+        from services.credit_service import GENERATION_CREDIT_COST
+
+        return GENERATION_CREDIT_COST
+
+    def get_generaciones_disponibles(self, obj: User) -> int | None:
+        from services.credit_service import generaciones
+
+        return generaciones(obj.tokens_disponibles)
 
     def _foto_actualizada(self, obj: User):
         """Una sola consulta por usuario serializado (has_avatar y avatar_version la comparten)."""
@@ -293,6 +306,9 @@ class UserResponseSerializer(serializers.ModelSerializer):
             "is_active",
             "fecha_creacion",
             "tokens_disponibles",
+            "plan_key",
+            "costo_generacion",
+            "generaciones_disponibles",
             "has_avatar",
             "avatar_version",
             "has_password",

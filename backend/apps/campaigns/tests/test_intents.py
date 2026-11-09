@@ -155,7 +155,7 @@ class TestEdicionYAcceso:
 
 @pytest.mark.django_db
 class TestConfirm:
-    def test_confirma_crea_campana_y_descuenta_un_credito(
+    def test_confirma_crea_campana_y_descuenta_una_generacion(
         self, api_client, intent, cliente, user_marketero
     ):
         response = api_client.post(
@@ -173,7 +173,7 @@ class TestConfirm:
         assert intent.campaign == campaign
         assert intent.confirmado_at is not None
         user_marketero.refresh_from_db()
-        assert user_marketero.tokens_disponibles == 9
+        assert user_marketero.tokens_disponibles == 6  # 10 - 4
 
     def test_confirmar_dos_veces_no_duplica_ni_cobra_de_nuevo(
         self, api_client, intent, cliente, user_marketero
@@ -190,7 +190,7 @@ class TestConfirm:
         assert segunda.data["data"]["campaign"]["id"] == primera.data["data"]["campaign"]["id"]
         assert Campaign.objects.count() == 1
         user_marketero.refresh_from_db()
-        assert user_marketero.tokens_disponibles == 9
+        assert user_marketero.tokens_disponibles == 6  # 10 - 4
 
     def test_campos_incompletos_400_y_sigue_en_borrador(self, api_client, intent, user_marketero):
         response = api_client.post(confirm_url(intent.pk), {}, format="json")

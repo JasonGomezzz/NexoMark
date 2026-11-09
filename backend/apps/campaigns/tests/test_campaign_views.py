@@ -1,6 +1,8 @@
 """Tests de CampaignViewSet: create, list, retrieve, generate, submit, stats."""
 
 import pytest
+
+from services.credit_service import GENERATION_CREDIT_COST
 from unittest.mock import patch
 from django.db import transaction
 from rest_framework.test import APIClient
@@ -100,7 +102,7 @@ class TestCampaignCreate:
         initial_tokens = user_marketero.tokens_disponibles
         api_client.post(CAMPAIGNS_URL, VALID_PAYLOAD, format="json")
         user_marketero.refresh_from_db()
-        assert user_marketero.tokens_disponibles == initial_tokens - 1
+        assert user_marketero.tokens_disponibles == initial_tokens - GENERATION_CREDIT_COST
 
     def test_non_marketero_gets_403(self, cliente):
         client = APIClient()
@@ -433,21 +435,42 @@ class TestCampaignCreditsDetail:
 class TestCampaignPurchaseCredits:
     """Pasarela de pago simulada — siempre aprueba, nunca confía en el body."""
 
-    def test_pro_plan_suma_1500_creditos(self, api_client, user_marketero):
+    def test_agencia_suma_400_creditos_y_guarda_el_plan(self, api_client, user_marketero):
         saldo_inicial = user_marketero.tokens_disponibles
-        response = api_client.post(CREDITS_PURCHASE_URL, {"plan": "pro"}, format="json")
+        response = api_client.post(CREDITS_PURCHASE_URL, {"plan": "agencia"}, format="json")
         assert response.status_code == 200
-        assert response.data["data"]["creditos_agregados"] == 1500
+        assert response.data["data"]["creditos_agregados"] == 400
+        assert response.data["data"]["costo_generacion"] == 4
+        assert response.data["data"]["plan_key"] == "agencia"
         user_marketero.refresh_from_db()
-        assert user_marketero.tokens_disponibles == saldo_inicial + 1500
+        assert user_marketero.tokens_disponibles == saldo_inicial + 400
+        assert user_marketero.plan_key == "agencia"
+
+    def test_agencia_plus_aun_no_se_vende(self, api_client, user_marketero):
+        from apps.campaigns.models import CreditPurchase
+
+        saldo_inicial = user_marketero.tokens_disponibles
+        response = api_client.post(CREDITS_PURCHASE_URL, {"plan": "agencia_plus"}, format="json")
+        assert response.status_code == 400
+        assert "próximamente" in response.data["message"]
+        assert response.data["data"]["planes_validos"] == ["freelance", "agencia"]
+        user_marketero.refresh_from_db()
+        assert user_marketero.tokens_disponibles == saldo_inicial
+        assert not CreditPurchase.objects.filter(usuario=user_marketero).exists()
+
+    def test_planes_viejos_ya_no_existen(self, api_client):
+        for viejo in ("basico", "pro", "elite"):
+            response = api_client.post(CREDITS_PURCHASE_URL, {"plan": viejo}, format="json")
+            assert response.status_code == 400
 
     def test_crea_registro_credit_purchase(self, api_client, user_marketero):
         from apps.campaigns.models import CreditPurchase
 
-        api_client.post(CREDITS_PURCHASE_URL, {"plan": "elite"}, format="json")
+        api_client.post(CREDITS_PURCHASE_URL, {"plan": "freelance"}, format="json")
         compra = CreditPurchase.objects.get(usuario=user_marketero)
-        assert compra.creditos == 5000
-        assert compra.plan_nombre == "Elite"
+        assert compra.creditos == 100
+        assert compra.monto == 59
+        assert compra.plan_nombre == "Freelance"
         assert compra.estado == "aprobado"
 
     def test_ignora_creditos_y_monto_enviados_por_el_cliente(self, api_client, user_marketero):
@@ -455,12 +478,12 @@ class TestCampaignPurchaseCredits:
         saldo_inicial = user_marketero.tokens_disponibles
         response = api_client.post(
             CREDITS_PURCHASE_URL,
-            {"plan": "basico", "creditos": 999999, "monto": 1},
+            {"plan": "freelance", "creditos": 999999, "monto": 1},
             format="json",
         )
-        assert response.data["data"]["creditos_agregados"] == 500
+        assert response.data["data"]["creditos_agregados"] == 100
         user_marketero.refresh_from_db()
-        assert user_marketero.tokens_disponibles == saldo_inicial + 500
+        assert user_marketero.tokens_disponibles == saldo_inicial + 100
 
     def test_plan_invalido_400(self, api_client):
         response = api_client.post(CREDITS_PURCHASE_URL, {"plan": "no-existe"}, format="json")
@@ -472,8 +495,27 @@ class TestCampaignPurchaseCredits:
 
     def test_unauthenticated_401(self):
         client = APIClient()
-        response = client.post(CREDITS_PURCHASE_URL, {"plan": "pro"}, format="json")
+        response = client.post(CREDITS_PURCHASE_URL, {"plan": "agencia"}, format="json")
         assert response.status_code == 401
+
+
+@pytest.mark.django_db
+class TestCreditPlans:
+    """GET /api/campaigns/credits/plans/ — fuente única para web, móvil y landing."""
+
+    def test_es_publico_y_trae_los_tres_planes(self):
+        response = APIClient().get("/api/campaigns/credits/plans/")
+        assert response.status_code == 200
+        data = response.data["data"]
+        assert data["costo_generacion"] == 4
+        assert data["incluye_igv"] is False
+        planes = {p["key"]: p for p in data["planes"]}
+        assert [p["key"] for p in data["planes"]] == ["freelance", "agencia", "agencia_plus"]
+        assert (planes["freelance"]["precio"], planes["freelance"]["creditos"], planes["freelance"]["generaciones"]) == (59, 100, 25)
+        assert (planes["agencia"]["precio"], planes["agencia"]["creditos"], planes["agencia"]["generaciones"]) == (149, 400, 100)
+        assert (planes["agencia_plus"]["precio"], planes["agencia_plus"]["creditos"], planes["agencia_plus"]["generaciones"]) == (299, 1000, 250)
+        assert planes["agencia_plus"]["disponible"] is False
+        assert planes["agencia"]["destacado"] is True
 
 
 def restore_url(campaign_pk: int, version_pk: int) -> str:

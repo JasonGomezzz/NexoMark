@@ -2,16 +2,16 @@
 MarketMind IA — n8n Service (Orquestador Asíncrono)
 
 Flujo producción (USE_MOCK_AI=False):
-  1. Valida tokens_disponibles > 0 (defensa en profundidad).
-  2. En transaction.atomic(): descuenta 1 token con un UPDATE condicional
+  1. Valida que el saldo cubra GENERATION_CREDIT_COST (defensa en profundidad).
+  2. En transaction.atomic(): descuenta GENERATION_CREDIT_COST con un UPDATE condicional
      (credit_service; no se gasta dos veces el último), rota n8n_callback_token,
      incrementa intentos y transiciona campaña → PENDIENTE_IA.
   3. Dispara webhook a n8n con el secreto compartido (X-NexoMark-Token) y el
      n8n_callback_token del intento. n8n valida el secreto antes de procesar y
      responde 202 enseguida; la URL de callback la arma n8n con su propia
      variable DJANGO_CALLBACK_BASE_URL (no la toma del payload).
-  4. Si n8n no responde o rechaza (401/403/5xx): devuelve el crédito y
-     estado → BORRADOR.
+  4. Si n8n no responde o rechaza (401/403/5xx): devuelve lo cobrado en ese
+     intento (Campaign.creditos_intento) y estado → BORRADOR.
   5. El resultado real llega por POST /api/campaigns/webhook/ia-result/ con el
      mismo secreto. Como el token se rota en cada intento, un callback de un
      intento anterior ya no corresponde a ninguna campaña y se rechaza.
@@ -30,7 +30,13 @@ import requests
 from django.conf import settings
 from django.db import transaction
 
-from services.credit_service import agregar_creditos, consumir_credito
+from services.credit_service import (
+    GENERATION_CREDIT_COST,
+    agregar_creditos,
+    alcanza_para_generar,
+    consumir_credito,
+    creditos_a_devolver,
+)
 from services.mock_assets import MOCK_IMAGE_B64
 from services.version_service import save_campaign_version
 
@@ -72,7 +78,7 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
     """
     Orquesta la generación asíncrona de copy IA para una campaña.
 
-    Descuenta 1 token, transiciona a PENDIENTE_IA y dispara el webhook n8n.
+    Descuenta GENERATION_CREDIT_COST créditos, transiciona a PENDIENTE_IA y dispara el webhook n8n.
     Django retorna 202 inmediatamente; el resultado llega por callback.
 
     Args:
@@ -88,13 +94,13 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
 
     user = campaign.marketero
 
-    if user.tokens_disponibles <= 0:
+    if not alcanza_para_generar(user):
         logger.warning(
             "Campaña %s sin tokens disponibles para usuario %s",
             campaign.id,
             user.id,
         )
-        return {"dispatched": False, "error": "Sin tokens disponibles."}
+        return {"dispatched": False, "error": f"Necesitas {GENERATION_CREDIT_COST} créditos para generar."}
 
     if campaign.intentos_generacion >= 3:
         logger.warning(
@@ -109,22 +115,24 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
     # guarda después de recibir el contenido.
     save_campaign_version(campaign)
 
-    # ── Descontar token + incrementar intentos + transicionar ──────────
+    # ── Descontar créditos + incrementar intentos + transicionar ───────
     with transaction.atomic():
-        if not consumir_credito(user):
-            # Otra petición gastó el último crédito entre la validación y el cobro.
-            return {"dispatched": False, "error": "Sin tokens disponibles."}
+        if not consumir_credito(user, GENERATION_CREDIT_COST):
+            # Otra petición gastó el saldo entre la validación y el cobro.
+            return {"dispatched": False, "error": f"Necesitas {GENERATION_CREDIT_COST} créditos para generar."}
 
         # Token nuevo por intento: el callback de un intento anterior (p. ej. uno
         # que n8n terminó después de un timeout) ya no autentica contra esta campaña.
         campaign.n8n_callback_token = uuid.uuid4()
         campaign.intentos_generacion += 1
-        campaign.tokens_consumidos += 1
+        campaign.tokens_consumidos += GENERATION_CREDIT_COST
+        campaign.creditos_intento = GENERATION_CREDIT_COST
         campaign.save(
             update_fields=[
                 "n8n_callback_token",
                 "intentos_generacion",
                 "tokens_consumidos",
+                "creditos_intento",
                 "fecha_actualizacion",
             ]
         )
@@ -148,7 +156,7 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
             "Transforma tu marca hoy con NexoMark IA."
         )
         campaign.texto_generado = mock_copy
-        # El mock no llama a Gemini Imagen 3, pero devuelve un PNG placeholder
+        # El mock no llama al modelo de imagen (GEMINI_IMAGE_MODEL), pero devuelve un PNG placeholder
         # honesto para que la web y el mobile siempre muestren un anuncio
         # completo (texto + imagen) sin depender del contenedor n8n.
         campaign.imagen_b64 = MOCK_IMAGE_B64
@@ -201,9 +209,9 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
             campaign.id,
             error_msg,
         )
-        # Rollback: devolver token + marcar error + estado → BORRADOR
+        # Rollback: devolver lo cobrado + marcar error + estado → BORRADOR
         with transaction.atomic():
-            agregar_creditos(user, 1)
+            agregar_creditos(user, creditos_a_devolver(campaign.creditos_intento))
 
             campaign.ia_error_message = f"n8n no disponible: {error_msg}"
             campaign.save(update_fields=["ia_error_message", "fecha_actualizacion"])
@@ -211,7 +219,7 @@ def trigger_ia_generation(campaign: "Campaign") -> dict[str, Any]:
             campaign.transition_to(CampaignStatus.BORRADOR)
 
         logger.warning(
-            "Campaña %s revertida a BORRADOR. Token devuelto a usuario %s.",
+            "Campaña %s revertida a BORRADOR. Créditos devueltos a usuario %s.",
             campaign.id,
             user.id,
         )

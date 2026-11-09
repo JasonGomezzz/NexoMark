@@ -166,8 +166,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     # ── Plan de suscripción ──────────────────────────────────
     tokens_disponibles = models.IntegerField(
         default=100,
-        verbose_name="Tokens disponibles",
-        help_text="Cuota de generaciones IA restantes en el plan actual.",
+        verbose_name="Créditos disponibles",
+        help_text="Créditos de IA restantes. Una generación de texto + imagen cuesta 4.",
+    )
+    plan_key = models.CharField(
+        max_length=20,
+        default="freelance",
+        verbose_name="Plan",
+        help_text="Plan elegido en el checkout de demostración (services.credit_service.CREDIT_PLANS).",
     )
 
     # ── Token version (para invalidar JWTs al suspender — HU18) ──

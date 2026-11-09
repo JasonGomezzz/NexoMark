@@ -129,7 +129,7 @@ class TestCallbackPorIntento:
         assert token_viejo != token_nuevo
         campaign.refresh_from_db()
         assert str(campaign.n8n_callback_token) == token_nuevo
-        assert saldo(user_marketero) == 9  # intento 1 devuelto, intento 2 cobrado
+        assert saldo(user_marketero) == 6  # intento 1 devuelto, intento 2 cobrado (4)
 
         # n8n termina el intento 1 y avisa tarde: ya no corresponde a la campaña.
         viejo = n8n_client.post(CALLBACK_URL, {
@@ -151,7 +151,7 @@ class TestCallbackPorIntento:
         campaign.refresh_from_db()
         assert campaign.estado == CampaignStatus.GENERADO
         assert campaign.texto_generado == "resultado del intento 2"
-        assert saldo(user_marketero) == 9
+        assert saldo(user_marketero) == 6
 
     def test_callback_tardio_tras_timeout_no_devuelve_otro_credito(self, campaign, user_marketero, n8n_client):
         User.objects.filter(pk=user_marketero.pk).update(tokens_disponibles=10)

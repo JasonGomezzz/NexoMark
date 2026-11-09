@@ -31,6 +31,7 @@ from apps.authentication.models import UserRole
 from apps.authentication.permissions import IsMarketero, IsMarketeroOrSuperAdmin
 from core.exceptions import api_response
 from services import medicion_service
+from services.credit_service import alcanza_para_generar, datos_sin_saldo, mensaje_sin_saldo
 from services.intent_service import IntentInterpretationError, interpretar_brief
 from services.n8n_service import describir_resultado, trigger_ia_generation
 
@@ -198,15 +199,12 @@ class CampaignIntentViewSet(viewsets.GenericViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            if request.user.tokens_disponibles <= 0:
+            if not alcanza_para_generar(request.user):
                 return Response(
                     api_response(
                         success=False,
-                        message=(
-                            "Sin tokens disponibles. "
-                            "Contacta al administrador para renovar tu plan."
-                        ),
-                        data={"tokens_disponibles": 0},
+                        message=mensaje_sin_saldo(request.user),
+                        data=datos_sin_saldo(request.user),
                     ),
                     status=status.HTTP_402_PAYMENT_REQUIRED,
                 )

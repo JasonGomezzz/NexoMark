@@ -155,6 +155,11 @@ class Campaign(models.Model):
         default=0,
         verbose_name="Tokens consumidos",
     )
+    creditos_intento = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Créditos del último intento",
+        help_text="Lo cobrado en el intento en curso; es lo que se devuelve si falla.",
+    )
     intentos_generacion = models.IntegerField(
         default=0,
         verbose_name="Intentos de generación",

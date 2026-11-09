@@ -3,7 +3,7 @@ MarketMind IA — Admin Views (HU18)
 Endpoints de gestión de usuarios para SuperAdmin:
 - GET    /api/admin/users/                 → lista paginada
 - PATCH  /api/admin/users/{id}/            → suspender/reactivar + invalidar JWT
-- PATCH  /api/admin/users/{id}/reset-quota → tokens_disponibles = 100
+- PATCH  /api/admin/users/{id}/reset-quota → tokens_disponibles = cuota del plan
 """
 
 from django.db import transaction
@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.exceptions import api_response
+from services.credit_service import cuota_del_plan
 
 from .models import User
 from .permissions import IsSuperAdmin
@@ -102,7 +103,8 @@ class AdminResetQuotaView(APIView):
     """
     PATCH /api/admin/users/{id}/reset-quota/
 
-    Resetea tokens_disponibles a 100. No modifica token_version porque
+    Resetea tokens_disponibles a la cuota del plan del usuario (Freelance 100,
+    Agencia 400, Agencia Plus 1000). No modifica token_version porque
     no es un cambio de estado de seguridad — el usuario sigue autenticado.
     """
 
@@ -119,13 +121,13 @@ class AdminResetQuotaView(APIView):
             HTTP 404 si el usuario no existe.
         """
         user = get_object_or_404(User, pk=pk)
-        user.tokens_disponibles = 100
+        user.tokens_disponibles = cuota_del_plan(user.plan_key)
         user.save(update_fields=["tokens_disponibles", "fecha_actualizacion"])
 
         return Response(
             api_response(
                 success=True,
-                message="Cuota reseteada a 100 tokens.",
+                message=f"Cuota reseteada a {user.tokens_disponibles} créditos.",
                 data={"user": UserResponseSerializer(user).data},
             ),
             status=status.HTTP_200_OK,

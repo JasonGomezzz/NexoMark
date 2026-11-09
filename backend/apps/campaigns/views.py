@@ -19,7 +19,7 @@ from django.utils import timezone
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -28,7 +28,17 @@ from apps.authentication.permissions import IsSuperAdmin
 from core.exceptions import api_response
 from services.gemini_text_service import improve_copy
 from services.internal_event_service import notify_campaign_submitted
-from services.credit_service import agregar_creditos
+from services.credit_service import (
+    CREDIT_PLANS,
+    GENERATION_CREDIT_COST,
+    agregar_creditos,
+    alcanza_para_generar,
+    creditos_a_devolver,
+    datos_sin_saldo,
+    generaciones,
+    mensaje_sin_saldo,
+    plan_publico,
+)
 from services.n8n_service import describir_resultado, trigger_ia_generation
 from services.publication_service import DestinoInvalido, programar_publicaciones
 from services.version_service import restore_campaign_version, save_campaign_version
@@ -87,11 +97,8 @@ def _es_entero(valor: Any) -> bool:
     return isinstance(valor, int) and not isinstance(valor, bool)
 
 
-CREDIT_PLAN_MAP = {
-    "basico": {"nombre": "Básico", "precio": 49, "creditos": 500},
-    "pro": {"nombre": "Pro", "precio": 129, "creditos": 1500},
-    "elite": {"nombre": "Elite", "precio": 299, "creditos": 5000},
-}
+# Fuente única en services.credit_service (Freelance, Agencia, Agencia Plus).
+CREDIT_PLAN_MAP = CREDIT_PLANS
 
 
 class CampaignViewSet(viewsets.ModelViewSet):
@@ -178,15 +185,12 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if request.user.tokens_disponibles <= 0:
+        if not alcanza_para_generar(request.user):
             return Response(
                 api_response(
                     success=False,
-                    message=(
-                        "Sin tokens disponibles. "
-                        "Contacta al administrador para renovar tu plan."
-                    ),
-                    data={"tokens_disponibles": 0},
+                    message=mensaje_sin_saldo(request.user),
+                    data=datos_sin_saldo(request.user),
                 ),
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
@@ -264,12 +268,12 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        if request.user.tokens_disponibles <= 0:
+        if not alcanza_para_generar(request.user):
             return Response(
                 api_response(
                     success=False,
-                    message="Sin tokens disponibles. Contacta al administrador.",
-                    data={"tokens_disponibles": 0},
+                    message=mensaje_sin_saldo(request.user),
+                    data=datos_sin_saldo(request.user),
                 ),
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
@@ -348,12 +352,12 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        if request.user.tokens_disponibles <= 0:
+        if not alcanza_para_generar(request.user):
             return Response(
                 api_response(
                     success=False,
-                    message="Sin tokens disponibles. Contacta al administrador.",
-                    data={"tokens_disponibles": 0},
+                    message=mensaje_sin_saldo(request.user),
+                    data=datos_sin_saldo(request.user),
                 ),
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
@@ -678,6 +682,8 @@ class CampaignViewSet(viewsets.ModelViewSet):
         data = {
             "total": sum(conteos.values()),
             "tokens_disponibles": request.user.tokens_disponibles,
+            "costo_generacion": GENERATION_CREDIT_COST,
+            "generaciones_disponibles": generaciones(request.user.tokens_disponibles),
             **conteos,
         }
         cache.set(cache_key, data, timeout=30)
@@ -735,10 +741,48 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 message="Detalle de créditos de IA.",
                 data={
                     "tokens_disponibles": request.user.tokens_disponibles,
+                    "costo_generacion": GENERATION_CREDIT_COST,
+                    "generaciones_disponibles": generaciones(request.user.tokens_disponibles),
+                    "plan_key": request.user.plan_key,
                     "consumidos_mes": consumidos_mes,
                     "campanas_mes": campanas_mes,
                     "promedio_por_campana_mes": promedio_mes,
                     "historial": historial,
+                },
+            ),
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="credits/plans",
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
+    def credit_plans(self, request: Request) -> Response:
+        """
+        GET /api/campaigns/credits/plans/ — público (lo usa también la landing).
+
+        Planes, costo por generación y reglas de consumo, para que web y móvil
+        no repitan números en su código.
+        """
+        return Response(
+            api_response(
+                success=True,
+                message="Planes de créditos.",
+                data={
+                    "costo_generacion": GENERATION_CREDIT_COST,
+                    "moneda": "PEN",
+                    "incluye_igv": False,
+                    "planes": [plan_publico(key) for key in CREDIT_PLAN_MAP],
+                    "reglas": [
+                        {"accion": "Generar texto e imagen", "creditos": GENERATION_CREDIT_COST},
+                        {"accion": "Regenerar texto e imagen", "creditos": GENERATION_CREDIT_COST},
+                        {"accion": "Editar a mano, enviar, aprobar y consultar", "creditos": 0},
+                        {"accion": "Publicar el mismo contenido en varias redes", "creditos": 0},
+                        {"accion": "Fallo técnico sin contenido", "creditos": 0, "nota": "Se devuelve lo cobrado"},
+                    ],
                 },
             ),
             status=status.HTTP_200_OK,
@@ -754,20 +798,26 @@ class CampaignViewSet(viewsets.ModelViewSet):
         una key fija (CREDIT_PLAN_MAP); el monto y los créditos NUNCA se
         leen del body para evitar que el cliente se auto-otorgue créditos.
 
-        Body: {"plan": "basico" | "pro" | "elite"}
+        Body: {"plan": "freelance" | "agencia"}. "agencia_plus" aún no se vende
+        (próximamente) y responde 400.
 
         Returns:
             HTTP 200 con tokens_disponibles actualizado y créditos añadidos.
             HTTP 400 si el plan no existe.
         """
         plan_key = request.data.get("plan")
-        plan = CREDIT_PLAN_MAP.get(plan_key)
-        if plan is None:
+        plan = CREDIT_PLAN_MAP.get(plan_key) if isinstance(plan_key, str) else None
+        planes_validos = [k for k, p in CREDIT_PLAN_MAP.items() if p["disponible"]]
+        if plan is None or not plan["disponible"]:
             return Response(
                 api_response(
                     success=False,
-                    message="Plan inválido.",
-                    data={"planes_validos": list(CREDIT_PLAN_MAP.keys())},
+                    message=(
+                        f"{plan['nombre']} estará disponible próximamente."
+                        if plan is not None
+                        else "Plan inválido."
+                    ),
+                    data={"planes_validos": planes_validos},
                 ),
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -780,6 +830,8 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 creditos=plan["creditos"],
             )
             agregar_creditos(request.user, plan["creditos"])
+            type(request.user).objects.filter(pk=request.user.pk).update(plan_key=plan_key)
+            request.user.plan_key = plan_key
 
         return Response(
             api_response(
@@ -788,7 +840,10 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 data={
                     "tokens_disponibles": request.user.tokens_disponibles,
                     "creditos_agregados": plan["creditos"],
+                    "generaciones_disponibles": generaciones(request.user.tokens_disponibles),
+                    "costo_generacion": GENERATION_CREDIT_COST,
                     "plan": plan["nombre"],
+                    "plan_key": plan_key,
                 },
             ),
             status=status.HTTP_200_OK,
@@ -823,7 +878,7 @@ class IaResultCallbackView(APIView):
 
         Éxito: PENDIENTE_IA → GENERADO, guarda texto_generado y sube la versión
         (contenido nuevo: una pestaña con el copy anterior ya no puede pisarlo).
-        Fallo: PENDIENTE_IA → BORRADOR, devuelve 1 token al marketero.
+        Fallo: PENDIENTE_IA → BORRADOR, devuelve al marketero lo cobrado en el intento.
         Si la campaña ya no está en PENDIENTE_IA (callback repetido o tardío),
         responde 409 sin tocar contenido, créditos ni historial.
         Todo en transaction.atomic() para consistencia.
@@ -879,14 +934,14 @@ class IaResultCallbackView(APIView):
                 campaign.ia_error_message = error_msg
                 campaign.save(update_fields=["ia_error_message", "fecha_actualizacion"])
 
-                agregar_creditos(campaign.marketero, 1)
+                agregar_creditos(campaign.marketero, creditos_a_devolver(campaign.creditos_intento))
 
                 campaign.transition_to(CampaignStatus.BORRADOR)
 
                 return Response(
                     api_response(
                         success=False,
-                        message="Generación IA fallida. Token devuelto al usuario.",
+                        message="Generación IA fallida. Créditos devueltos al usuario.",
                         data={
                             "campaign_id": campaign.id,
                             "estado": campaign.estado,
