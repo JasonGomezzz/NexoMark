@@ -1,7 +1,10 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Q8MxYa_E)
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=23827676&assignment_repo_type=AssignmentRepo)
 
-# MarketMind IA
+# NexoMark IA
+
+Antes **MarketMind IA**. Los paquetes e identificadores de código siguen
+llamándose `marketmind`.
 
 SaaS de automatización de campañas publicitarias con IA para agencias de
 marketing digital. Genera copy + imagen de anuncios automáticamente y
@@ -14,7 +17,10 @@ Arquitectura políglota distribuida sobre una misma base de datos PostgreSQL:
 - **Spring Boot** (Java) — API de cara al cliente final (revisar/aprobar
   campañas), solo lee/actualiza estado, nunca migra el schema.
 - **React** — frontend web (SuperAdmin, Marketero, Cliente).
-- **Android/Kotlin** — app móvil (Marketero y Cliente).
+- **Flutter** — app móvil principal para Android e iOS (Marketero y Cliente),
+  en `mobile_flutter/`.
+- **Android/Kotlin** — app móvil anterior en `mobile/`, congelada desde el
+  21/10/2026 como respaldo.
 - **n8n** — orquesta la generación asíncrona de copy + imagen con Gemini.
 
 ## Índice
@@ -27,7 +33,7 @@ Arquitectura políglota distribuida sobre una misma base de datos PostgreSQL:
 - [4-8. Backend Django](#4-crear-y-activar-el-entorno-virtual-del-backend)
 - [9. Spring Boot](#9-levantar-spring-boot)
 - [10. Frontend React](#10-correr-el-frontend-web)
-- [11. App móvil Android/Kotlin](#11-correr-la-app-movil-androidkotlin)
+- [11. App móvil (Flutter)](#11-correr-la-app-móvil-flutter)
 - [Usuarios de prueba (3 roles)](#usuarios-de-prueba-3-roles)
 - [Arranque rápido del día a día](#orden-recomendado-para-volver-a-correr-el-proyecto)
 - [Despliegue en producción](#despliegue-en-producción)
@@ -40,7 +46,8 @@ Arquitectura políglota distribuida sobre una misma base de datos PostgreSQL:
 - Node.js 18 o superior.
 - Git.
 - Java 25 (solo si vas a compilar Spring Boot fuera de Docker).
-- Android Studio (solo si vas a correr la app móvil).
+- Flutter 3.47 con Xcode (iOS) o Android SDK (solo si vas a correr la app
+  móvil). Android Studio solo hace falta para la app Kotlin congelada.
 
 > **Windows:** si usas WSL, ejecuta todos los comandos desde la terminal de
 > WSL. Evita mezclar un `venv` creado en Windows (PowerShell/CMD) con
@@ -344,7 +351,19 @@ El dashboard del cliente se conecta por WebSocket a Spring Boot
 (`ws://localhost:8080/ws/client-campaigns`) para recibir campañas nuevas sin
 refrescar la página.
 
-## 11. Correr la app móvil (Android/Kotlin)
+## 11. Correr la app móvil (Flutter)
+
+La app móvil principal es **Flutter** (`mobile_flutter/`, Android e iOS).
+Requisitos, comandos (`flutter run`) y configuración están en
+[`mobile_flutter/README.md`](mobile_flutter/README.md). Habla con el mismo
+backend que la web: Django y Spring Boot deben estar corriendo antes de
+abrirla.
+
+### App Kotlin (congelada)
+
+`mobile/` es la app Android nativa anterior. Está congelada desde el
+21/10/2026 como respaldo: no recibe funciones nuevas ni la identidad
+«C · Conforme» de la web y de Flutter.
 
 1. Abre la carpeta `mobile/` en **Android Studio** (Gradle sync automático).
 2. Crea un emulador (AVD) desde Android Studio, API 28 o superior (`minSdk 24`,
@@ -412,8 +431,8 @@ cd frontend
 npm run dev
 ```
 
-Android: solo abre Android Studio y corre la app (Django y Spring Boot deben
-estar arriba primero).
+Móvil: `flutter run` desde `mobile_flutter/` (ver su README). Django y Spring
+Boot deben estar arriba primero.
 
 ## Despliegue en producción
 
@@ -427,7 +446,7 @@ despliegue:
 | n8n | Render | PostgreSQL propio (Neon, schema separado `n8n`) en vez de SQLite, para sobrevivir el disco efímero de Render |
 | React (frontend) | [Vercel](https://vercel.com) | `vercel.json` con rewrites SPA (obligatorio para que las rutas de React Router no den 404) |
 | PostgreSQL | [Neon.tech](https://neon.tech) | Única base de datos compartida entre Django y Spring Boot |
-| APK Android | Build local firmado | Variante `release` apunta a las URLs de Render |
+| APK Android (app Kotlin congelada) | Build local firmado | Variante `release` apunta a las URLs de Render |
 
 ### Pasos generales para desplegar cada bloque
 
@@ -482,7 +501,7 @@ despliegue:
 3. `vercel.json` ya trae los rewrites necesarios para SPA — sin esto, cualquier
    ruta que no sea `/` da 404 al refrescar o compartir un link directo.
 
-**APK Android (release):**
+**APK Android de la app Kotlin congelada (release):**
 
 1. Las URLs de producción ya están en `mobile/app/build.gradle.kts` (variante
    `release`), no requieren configuración adicional.
