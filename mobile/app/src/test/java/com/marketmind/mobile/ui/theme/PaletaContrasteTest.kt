@@ -128,32 +128,7 @@ class PaletaContrasteTest {
         }
     }
 
-    /** Los tokens de Kotlin son los mismos de frontend/src/index.css (si el archivo está en el repo). */
-    @Test
-    fun `los tokens coinciden con index css de la web`() {
-        val css = listOf("../../frontend/src/index.css", "../frontend/src/index.css")
-            .map(::File)
-            .firstOrNull { it.isFile }
-        assumeTrue("frontend/src/index.css no está disponible", css != null)
-        val texto = css!!.readText()
-        val claro = texto.substringAfter("@theme {").substringBefore("\n}")
-        val oscuro = texto.substringAfter("html[data-theme='dark'] {").substringBefore("\n}")
-
-        val diferencias = mutableListOf<String>()
-        for ((bloque, paleta, tema) in listOf(Triple(claro, NexoLightColors, "claro"), Triple(oscuro, NexoDarkColors, "oscuro"))) {
-            for ((token, valor) in tokensSemanticos(paleta)) {
-                val web = hexDe(bloque, token) ?: continue
-                if (web != valor.argb()) {
-                    diferencias += "$tema · $token: web #${hex(web)} vs app #${hex(valor.argb())}"
-                }
-            }
-        }
-        for ((token, valor) in tokensMarca()) {
-            val web = hexDe(claro, token)
-            if (web == null || web != valor.argb()) diferencias += "marca · $token"
-        }
-        assertTrue("Tokens distintos de la web:\n${diferencias.joinToString("\n")}", diferencias.isEmpty())
-    }
+    // La app Kotlin está congelada con la paleta del 17/10 y ya no replica frontend/src/index.css.
 
     @Test
     fun `no quedan colores del diseno anterior en el codigo de la app`() {
@@ -167,71 +142,6 @@ class PaletaContrasteTest {
         }
         assertTrue("Restos del índigo anterior:\n${hallazgos.joinToString("\n")}", hallazgos.isEmpty())
     }
-
-    private fun tokensSemanticos(p: NexoPalette): Map<String, Color> = mapOf(
-        "background" to p.background,
-        "surface" to p.surface,
-        "surface-dim" to p.surfaceDim,
-        "surface-bright" to p.surfaceBright,
-        "surface-container-lowest" to p.surfaceContainerLowest,
-        "surface-container-low" to p.surfaceContainerLow,
-        "surface-container" to p.surfaceContainer,
-        "surface-container-high" to p.surfaceContainerHigh,
-        "surface-container-highest" to p.surfaceContainerHighest,
-        "surface-variant" to p.surfaceVariant,
-        "on-background" to p.onBackground,
-        "on-surface" to p.onSurface,
-        "on-surface-variant" to p.onSurfaceVariant,
-        "inverse-surface" to p.inverseSurface,
-        "inverse-on-surface" to p.inverseOnSurface,
-        "outline" to p.outline,
-        "outline-variant" to p.outlineVariant,
-        "primary" to p.primary,
-        "on-primary" to p.onPrimary,
-        "primary-container" to p.primaryContainer,
-        "on-primary-container" to p.onPrimaryContainer,
-        "inverse-primary" to p.inversePrimary,
-        "primary-fixed" to p.primaryFixed,
-        "primary-fixed-dim" to p.primaryFixedDim,
-        "on-primary-fixed" to p.onPrimaryFixed,
-        "on-primary-fixed-variant" to p.onPrimaryFixedVariant,
-        "secondary" to p.secondary,
-        "on-secondary" to p.onSecondary,
-        "secondary-container" to p.secondaryContainer,
-        "on-secondary-container" to p.onSecondaryContainer,
-        "tertiary" to p.tertiary,
-        "on-tertiary" to p.onTertiary,
-        "tertiary-container" to p.tertiaryContainer,
-        "on-tertiary-container" to p.onTertiaryContainer,
-        "error" to p.error,
-        "on-error" to p.onError,
-        "error-container" to p.errorContainer,
-        "on-error-container" to p.onErrorContainer,
-        "success" to p.success,
-        "on-success" to p.onSuccess,
-        "success-container" to p.successContainer,
-        "warning" to p.warning,
-        "warning-container" to p.warningContainer,
-    )
-
-    private fun tokensMarca(): Map<String, Color> = mapOf(
-        "navy" to NexoNavy,
-        "navy-deep" to NexoNavyDeep,
-        "navy-raised" to NexoNavyRaised,
-        "navy-line" to NexoNavyLine,
-        "turquoise" to NexoTurquoise,
-        "turquoise-soft" to NexoTurquoiseSoft,
-        "on-navy" to NexoOnNavy,
-        "on-navy-muted" to NexoOnNavyMuted,
-        "on-navy-error" to NexoOnNavyError,
-        "paper" to NexoPaper,
-    )
-
-    private fun hexDe(bloque: String, token: String): Int? =
-        Regex("--color-${Regex.escape(token)}: #([0-9a-fA-F]{6});").find(bloque)
-            ?.groupValues?.get(1)?.let { (0xFF000000 or it.toLong(16)).toInt() }
-
-    private fun hex(argb: Int): String = (argb.toLong() and 0xFFFFFF).toString(16).padStart(6, '0').uppercase()
 
     private fun Color.argb(): Int {
         val r = (red * 255 + 0.5f).toInt()
