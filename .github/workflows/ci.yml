@@ -142,7 +142,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.11.9'
-      - name: Test the static validator and inspect both workflow exports
+      - name: Test the static validator and inspect the workflow export
         run: |
           python -m unittest discover -s scripts/ci -p 'test_*.py' -v
           python scripts/ci/check_n8n.py
