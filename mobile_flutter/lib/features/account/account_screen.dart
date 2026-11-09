@@ -414,7 +414,7 @@ class _Ayuda extends StatelessWidget {
             ('Nombra al cliente y su correo', 'Así la campaña le llega a su cuenta para aprobar.'),
             ('Elige el tono', 'Profesional, casual, urgente, inspiracional, humorístico o persuasivo.'),
             ('Di la red', 'Instagram, Facebook o TikTok: orienta el largo y el estilo del texto.'),
-            ('Revisa antes de generar', 'Interpretar es gratis; generar usa 1 crédito.'),
+            ('Revisa antes de generar', 'Interpretar es gratis; generar usa $kCostoGeneracion créditos.'),
           ]
         : [
             ('Mira la imagen y el texto completos', 'Se publicará exactamente lo que apruebes.'),

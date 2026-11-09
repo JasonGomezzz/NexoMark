@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/theme/motion.dart';
 import '../core/theme/tokens.dart';
+import '../data/credits.dart';
 import 'nexo_mark_logo.dart';
 
 // La dirección "Conforme" en piezas: la mesa, el pliego con sus marcas de
@@ -445,10 +446,10 @@ class CreditosChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final valor = disponibles;
-    final agotado = valor != null && valor <= 0;
+    final agotado = !alcanzaParaGenerar(valor);
     return Semantics(
       button: true,
-      label: valor == null ? 'Créditos: sin dato' : valor == 1 ? 'Créditos: 1 disponible' : 'Créditos: $valor disponibles',
+      label: 'Créditos: ${creditosConGeneraciones(valor)}',
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,

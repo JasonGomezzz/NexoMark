@@ -69,7 +69,7 @@ class CampaignRepository {
         return CampaignIntent.fromJson(envelopeData(r)['intent'] as Map<String, dynamic>);
       });
 
-  /// Confirmar crea la campaña y la manda a generar (1 crédito). Repetirlo devuelve la misma.
+  /// Confirmar crea la campaña y la manda a generar (kCostoGeneracion créditos). Repetirlo devuelve la misma.
   Future<Campaign> confirm(int intentId, Map<String, String?> campos) => _call(() async {
         final r = await _dj.post<dynamic>('/api/intents/$intentId/confirm/', data: {'campos': campos});
         return _campaign(r);

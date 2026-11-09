@@ -8,6 +8,7 @@ import '../../widgets/motion_widgets.dart';
 import '../../widgets/conforme.dart';
 import '../../widgets/nexo_widgets.dart';
 import '../../core/theme/tokens.dart';
+import '../../data/credits.dart';
 
 final _solicitudesProvider = FutureProvider.autoDispose((ref) => ref.watch(authRepositoryProvider).creditRequests());
 
@@ -60,6 +61,40 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
             children: [
               CreditsMeter(disponibles: user?.tokensDisponibles),
               const SizedBox(height: 20),
+              Text('Planes de lanzamiento', style: context.text.titleMedium),
+              const SizedBox(height: 4),
+              Text(
+                'Precios mensuales sin IGV. Cada generación de texto e imagen usa $kCostoGeneracion créditos. '
+                'La compra se hace desde la web (pago simulado).',
+                style: context.text.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              for (final plan in kPlanes)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: NexoCard(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                plan.disponible ? plan.nombre : '${plan.nombre} · próximamente',
+                                style: context.text.titleSmall,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(creditosConGeneraciones(plan.creditos), style: context.text.bodySmall),
+                            ],
+                          ),
+                        ),
+                        Text('S/ ${plan.precio}', style: context.text.titleMedium),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 20),
               ...solicitudes.when(
                 loading: () => [const Skeleton(height: 120)],
                 error: (e, _) => [ErrorBanner(message: toApiException(e).message)],
@@ -73,7 +108,7 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
                     Text('Solicitar créditos', style: context.text.titleMedium),
                     const SizedBox(height: 4),
                     Text(
-                      'El administrador decide cuántos sumar. Los planes y precios reales aún no están definidos.',
+                      'El administrador decide cuántos sumar.',
                       style: context.text.bodySmall,
                     ),
                     const SizedBox(height: 12),

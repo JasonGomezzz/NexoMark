@@ -609,8 +609,8 @@ class CreditsMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final valor = disponibles;
-    final agotado = valor != null && valor <= 0;
-    // Referencia visual: el saldo inicial de una cuenta (100). No es un tope.
+    final agotado = !alcanzaParaGenerar(valor);
+    // Referencia visual: la cuota de Freelance (100). No es un tope.
     final progreso = valor == null ? 0.0 : (valor / 100).clamp(0.0, 1.0);
     return NavyPanel(
       padding: const EdgeInsets.all(16),
@@ -650,8 +650,8 @@ class CreditsMeter extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             agotado
-                ? 'Sin créditos: puedes ver tu historial, pero no crear ni regenerar campañas.'
-                : '1 crédito = 1 generación. Mejorar el texto y restaurar versiones no gastan.',
+                ? 'Créditos insuficientes: cada generación usa $kCostoGeneracion. Puedes ver tu historial, pero no crear ni regenerar campañas.'
+                : '${creditosConGeneraciones(valor)}. Cada generación usa $kCostoGeneracion; mejorar el texto, restaurar versiones y publicar no gastan.',
             style: context.text.bodySmall?.copyWith(color: agotado ? Nexo.onNavyError : Nexo.onNavyMuted),
           ),
           if (agotado && onRequest != null) ...[

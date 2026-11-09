@@ -229,7 +229,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 FilledButton.icon(
                   onPressed: _ocupado ? null : () => _regenerar(c),
                   icon: const Icon(LucideIcons.refreshCw),
-                  label: const Text('Regenerar · 1 crédito'),
+                  label: const Text('Regenerar · $kCostoGeneracion créditos'),
                 ),
               ],
               if (_esperaAgotada) ...[
@@ -317,7 +317,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     final ok = await confirmar(
       context,
       titulo: '¿Regenerar la campaña?',
-      mensaje: 'La IA escribirá un texto y una imagen nuevos. Usa 1 crédito; si falla, se devuelve.',
+      mensaje: 'La IA escribirá un texto y una imagen nuevos. '
+          '${avisoConsumo(ref.read(currentUserProvider)?.tokensDisponibles, accion: 'Regenerar')} Si falla, se devuelven.',
       accion: 'Regenerar',
     );
     if (ok) {
@@ -925,7 +926,7 @@ class _AjustarSheetState extends State<_AjustarSheet> {
           Text('Ajustar instrucciones', style: context.text.titleLarge),
           const SizedBox(height: 6),
           Text(
-            'La IA usará estas instrucciones para la nueva versión. Regenerar usa 1 crédito; si falla, se devuelve.',
+            'La IA usará estas instrucciones para la nueva versión. Regenerar usa $kCostoGeneracion créditos; si falla, se devuelven.',
             style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
           ),
           const SizedBox(height: 14),
@@ -934,7 +935,7 @@ class _AjustarSheetState extends State<_AjustarSheet> {
           FilledButton.icon(
             onPressed: () => Navigator.pop(context, _prompt.text.trim()),
             icon: const Icon(LucideIcons.refreshCw),
-            label: const Text('Guardar y regenerar · 1 crédito'),
+            label: const Text('Guardar y regenerar · $kCostoGeneracion créditos'),
           ),
         ],
       ),

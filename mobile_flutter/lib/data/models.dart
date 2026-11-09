@@ -3,6 +3,10 @@
 /// null y la UI lo muestra como "sin dato", nunca como 0.
 library;
 
+import 'credits.dart';
+
+export 'credits.dart';
+
 T? _pick<T>(Map<String, dynamic> j, String snake, [String? camel]) {
   final value = j[snake] ?? (camel != null ? j[camel] : null);
   return value is T ? value : null;
@@ -39,6 +43,8 @@ class AppUser {
     required this.nombre,
     required this.rol,
     this.tokensDisponibles,
+    this.costoGeneracion = kCostoGeneracion,
+    this.planKey = 'freelance',
     this.hasAvatar = false,
     this.avatarVersion,
     this.hasPassword = true,
@@ -50,6 +56,8 @@ class AppUser {
   final String nombre;
   final Rol rol;
   final int? tokensDisponibles;
+  final int costoGeneracion;
+  final String planKey;
   final bool hasAvatar;
   final int? avatarVersion;
   final bool hasPassword;
@@ -62,7 +70,8 @@ class AppUser {
     return partes.take(2).map((p) => p[0].toUpperCase()).join();
   }
 
-  bool get sinCreditos => rol == Rol.marketero && (tokensDisponibles ?? 1) <= 0;
+  /// El saldo no cubre una generación completa (texto + imagen).
+  bool get sinCreditos => rol == Rol.marketero && !alcanzaParaGenerar(tokensDisponibles, costoGeneracion);
 
   factory AppUser.fromJson(Map<String, dynamic> j) => AppUser(
         id: _int(j, 'id') ?? 0,
@@ -70,6 +79,8 @@ class AppUser {
         nombre: _pick<String>(j, 'nombre') ?? '',
         rol: rolDesde(_pick<String>(j, 'rol', 'role')),
         tokensDisponibles: _int(j, 'tokens_disponibles', 'tokensDisponibles'),
+        costoGeneracion: _int(j, 'costo_generacion') ?? kCostoGeneracion,
+        planKey: _pick<String>(j, 'plan_key') ?? 'freelance',
         hasAvatar: j['has_avatar'] == true,
         avatarVersion: _int(j, 'avatar_version'),
         hasPassword: j['has_password'] != false,

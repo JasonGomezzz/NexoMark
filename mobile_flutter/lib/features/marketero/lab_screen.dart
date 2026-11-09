@@ -446,7 +446,7 @@ class _LabScreenState extends ConsumerState<LabScreen> {
             children: [
               completar,
               const SizedBox(height: 6),
-              Text('Completar la ficha no usa créditos; generar la campaña usa 1.', style: context.text.bodySmall, textAlign: TextAlign.center),
+              Text('Completar la ficha no usa créditos; generar la campaña usa $kCostoGeneracion.', style: context.text.bodySmall, textAlign: TextAlign.center),
             ],
           );
         }
@@ -633,7 +633,13 @@ class _LabScreenState extends ConsumerState<LabScreen> {
           icon: _ocupado
               ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5))
               : const Icon(LucideIcons.wandSparkles, size: 18),
-          label: Text(_ocupado ? 'Enviando a la IA…' : 'Generar campaña · 1 crédito'),
+          label: Text(_ocupado ? 'Enviando a la IA…' : 'Generar campaña · $kCostoGeneracion créditos'),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${avisoConsumo(ref.watch(currentUserProvider)?.tokensDisponibles)} Si la IA falla, se devuelven.',
+          style: context.text.bodySmall,
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 2),
         TextButton(onPressed: _ocupado ? null : _descartar, child: const Text('Volver al dictado')),
@@ -740,7 +746,7 @@ class _FichaPorCompletar extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'Al terminar, la IA la llena con lo que dijiste. Lo que no reconozca queda vacío y te avisa. '
-          'Completar la ficha no usa créditos; generar la campaña usa 1.',
+          'Completar la ficha no usa créditos; generar la campaña usa $kCostoGeneracion.',
           style: context.text.bodySmall,
         ),
         const SizedBox(height: 12),
@@ -816,7 +822,7 @@ class _SinCreditos extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Sin créditos: puedes preparar el brief, pero generar usa 1.',
+              'Créditos insuficientes: puedes preparar el brief, pero generar usa $kCostoGeneracion.',
               style: context.text.bodySmall?.copyWith(color: context.nexo.warning),
             ),
           ),

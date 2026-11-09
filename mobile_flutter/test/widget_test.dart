@@ -104,12 +104,26 @@ void main() {
       expect(u.avatarVersion, 1792636300);
     });
 
-    test('sin créditos solo aplica al marketero', () {
+    test('sin créditos: el saldo no cubre una generación (4) y solo aplica al marketero', () {
       AppUser con(String rol, int creditos) =>
           AppUser.fromJson({'id': 1, 'email': 'a@b.c', 'nombre': 'A', 'rol': rol, 'tokens_disponibles': creditos});
       expect(con('marketero', 0).sinCreditos, isTrue);
-      expect(con('marketero', 3).sinCreditos, isFalse);
+      expect(con('marketero', 3).sinCreditos, isTrue);
+      expect(con('marketero', 4).sinCreditos, isFalse);
       expect(con('cliente', 0).sinCreditos, isFalse);
+      expect(con('marketero', 4).costoGeneracion, kCostoGeneracion);
+    });
+
+    test('planes de lanzamiento y textos de consumo', () {
+      expect(kCostoGeneracion, 4);
+      expect(kPlanes.map((p) => (p.key, p.precio, p.creditos, p.generaciones, p.disponible)).toList(), [
+        ('freelance', 59, 100, 25, true),
+        ('agencia', 149, 400, 100, true),
+        ('agencia_plus', 299, 1000, 250, false),
+      ]);
+      expect(creditosConGeneraciones(100), '100 créditos · hasta 25 generaciones');
+      expect(avisoConsumo(96), 'Esta generación usará 4 créditos. Te quedan 96.');
+      expect(avisoConsumo(null, accion: 'Regenerar'), 'Regenerar usará 4 créditos.');
     });
   });
 
