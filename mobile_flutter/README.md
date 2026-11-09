@@ -22,8 +22,10 @@ flutter run -d emulator-5554
 flutter run --dart-define=API_HOST=192.168.1.20
 ```
 
-En un teléfono real Django debe escuchar en la red (`python manage.py runserver 0.0.0.0:8000`)
-y `ALLOWED_HOSTS` debe incluir la IP del Mac. En iPhone, la primera vez: abrir
+En un teléfono real Django debe escuchar en la red (`python manage.py runserver 0.0.0.0:8000`);
+`dev.py` ya acepta la IP que tenga el Mac al arrancar. Para no depender del Mac,
+`tool/instalar_iphone_release.sh` instala en el iPhone una versión release que habla
+con Render (`… local` usa el Mac). En iPhone, la primera vez: abrir
 `ios/Runner.xcworkspace` en Xcode, elegir tu Apple ID en *Signing & Capabilities*
 y activar el modo desarrollador del iPhone (con la cuenta gratuita la app caduca
 a los 7 días).
