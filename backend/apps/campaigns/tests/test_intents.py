@@ -229,7 +229,7 @@ class TestConfirm:
         api_client.post(confirm_url(intent.pk), {"campos": CAMPOS_COMPLETOS}, format="json")
         assert api_client.post(discard_url(intent.pk)).status_code == 409
 
-    def test_multiple_platforms_and_current_client_relationship(self, api_client, intent, cliente, user_marketero):
+    def test_multiple_platforms(self, api_client, intent, cliente, user_marketero):
         response = api_client.post(confirm_url(intent.pk), {"campos": {
             **CAMPOS_COMPLETOS, "plataformas": ["facebook", "tiktok"],
         }}, format="json")
@@ -237,21 +237,21 @@ class TestConfirm:
         campaign = Campaign.objects.get()
         assert campaign.plataformas == ["facebook", "tiktok"]
         assert campaign.plataforma == "facebook"
-        assert ClientRelationship.objects.filter(marketero=user_marketero, cliente=cliente).exists()
 
-    def test_freelance_quota_applies_to_voice_confirmation(self, api_client, intent, cliente, user_marketero):
+    def test_confirmation_ignores_legacy_client_relationships(self, api_client, intent, cliente, user_marketero):
         user_marketero.plan_key = "basico"
         user_marketero.save(update_fields=["plan_key"])
         for index in range(5):
             client = User.objects.create_user(email=f"quota{index}@example.com", password=None, nombre="Cliente", rol="cliente")
             ClientRelationship.objects.create(marketero=user_marketero, cliente=client)
+        ClientRelationship.objects.create(marketero=user_marketero, cliente=cliente, is_active=False)
         response = api_client.post(confirm_url(intent.pk), {"campos": CAMPOS_COMPLETOS}, format="json")
-        assert response.status_code == 400
-        assert Campaign.objects.count() == 0
+        assert response.status_code == 202
+        assert Campaign.objects.count() == 1
         intent.refresh_from_db()
-        assert intent.estado == IntentEstado.BORRADOR
+        assert intent.estado == IntentEstado.CONFIRMADO
         user_marketero.refresh_from_db()
-        assert user_marketero.tokens_disponibles == 10
+        assert user_marketero.tokens_disponibles == 6
 
     @pytest.mark.parametrize("platform", ["linkedin", "google_ads"])
     def test_retired_platform_cannot_be_confirmed(self, api_client, intent, cliente, platform):

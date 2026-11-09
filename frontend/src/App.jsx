@@ -2,7 +2,6 @@ import { getAuthItem } from '@/lib/authStorage'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { MotionConfig } from 'motion/react'
 import LandingPage from './pages/LandingPage'
-import ClientsPage from './pages/ClientsPage'
 import LoginPage from './pages/LoginPage'
 import PasswordRecoveryPage from './pages/PasswordRecoveryPage'
 import EmailChangeConfirmPage from './pages/EmailChangeConfirmPage'
@@ -61,7 +60,7 @@ export default function App() {
               </Route>
               <Route element={<RoleRoute roles={['marketero']} />}>
               <Route path="/campaigns/new" element={<NewCampaignPage />} />
-              <Route path="/clients" element={<ClientsPage />} />
+              <Route path="/clients" element={<Navigate to="/campaigns" replace />} />
               </Route>
               <Route element={<RoleRoute roles={['cliente']} />}>
               <Route path="/review/:id" element={<ClientReviewPage />} />
