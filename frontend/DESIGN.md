@@ -1,7 +1,6 @@
 # NexoMark IA — Sistema visual "Conforme"
 
-> Fuente de verdad visual del frontend React. Dirección **C · Conforme**, elegida por Jason el 31/10/2026.
-> Ese día reemplazó a la B · Línea, elegida el 30/10.
+> Fuente de verdad visual del frontend React. Identidad **C · Conforme**, elegida por Jason el 31/10/2026.
 > Contrato compartido con Flutter: `docs/diseno/direcciones.md`, sección «Dirección elegida» (fuera de Git).
 > Si cambia un token aquí o en `src/index.css`, se cambia también allí el mismo día.
 > Tailwind v4 CSS-first: todos los tokens viven en `src/index.css`.
@@ -51,7 +50,7 @@ Estrategia **restringida**:
 
 - `tests/brandPalette.test.js` exige 4.5:1 en los pares de texto, en ambos temas.
 - Los colores por red pasan los 5 chequeos de `dataviz/validate_palette.js`.
-- `banda`, `banda-2` y `via` quedan como alias de la mesa (heredados de la B).
+- `banda`, `banda-2` y `via` son alias de `cama`, `cama-2` y `cama-line` (mismos valores).
 
 ## Tipografía
 

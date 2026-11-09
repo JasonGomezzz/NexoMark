@@ -6,7 +6,7 @@
 
 web
 
-La web (React) es una de dos interfaces. Existe además una app Android nativa en Kotlin con su propio diseño (captura por voz y aprobaciones rápidas); este registro cubre la web.
+La web (React) es una de las interfaces. La app móvil principal es Flutter (`mobile_flutter/`, Android e iOS); la app Android nativa en Kotlin (`mobile/`) está congelada desde el 21/10 como respaldo. Este registro cubre la web.
 
 ## Users
 
@@ -39,9 +39,9 @@ Todo el ciclo en un solo flujo: dictar la idea → la IA crea copy e imagen → 
 
 ## Brand Commitments
 
-- Nombre del producto: **NexoMark IA** (confirmado el 2026-10-06). Reemplaza a "MarketMind IA" / "MarketMind Voice" en la interfaz visible. Los identificadores de código y el repositorio siguen llamándose `marketmind`.
+- Nombre del producto: **NexoMark IA** (confirmado el 2026-10-06). Reemplaza a "MarketMind IA" / "MarketMind Voice" en la interfaz visible. Los identificadores de código siguen llamándose `marketmind`; el repositorio en GitHub es `JasonGomezzz/NexoMark`.
 - La marca de la cuenta de demostración es la misma: Instagram `@nexomarkia` ("NexoMarkAI").
-- Sistema visual vigente: identidad **NexoMark** (azul marino y turquesa, logo aprobado, modo claro y oscuro), descrita en `DESIGN.md`. Es la única identidad del producto.
+- Sistema visual vigente: identidad **NexoMark «C · Conforme»** (azul marino y turquesa, logo aprobado, modo claro y oscuro), descrita en `DESIGN.md`. Es la única identidad del producto.
 
 ## Evidence on Hand
 
