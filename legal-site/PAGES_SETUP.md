@@ -8,7 +8,7 @@ Pages no incluye servidor, PostgreSQL ni respaldos.
 
 ## Para Jason
 
-1. Abrir `JasonGomezzz/MarketMind-Voice` con la cuenta que administra el repo.
+1. Abrir `JasonGomezzz/NexoMark` con la cuenta que administra el repo.
 2. En Settings → Pages → Build and deployment, elegir **GitHub Actions**.
    No publicar la raíz del repositorio.
 3. Revisar el environment `github-pages`: permitir la rama que se publicará y, si lo desean,

@@ -1,4 +1,4 @@
-# CI inicial de MarketMind
+# CI inicial de NexoMark IA
 
 El workflow `.github/workflows/ci.yml` cubre los componentes existentes en cinco jobs.
 No publica APK/JAR, no despliega, no usa secretos de aplicación ni llama a Gemini o n8n.
