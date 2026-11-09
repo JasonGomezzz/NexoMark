@@ -37,6 +37,7 @@ CLAUDE.md
 
 # Contexto local para asistentes IA (no commitear)
 .ai-context/
+.playwright-mcp/
 
 # Mobile
 mobile/.gradle/
