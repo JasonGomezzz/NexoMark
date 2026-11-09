@@ -56,9 +56,6 @@ _PLATAFORMA_ALIAS = {
     "x": "twitter",
     "twitter / x": "twitter",
     "tik tok": "tiktok",
-    "google ads": "google_ads",
-    "google": "google_ads",
-    "linked in": "linkedin",
 }
 
 _RESPONSE_SCHEMA = {
@@ -263,9 +260,7 @@ _MOCK_PLATAFORMAS = {
     "facebook": "facebook",
     "tiktok": "tiktok",
     "tik tok": "tiktok",
-    "linkedin": "linkedin",
     "twitter": "twitter",
-    "google ads": "google_ads",
 }
 _MOCK_TONOS = {
     "profesional": "profesional",

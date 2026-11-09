@@ -29,8 +29,6 @@ class CampaignPlataforma(models.TextChoices):
     INSTAGRAM = "instagram", "Instagram"
     FACEBOOK = "facebook", "Facebook"
     TWITTER = "twitter", "Twitter / X"
-    LINKEDIN = "linkedin", "LinkedIn"
-    GOOGLE_ADS = "google_ads", "Google Ads"
     TIKTOK = "tiktok", "TikTok"
 
 

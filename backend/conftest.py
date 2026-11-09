@@ -101,7 +101,7 @@ def campaign_pendiente_ia(db, user_marketero) -> Campaign:
         cliente_nombre="Cliente SA",
         industria="salud",
         tono=CampaignTono.PROFESIONAL,
-        plataforma=CampaignPlataforma.LINKEDIN,
+        plataforma=CampaignPlataforma.INSTAGRAM,
         prompt="Campaña salud",
         estado=CampaignStatus.PENDIENTE_IA,
         tokens_consumidos=1,

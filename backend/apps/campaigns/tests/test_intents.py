@@ -237,7 +237,7 @@ class TestNormalizarCampos:
                 "cliente_email": "Cliente@Test.COM",
                 "industria": "Tecnología",
                 "tono": "Humorístico",
-                "plataforma": "Google Ads",
+                "plataforma": "TikTok",
                 "prompt": "Promoción de verano con descuentos",
             }
         )
@@ -245,7 +245,7 @@ class TestNormalizarCampos:
         assert campos["cliente_email"] == "cliente@test.com"
         assert campos["industria"] == "tecnologia"
         assert campos["tono"] == "humoristico"
-        assert campos["plataforma"] == "google_ads"
+        assert campos["plataforma"] == "tiktok"
         assert campos["cliente_nombre"] is None
         assert advertencias == []
 
@@ -270,6 +270,13 @@ class TestNormalizarCampos:
         assert campos["prompt"] == "Brief original suficientemente largo"
         assert "rol" not in campos
         assert len(advertencias) == 4
+
+    @pytest.mark.parametrize("plataforma", ["LinkedIn", "Linked In", "linkedin", "Google Ads", "google_ads", "Google"])
+    def test_plataformas_retiradas_no_pasan(self, plataforma):
+        """LinkedIn y Google Ads se retiraron del proyecto: la IA no puede proponerlas."""
+        campos, advertencias = normalizar_campos({"plataforma": plataforma})
+        assert campos["plataforma"] is None
+        assert len(advertencias) == 1
 
     def test_textos_largos_se_recortan(self):
         campos, _ = normalizar_campos({"titulo": "t" * 500, "prompt": "p" * 5000})

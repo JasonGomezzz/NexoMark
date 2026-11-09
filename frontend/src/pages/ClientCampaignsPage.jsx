@@ -178,7 +178,7 @@ export default function ClientCampaignsPage() {
               <span className="sr-only">Plataforma</span>
               <select value={filters.plataforma} onChange={(e) => updateFilter('plataforma', e.target.value)} className="h-11 rounded-[10px] border border-outline bg-surface-container-lowest px-3 text-[15px] text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
                 <option value="">Toda plataforma</option>
-                {['instagram', 'facebook', 'twitter', 'linkedin', 'google_ads', 'tiktok'].map((item) => (
+                {['instagram', 'facebook', 'twitter', 'tiktok'].map((item) => (
                   <option key={item} value={item}>{item}</option>
                 ))}
               </select>

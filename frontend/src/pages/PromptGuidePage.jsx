@@ -36,18 +36,6 @@ const TEMPLATE_POOL = [
       'Redacta un email personalizado de re-enganche para clientes que abandonaron su carrito, con tono cercano, un beneficio concreto y un solo botón de acción.',
   },
   {
-    icon: FileText,
-    titulo: 'Anuncio pagado',
-    texto:
-      'Escribe 3 variantes de un anuncio de búsqueda de Google para un servicio B2B: titular de máximo 30 caracteres, descripción de máximo 90 y enfoque en el dolor del cliente.',
-  },
-  {
-    icon: Share2,
-    titulo: 'LinkedIn B2B',
-    texto:
-      'Escribe un post de LinkedIn con tono profesional que nos posicione como líderes del sector: un dato duro de apertura, 3 aprendizajes accionables y una pregunta final para generar conversación.',
-  },
-  {
     icon: Mail,
     titulo: 'Lanzamiento',
     texto:
@@ -91,7 +79,7 @@ const TIPS = [
   },
   {
     titulo: 'Menciona la plataforma',
-    desc: 'La IA escribe distinto para LinkedIn que para Instagram. El campo plataforma del formulario ya se lo indica.',
+    desc: 'La IA escribe distinto para TikTok que para Instagram. El campo plataforma del formulario ya se lo indica.',
   },
   {
     titulo: 'Refina por iteración',

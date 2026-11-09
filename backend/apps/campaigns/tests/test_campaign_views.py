@@ -76,6 +76,14 @@ class TestCampaignCreate:
         assert response.status_code == 202
         assert response.data["data"]["campaign"]["cliente_nombre"] == "Gimnasio Mega Force"
 
+    @pytest.mark.parametrize("plataforma", ["linkedin", "google_ads"])
+    def test_create_rejects_retired_platforms(self, api_client, plataforma):
+        """LinkedIn y Google Ads se retiraron del proyecto: la API no las acepta."""
+        payload = {**VALID_PAYLOAD, "plataforma": plataforma}
+        response = api_client.post(CAMPAIGNS_URL, payload, format="json")
+        assert response.status_code == 400
+        assert "plataforma" in response.data["data"]["errors"]
+
     def test_create_rejects_unregistered_cliente_email(self, api_client):
         """El email SÍ debe pertenecer a un cliente registrado."""
         payload = {**VALID_PAYLOAD, "cliente_email": "noexiste@ejemplo.com"}

@@ -64,7 +64,7 @@ test('a publication stuck in publicando for more than 5 minutes can be retried',
 test('labels fall back to the raw value for unknown networks and states', () => {
   assert.equal(etiquetaRed('instagram'), 'Instagram')
   assert.equal(etiquetaRed('tiktok'), 'TikTok')
-  assert.equal(etiquetaRed('linkedin'), 'linkedin')
+  assert.equal(etiquetaRed('threads'), 'threads')
   assert.equal(estadoPublicacion('publicado').tono, 'ok')
   assert.equal(estadoPublicacion('fallido').tono, 'error')
   assert.equal(estadoPublicacion('nuevo').texto, 'nuevo')

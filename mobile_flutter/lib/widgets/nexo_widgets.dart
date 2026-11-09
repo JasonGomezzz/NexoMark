@@ -132,8 +132,6 @@ const etiquetaRed = {
   'x': 'X',
   'tiktok': 'TikTok',
   'twitter': 'X',
-  'linkedin': 'LinkedIn',
-  'google_ads': 'Google Ads',
 };
 
 /// Logo simplificado de cada red. Instagram y Facebook con su color; X y
