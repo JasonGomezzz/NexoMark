@@ -674,7 +674,7 @@
     },
     {
       "id": "node-http-imagen3",
-      "name": "Gemini Imagen 3",
+      "name": "Gemini Flash Image",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
@@ -1052,14 +1052,14 @@
       "main": [
         [
           {
-            "node": "Gemini Imagen 3",
+            "node": "Gemini Flash Image",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Gemini Imagen 3": {
+    "Gemini Flash Image": {
       "main": [
         [
           {
