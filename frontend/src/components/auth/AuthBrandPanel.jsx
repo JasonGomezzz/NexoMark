@@ -12,7 +12,7 @@ import NexoN from '@/components/NexoN'
  */
 const ESTACIONES = [
   { nombre: 'Dictar', icono: Mic, desc: 'Hablas la idea en el navegador o en la app. A NexoMark solo llega el texto.' },
-  { nombre: 'Generar', icono: Wand2, desc: 'La IA propone los campos y crea copy e imagen. Cada generación usa 1 crédito.' },
+  { nombre: 'Generar', icono: Wand2, desc: 'La IA propone los campos y crea copy e imagen. Cada generación usa 4 créditos.' },
   { nombre: 'Aprobar', icono: CheckCheck, desc: 'Tu cliente aprueba la versión exacta que saldrá en sus redes.' },
   { nombre: 'Publicar', icono: Send, desc: 'Al aprobarla, se publica sola en Instagram o Facebook.' },
   { nombre: 'Medir', icono: ChartColumn, desc: 'Ves me gusta, comentarios y alcance. Lo que Meta no informa dice «sin dato».' },

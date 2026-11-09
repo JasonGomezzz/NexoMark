@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button'
 import StatusBadge from '@/components/StatusBadge'
 import CampaignStepper from '@/components/CampaignStepper'
 import SelloConforme from '@/components/SelloConforme'
+import { avisoConsumo } from '@/lib/credits'
+import useCreditos from '../hooks/useCreditos'
 import { useEstacionPagina } from '@/components/linea/EstacionContext'
 import { etapaDeEstado } from '@/components/linea/estaciones'
 
@@ -543,6 +545,7 @@ function SiguientePaso({
   onDelete,
 }) {
   const estado = campaign.estado
+  const creditos = useCreditos()
 
   return (
     <div>
@@ -564,7 +567,7 @@ function SiguientePaso({
       {estado === 'borrador' && (
         <>
           <Titulo>Generar la pieza</Titulo>
-          <p className="mt-2 text-[15px] text-on-surface-variant">Todavía no hay copy ni imagen. Generar usa 1 crédito y se devuelve si la IA falla.</p>
+          <p className="mt-2 text-[15px] text-on-surface-variant">Todavía no hay copy ni imagen. {avisoConsumo(creditos.saldo, creditos.costo)} Si la IA falla, se devuelven.</p>
         </>
       )}
       {estado === 'pendiente_aprobacion' && (
@@ -614,8 +617,13 @@ function SiguientePaso({
         {canRegenerate && (
           <Button size="lg" onClick={onRegenerate} disabled={regenerating}>
             <RefreshCw className={`h-5 w-5 ${regenerating ? 'animate-spin' : ''}`} aria-hidden="true" />
-            {regenerating ? 'Regenerando…' : 'Regenerar con IA · 1 crédito'}
+            {regenerating ? 'Regenerando…' : `Regenerar con IA · ${creditos.costo} créditos`}
           </Button>
+        )}
+        {canRegenerate && !regenerating && (
+          <p className="text-center text-[13px] text-on-surface-variant">
+            {avisoConsumo(creditos.saldo, creditos.costo, 'Regenerar')}
+          </p>
         )}
         {isGenerating && (
           <Button size="lg" disabled>

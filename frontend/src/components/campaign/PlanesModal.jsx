@@ -5,7 +5,7 @@ import { Info, X, Coins, Loader2, CircleCheck, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '../../services/api'
 import CreditRequestButton from '@/components/campaign/CreditRequestButton'
-import { PLANS } from '@/lib/credits'
+import { GENERATION_CREDIT_COST, PLANS, creditosConGeneraciones } from '@/lib/credits'
 
 /**
  * Modal de planes de créditos (overlay a pantalla completa con 3 cards de
@@ -87,7 +87,7 @@ export default function PlanesModal({ open, onClose }) {
           <>
             <span className="demo-tag">
               <Info className="h-3 w-3" aria-hidden="true" />
-              Precios de ejemplo · pasarela simulada
+              Precios de lanzamiento · sin IGV · pasarela simulada
             </span>
             <h2
               id="planes-title"
@@ -96,7 +96,8 @@ export default function PlanesModal({ open, onClose }) {
               Planes de créditos
             </h2>
             <p className="mt-2 max-w-xl text-[15px] text-on-surface-variant">
-              Cada crédito es una generación de copy e imagen. Completar la ficha y restaurar versiones no gastan.
+              Generar o regenerar copy e imagen usa {GENERATION_CREDIT_COST} créditos. Completar la ficha, editar, aprobar,
+              restaurar versiones y publicar en varias redes no gastan.
             </p>
 
             {/* Planes en una plancha: columnas separadas por un hilo, sin tarjetas */}
@@ -108,7 +109,7 @@ export default function PlanesModal({ open, onClose }) {
                 >
                   <p className="flex items-center gap-2 font-display text-lg font-extrabold text-on-surface">
                     {plan.nombre}
-                    {plan.popular && (
+                    {plan.destacado && (
                       <span className="rounded-[6px] bg-primary-fixed px-2 py-0.5 font-sans text-[12px] font-semibold text-on-primary-fixed">
                         Sugerido
                       </span>
@@ -118,13 +119,15 @@ export default function PlanesModal({ open, onClose }) {
                     <span className="mr-1 align-top font-sans text-base font-semibold">S/</span>
                     {plan.precio}
                   </p>
-                  <p className="mt-1 text-sm text-on-surface-variant">{plan.creditos} créditos de IA</p>
+                  <p className="mt-1 text-sm text-on-surface-variant">{creditosConGeneraciones(plan.creditos)} al mes</p>
+                  <p className="mt-1 text-[13px] text-on-surface-variant">{plan.para}</p>
                   <Button
-                    variant={plan.popular ? 'default' : 'outline'}
+                    variant={plan.destacado ? 'default' : 'outline'}
                     className="mt-5 w-full"
-                    onClick={() => setCheckoutPlan(plan)}
+                    disabled={!plan.disponible}
+                    onClick={() => plan.disponible && setCheckoutPlan(plan)}
                   >
-                    Elegir {plan.nombre}
+                    {plan.disponible ? `Elegir ${plan.nombre}` : 'Próximamente'}
                   </Button>
                 </div>
               ))}
@@ -152,7 +155,7 @@ export default function PlanesModal({ open, onClose }) {
             </div>
             <h2 className="text-2xl font-semibold text-on-surface">Pago aprobado</h2>
             <p className="max-w-sm text-sm text-on-surface-variant">
-              Se añadieron {checkoutPlan.creditos} créditos de IA a tu cuenta (plan{' '}
+              Se añadieron {creditosConGeneraciones(checkoutPlan.creditos)} a tu cuenta (plan{' '}
               {checkoutPlan.nombre}).
             </p>
           </div>
@@ -169,7 +172,7 @@ export default function PlanesModal({ open, onClose }) {
             <div className="mb-6 flex items-center justify-between border-y border-outline-variant py-4">
               <div>
                 <p className="text-sm font-semibold text-on-surface">Plan {checkoutPlan.nombre}</p>
-                <p className="text-sm text-on-surface-variant">{checkoutPlan.creditos} Créditos de IA</p>
+                <p className="text-sm text-on-surface-variant">{creditosConGeneraciones(checkoutPlan.creditos)} · al mes, sin IGV</p>
               </div>
               <p className="text-2xl font-extrabold tabular-nums text-on-surface">
                 <span className="mr-1 align-top text-sm font-semibold">S/</span>

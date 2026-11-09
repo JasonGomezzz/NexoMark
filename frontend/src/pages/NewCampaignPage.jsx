@@ -12,6 +12,8 @@ import useBriefDictado from '../hooks/useBriefDictado'
 import { camposParaFormulario } from '../services/voiceIntent'
 import { cn } from '@/lib/utils'
 import { INDUSTRIAS, PLATAFORMAS, TONOS } from '@/lib/etiquetas'
+import { avisoConsumo } from '@/lib/credits'
+import useCreditos from '../hooks/useCreditos'
 
 // Opciones que el formulario acepta: lo que interprete la IA fuera de estas
 // listas no se vuelca y queda para que el usuario lo elija.
@@ -66,6 +68,7 @@ function MarcaCampo({ estado }) {
 
 export default function NewCampaignPage() {
   const navigate = useNavigate()
+  const creditos = useCreditos()
   const location = useLocation()
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState(null) // { campaign, warning, demora }
@@ -340,7 +343,7 @@ export default function NewCampaignPage() {
           {brief.interpretando ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <Wand2 className="h-5 w-5" aria-hidden="true" />}
           {brief.interpretando ? 'Completando la ficha…' : 'Completar ficha'}
         </Button>
-        <p className="text-[13px] text-on-surface-variant">Completar la ficha no usa créditos. Generar la campaña usa 1.</p>
+        <p className="text-[13px] text-on-surface-variant">Completar la ficha no usa créditos. Generar la campaña usa {creditos.costo}.</p>
         <button
           type="button"
           onClick={() => setVista('formulario')}
@@ -361,7 +364,7 @@ export default function NewCampaignPage() {
       <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant">
         {resumenIntent
           ? `La IA completó ${resumenIntent.completados.length} de 7 campos. Revísalos y corrige lo que falte antes de generar.`
-          : 'Llénala a mano. Generar la campaña usa 1 crédito.'}
+          : `Llénala a mano. Generar la campaña usa ${creditos.costo} créditos.`}
       </p>
 
       {resumenIntent?.advertencias?.length > 0 && (
@@ -510,7 +513,9 @@ export default function NewCampaignPage() {
           <Wand2 className="h-5 w-5" aria-hidden="true" />
           Generar campaña
         </Button>
-        <p className="text-center text-[13px] text-on-surface-variant">Usa 1 crédito. Si la IA falla, se devuelve.</p>
+        <p className="text-center text-[13px] text-on-surface-variant">
+          {avisoConsumo(creditos.saldo, creditos.costo)} Si la IA falla, se devuelven.
+        </p>
         {/* Con un brief ya interpretado, volver deja seguir dictando y completar de nuevo:
             lo corregido a mano se conserva. */}
         <button

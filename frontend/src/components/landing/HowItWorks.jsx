@@ -15,7 +15,7 @@ const STEPS = [
   },
   {
     verbo: 'Genera',
-    texto: 'Gemini escribe el copy y crea la imagen. Cuesta 1 crédito y, si la generación falla, se devuelve.',
+    texto: 'Gemini escribe el copy y crea la imagen. Cuesta 4 créditos y, si la generación falla, se devuelven.',
   },
   {
     verbo: 'Aprueba',

@@ -1,26 +1,27 @@
 import { Info } from 'lucide-react'
 import { ButtonLink } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { GENERATION_CREDIT_COST, PLANS as CREDIT_PLANS, creditosConGeneraciones } from '@/lib/credits'
 
 /**
- * Planes por créditos de IA (1 crédito = 1 generación). Los precios son de
- * EJEMPLO: los planes aún no están definidos (PRODUCT.md). Por decisión de
- * Jason no se borran, se rotulan de forma visible.
+ * Planes de lanzamiento (fuente: lib/credits.js ↔ backend services/credit_service.py).
+ * Precios mensuales sin IGV. Agencia Plus se muestra como próximamente.
+ * La pasarela es simulada: se rotula como precio de lanzamiento.
  */
-const PLANS = [
-  { nombre: 'Starter', precio: 'S/ 99', periodo: 'al mes', cta: 'Elegir Starter' },
-  { nombre: 'Pro', precio: 'S/ 299', periodo: 'al mes', cta: 'Empezar con Pro', destacado: true },
-  { nombre: 'Enterprise', precio: 'A medida', periodo: '', cta: 'Contactar ventas' },
-]
+const PLANS = CREDIT_PLANS.map((plan) => ({
+  ...plan,
+  precioTexto: `S/ ${plan.precio}`,
+  periodo: 'al mes',
+  cta: plan.disponible ? `Empezar con ${plan.nombre}` : 'Próximamente',
+}))
 
-// Cada fila compara lo que listaba cada plan de ejemplo. null = el ejemplo no lo define ("Sin definir").
+// Cada fila compara los planes. null = no aplica todavía ("Sin definir").
 const ROWS = [
-  { label: 'Créditos de IA', values: ['500 al mes', '2000 al mes', 'Ilimitados'] },
-  { label: 'Contenido con IA', values: ['Copy ilimitado', 'Copy e imágenes', null] },
-  { label: 'Usuarios', values: ['1 marketero', 'Hasta 5', 'Ilimitados'] },
-  { label: 'App de aprobación para clientes', values: [null, 'Incluida', null] },
-  { label: 'Analítica', values: ['Avanzado no incluido', null, 'Completo'] },
-  { label: 'Soporte prioritario', values: [null, null, 'Incluido'] },
+  { label: 'Créditos de IA', values: PLANS.map((p) => `${creditosConGeneraciones(p.creditos)} al mes`) },
+  { label: 'Contenido con IA', values: PLANS.map(() => 'Copy e imagen') },
+  { label: 'Pensado para', values: PLANS.map((p) => p.para) },
+  { label: 'Revisión del cliente en web y app', values: PLANS.map(() => 'Incluida') },
+  { label: 'Publicar en varias redes', values: PLANS.map(() => 'Sin costo extra') },
 ]
 
 function Value({ value, onNavy = false }) {
@@ -32,8 +33,29 @@ function DemoPrice() {
   return (
     <span className="demo-tag">
       <Info className="h-3 w-3" aria-hidden="true" />
-      Precio de ejemplo
+      Precio de lanzamiento
     </span>
+  )
+}
+
+function PlanCta({ plan, className }) {
+  if (!plan.disponible) {
+    return (
+      <span
+        aria-disabled="true"
+        className={cn(
+          'inline-flex min-h-11 items-center justify-center rounded-full border border-outline-variant px-5 text-sm font-semibold text-on-surface-variant',
+          className,
+        )}
+      >
+        {plan.cta}
+      </span>
+    )
+  }
+  return (
+    <ButtonLink to="/register" variant={plan.destacado ? 'onBrand' : 'outline'} className={className}>
+      {plan.cta}
+    </ButtonLink>
   )
 }
 
@@ -50,12 +72,12 @@ export default function PricingSection() {
           </h2>
           <div className="lg:col-span-6 lg:col-start-7 lg:pt-2">
             <p className="max-w-[34rem] text-lg leading-relaxed text-on-surface">
-              Cada crédito equivale a una generación de copy e imagen. Mejorar el texto y restaurar versiones no gastan
-              créditos.
+              Generar o regenerar copy e imagen usa {GENERATION_CREDIT_COST} créditos. Editar, aprobar, consultar y
+              publicar en varias redes no gastan créditos; si la IA falla, se devuelven.
             </p>
             <p className="mt-4 inline-flex items-start gap-2 rounded-lg bg-tertiary-container px-3 py-2 text-[15px] font-medium text-on-tertiary-container">
               <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              Precios y planes de ejemplo: todavía no están definidos.
+              Precios de lanzamiento por mes, sin IGV. Pago simulado: todavía no hay cobro real.
             </p>
           </div>
         </div>
@@ -63,7 +85,7 @@ export default function PricingSection() {
         {/* Escritorio: tabla comparativa */}
         <div className="mt-16 hidden overflow-hidden rounded-2xl bg-background lg:block">
           <table className="w-full table-fixed border-collapse text-left">
-            <caption className="sr-only">Comparación de planes de ejemplo</caption>
+            <caption className="sr-only">Comparación de planes de lanzamiento</caption>
             <thead>
               <tr>
                 <th scope="col" className="w-[28%] p-8 align-bottom text-base font-medium text-on-surface-variant">
@@ -80,17 +102,17 @@ export default function PricingSection() {
                       {plan.destacado && <span className="font-normal text-turquoise-soft"> · recomendado</span>}
                     </span>
                     <span className="mt-3 flex items-baseline gap-2">
-                      <span className="text-4xl font-bold tabular-nums tracking-[-0.02em]">{plan.precio}</span>
+                      <span className="text-4xl font-bold tabular-nums tracking-[-0.02em]">{plan.precioTexto}</span>
                       {plan.periodo && (
                         <span className={plan.destacado ? 'text-on-navy-muted' : 'text-on-surface-variant'}>{plan.periodo}</span>
                       )}
                     </span>
-                    {plan.precio.startsWith('S/') && (
+                    {plan.disponible && (
                       <span className="mt-3 block">
                         {plan.destacado ? (
                           <span className="demo-tag demo-tag-on-navy">
                             <Info className="h-3 w-3" aria-hidden="true" />
-                            Precio de ejemplo
+                            Precio de lanzamiento
                           </span>
                         ) : (
                           <DemoPrice />
@@ -125,9 +147,7 @@ export default function PricingSection() {
                 <td className="p-8" />
                 {PLANS.map((plan) => (
                   <td key={plan.nombre} className={cn('p-8', plan.destacado && 'bg-navy')}>
-                    <ButtonLink to="/register" variant={plan.destacado ? 'onBrand' : 'outline'} className="w-full">
-                      {plan.cta}
-                    </ButtonLink>
+                    <PlanCta plan={plan} className="w-full" />
                   </td>
                 ))}
               </tr>
@@ -147,14 +167,14 @@ export default function PricingSection() {
                 {plan.destacado && <span className="font-normal text-turquoise-soft"> · recomendado</span>}
               </h3>
               <p className="mt-2 flex items-baseline gap-2">
-                <span className="text-4xl font-bold tabular-nums tracking-[-0.02em]">{plan.precio}</span>
+                <span className="text-4xl font-bold tabular-nums tracking-[-0.02em]">{plan.precioTexto}</span>
                 {plan.periodo && <span className={plan.destacado ? 'text-on-navy-muted' : 'text-on-surface-variant'}>{plan.periodo}</span>}
               </p>
-              {plan.precio.startsWith('S/') && (
+              {plan.disponible && (
                 <p className="mt-2">
                   <span className={cn('demo-tag', plan.destacado && 'demo-tag-on-navy')}>
                     <Info className="h-3 w-3" aria-hidden="true" />
-                    Precio de ejemplo
+                    Precio de lanzamiento
                   </span>
                 </p>
               )}
@@ -168,9 +188,7 @@ export default function PricingSection() {
                   </div>
                 ))}
               </dl>
-              <ButtonLink to="/register" variant={plan.destacado ? 'onBrand' : 'outline'} className="mt-6 w-full">
-                {plan.cta}
-              </ButtonLink>
+              <PlanCta plan={plan} className="mt-6 w-full" />
             </article>
           ))}
         </div>

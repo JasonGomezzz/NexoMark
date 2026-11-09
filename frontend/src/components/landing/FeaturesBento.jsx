@@ -39,7 +39,7 @@ const FEATURES = [
   },
   {
     titulo: 'Copy e imagen con IA',
-    texto: 'Gemini redacta el texto y genera la imagen del anuncio. Regenerar cuesta un crédito; mejorar el texto, nada.',
+    texto: 'Gemini redacta el texto y genera la imagen del anuncio. Generar o regenerar cuesta 4 créditos; mejorar el texto, nada.',
     fragment: (
       <Fragment className="flex flex-col gap-3">
         <div className="flex gap-3">

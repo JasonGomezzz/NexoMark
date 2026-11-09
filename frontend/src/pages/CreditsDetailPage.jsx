@@ -15,6 +15,7 @@ import {
 import api from '../services/api'
 import StatusBadge from '@/components/StatusBadge'
 import PlanesModal from '@/components/campaign/PlanesModal'
+import { PLANS, costoGeneracion, creditosConGeneraciones } from '@/lib/credits'
 import CreditRequestButton from '@/components/campaign/CreditRequestButton'
 
 /**
@@ -27,7 +28,8 @@ import CreditRequestButton from '@/components/campaign/CreditRequestButton'
  * Diseño: réplica fiel de Downloads/creditosia (donut de uso + bento de
  * KPIs + tabla), diseño NexoMark. Glass SOLO en el modal de planes.
  */
-const QUOTA_DEFAULT = 100 // tokens_disponibles default del modelo User
+// Uso medido contra la cuota del plan (Freelance 100 por defecto).
+const cuotaDelPlan = (planKey) => (PLANS.find((p) => p.key === planKey) ?? PLANS[0]).creditos
 
 const ESTADO_ICON = {
   borrador: FileEdit,
@@ -105,8 +107,12 @@ export default function CreditsDetailPage() {
 
   const pctUsado = Math.max(
     0,
-    Math.min(100, Math.round(((QUOTA_DEFAULT - data.tokens_disponibles) / QUOTA_DEFAULT) * 100)),
+    Math.min(
+      100,
+      Math.round(((cuotaDelPlan(data.plan_key) - data.tokens_disponibles) / cuotaDelPlan(data.plan_key)) * 100),
+    ),
   )
+  const costo = costoGeneracion(data)
 
   return (
     <div className="space-y-6">
@@ -134,8 +140,9 @@ export default function CreditsDetailPage() {
                 </h2>
               </div>
               <p className="max-w-md text-sm text-on-surface-variant">
-                Cada crédito equivale a 1 generación o regeneración de IA exitosa. Al llegar a 0,
-                la creación se bloquea hasta que se añadan créditos a tu cuenta.
+                {creditosConGeneraciones(data.tokens_disponibles, costo)}. Cada generación o regeneración usa{' '}
+                {costo} créditos; editar, aprobar y publicar no gastan. Si el saldo no alcanza, la creación se
+                bloquea hasta que se añadan créditos.
               </p>
               <button
                 onClick={() => setShowPlanes(true)}

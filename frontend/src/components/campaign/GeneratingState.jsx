@@ -63,7 +63,7 @@ export default function GeneratingState({ titulo, onCancel }) {
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-hairline pt-5">
         <p className="text-sm text-on-surface-variant">
           Lleva <span className="font-semibold tabular-nums text-on-surface">{segundos} s</span>
-          {tarda ? '.' : ' · suele tardar entre 8 y 30 s.'} Ya se usó 1 crédito; si la IA falla, se devuelve.
+          {tarda ? '.' : ' · suele tardar entre 8 y 30 s.'} Ya se usaron 4 créditos; si la IA falla, se devuelven.
         </p>
         {onCancel && (
           <button

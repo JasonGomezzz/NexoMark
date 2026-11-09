@@ -10,6 +10,7 @@ import ProfilePhoto from '@/components/account/ProfilePhoto'
 import EmailChange, { SinContrasena } from '@/components/account/EmailChange'
 import GoogleLink from '@/components/account/GoogleLink'
 import { setAuthItem } from '../services/session'
+import { PLANS, costoGeneracion, creditosConGeneraciones } from '@/lib/credits'
 import AuthField from '@/components/auth/AuthField'
 
 /**
@@ -26,7 +27,8 @@ const ROLE_LABEL = {
   cliente: 'Cliente',
 }
 
-const QUOTA_DEFAULT = 100 // tokens_disponibles default del modelo User
+// La barra se mide contra la cuota del plan (Freelance 100 por defecto).
+const cuotaDelPlan = (planKey) => (PLANS.find((p) => p.key === planKey) ?? PLANS[0]).creditos
 
 export default function AccountSettingsPage() {
   const [user, setUser] = useState(null)
@@ -137,7 +139,8 @@ export default function AccountSettingsPage() {
 
   const usaCreditos = user.rol === 'marketero' || user.rol === 'superadmin'
   const tokens = user.tokens_disponibles ?? 0
-  const pct = Math.min(100, Math.round((tokens / QUOTA_DEFAULT) * 100))
+  const pct = Math.min(100, Math.round((tokens / cuotaDelPlan(user.plan_key)) * 100))
+  const costo = costoGeneracion(user)
   const nombreCambiado = nombre.trim() !== (user.nombre || '') && nombre.trim().length >= 2
   const errorNueva = tocados.nueva && newPassword.length < 8 ? 'Usa al menos 8 caracteres.' : undefined
   const errorConfirmar =
@@ -316,7 +319,7 @@ export default function AccountSettingsPage() {
                 Créditos de IA
               </h2>
               <span className="text-sm font-bold tabular-nums text-primary">
-                {tokens} / {QUOTA_DEFAULT}
+                {tokens} / {cuotaDelPlan(user.plan_key)}
               </span>
             </div>
 
@@ -324,19 +327,19 @@ export default function AccountSettingsPage() {
               role="progressbar"
               aria-valuenow={tokens}
               aria-valuemin={0}
-              aria-valuemax={QUOTA_DEFAULT}
+              aria-valuemax={cuotaDelPlan(user.plan_key)}
               aria-label="Créditos de IA disponibles"
               className="h-2.5 w-full overflow-hidden rounded-full bg-surface-container-high"
             >
               <div
-                className={`h-full rounded-full ${tokens === 0 ? 'bg-error' : 'bg-primary'}`}
+                className={`h-full rounded-full ${tokens < costo ? 'bg-error' : 'bg-primary'}`}
                 style={{ width: `${pct}%` }}
               />
             </div>
 
             <p className="mt-3 text-[13px] text-on-surface-variant">
-              1 crédito = 1 generación o regeneración exitosa de IA.{' '}
-              {tokens === 0 ? (
+              {creditosConGeneraciones(tokens, costo)}. Cada generación o regeneración usa {costo} créditos.{' '}
+              {tokens < costo ? (
                 <span className="font-semibold text-error">
                   Cuota agotada — pide un reset al administrador.
                 </span>

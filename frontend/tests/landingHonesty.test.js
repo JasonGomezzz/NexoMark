@@ -19,11 +19,16 @@ test('el flujo de la portada empieza por Dictar, está rotulado y no llama a ser
   assert.doesNotMatch(hero, /twitter|tiktok/i)
 })
 
+test('los precios de lanzamiento salen de lib/credits y se rotulan como tales', () => {
+  assert.match(pricing, /from '@\/lib\/credits'/)
+  assert.match(pricing, /Precio de lanzamiento/)
+  assert.match(pricing, /sin IGV/)
+  assert.match(pricing, /Pago simulado/)
+  assert.match(pricing, /Próximamente/)
+  assert.doesNotMatch(pricing, /Starter|Enterprise|'S\/ 99'/)
+})
+
 test('los datos inventados se conservan y se rotulan como ejemplo', () => {
-  assert.match(pricing, /'S\/ 99'/)
-  assert.match(pricing, /'S\/ 299'/)
-  assert.match(pricing, /Precio de ejemplo/)
-  assert.match(pricing, /Precios y planes de ejemplo/)
   assert.match(flow, /98% completado/)
   assert.match(login, /Generación 10× más rápida/)
   assert.match(login, /demo: true/)
