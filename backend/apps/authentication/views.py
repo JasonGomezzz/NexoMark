@@ -7,6 +7,7 @@ Token endpoints provistos por simplejwt directamente en urls.py.
 from typing import Any
 
 from rest_framework import status
+from rest_framework.exceptions import Throttled
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -23,6 +24,8 @@ from .serializers import (
     UserResponseSerializer,
 )
 from .models import AuthBrandContent
+from .password_reset import dar_formato_a_limite
+from .password_security import PasswordChangeThrottle, notify_password_changed
 from .throttles import RegisterRateThrottle
 
 
@@ -188,11 +191,26 @@ class ChangePasswordView(APIView):
     POST /api/auth/me/change-password/
 
     Cambia la contraseña del propio usuario. Exige la contraseña actual.
-    No invalida la sesión activa (token_version no cambia): el usuario
-    sigue logueado tras el cambio.
+    Sube token_version: se cierran todas las sesiones (access y refresh, en
+    Django y Spring), también la actual, y el cliente debe pedir iniciar sesión
+    de nuevo (`reauthentication_required`). Avisa al correo registrado, sin la
+    contraseña; si el correo falla, la contraseña igual queda cambiada.
+    Límite: 5 intentos por hora y cuenta y 20 por IP (cuentan aunque fallen).
     """
 
     permission_classes = [IsAuthenticated]
+    throttle_classes = [PasswordChangeThrottle]
+
+    def handle_exception(self, exc: Exception) -> Response:
+        response = super().handle_exception(exc)
+        if isinstance(exc, Throttled):
+            return dar_formato_a_limite(response, exc)
+        return response
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        response["Cache-Control"] = "no-store"
+        return response
 
     def post(self, request: Request) -> Response:
         """
@@ -210,9 +228,17 @@ class ChangePasswordView(APIView):
                 api_response(success=False, message="Datos inválidos.", data=serializer.errors),
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer.save()
+        user = serializer.save()
+        notificado = notify_password_changed(user.email)
+        mensaje = "Contraseña actualizada. Cerramos todas tus sesiones: inicia sesión con tu nueva contraseña."
+        if not notificado:
+            mensaje += " No se pudo enviar el aviso por correo; la contraseña sí se cambió."
         return Response(
-            api_response(success=True, message="Contraseña actualizada.", data={}),
+            api_response(
+                success=True,
+                message=mensaje,
+                data={"notification_sent": notificado, "reauthentication_required": True},
+            ),
             status=status.HTTP_200_OK,
         )
 

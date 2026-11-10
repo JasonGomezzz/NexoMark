@@ -205,6 +205,23 @@ class ConfirmacionSerializer(serializers.Serializer):
     new_password = serializers.CharField(max_length=128, write_only=True, trim_whitespace=False)
 
 
+def dar_formato_a_limite(response: Response, exc: Throttled) -> Response:
+    """Respuesta 429 de los límites propios: mensaje en español, `retry_after` y cabecera Retry-After."""
+    seconds = max(1, math.ceil(exc.wait or 60))
+    minutes = math.ceil(seconds / 60)
+    if seconds < 60:
+        duracion = f"{seconds} {'segundo' if seconds == 1 else 'segundos'}"
+    else:
+        duracion = f"{minutes} {'minuto' if minutes == 1 else 'minutos'}"
+    response.data = api_response(
+        success=False,
+        message=f"Demasiados intentos. Intenta nuevamente en {duracion}.",
+        data={"retry_after": seconds},
+    )
+    response["Retry-After"] = str(seconds)
+    return response
+
+
 class _RecoveryAPIView(APIView):
     """Vistas públicas: sin JWT y con límites propios en vez de los globales."""
 
@@ -214,18 +231,7 @@ class _RecoveryAPIView(APIView):
     def handle_exception(self, exc: Exception) -> Response:
         response = super().handle_exception(exc)
         if isinstance(exc, Throttled):
-            seconds = max(1, math.ceil(exc.wait or 60))
-            minutes = math.ceil(seconds / 60)
-            if seconds < 60:
-                duracion = f"{seconds} {'segundo' if seconds == 1 else 'segundos'}"
-            else:
-                duracion = f"{minutes} {'minuto' if minutes == 1 else 'minutos'}"
-            response.data = api_response(
-                success=False,
-                message=f"Demasiados intentos. Intenta nuevamente en {duracion}.",
-                data={"retry_after": seconds},
-            )
-            response["Retry-After"] = str(seconds)
+            return dar_formato_a_limite(response, exc)
         return response
 
 

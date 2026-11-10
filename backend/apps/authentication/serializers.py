@@ -10,12 +10,13 @@ from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 
-from .models import AuthBrandContent, FotoPerfil, User, UserRole
+from .models import AuthBrandContent, EmailChangeRequest, FotoPerfil, User, UserRole
 from .profile_avatar import normalizar_foto
 
 
@@ -148,12 +149,18 @@ class ChangePasswordSerializer(serializers.Serializer):
     Serializer para cambio de contraseña del propio usuario.
     Exige la contraseña actual (evita que una sesión robada cambie la clave
     sin conocerla) y valida la nueva con AUTH_PASSWORD_VALIDATORS.
+
+    Al guardar sube `token_version`: se cierran todas las sesiones (access y
+    refresh, en Django y Spring), también la actual. Portado de la rama de
+    Piero (70b3f60d).
     """
 
-    current_password = serializers.CharField(write_only=True)
+    current_password = serializers.CharField(write_only=True, max_length=128, trim_whitespace=False)
     new_password = serializers.CharField(
         write_only=True,
         min_length=8,
+        max_length=128,
+        trim_whitespace=False,
         error_messages={
             "min_length": "La nueva contraseña debe tener al menos 8 caracteres.",
         },
@@ -167,15 +174,27 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate_new_password(self, value: str) -> str:
-        """Aplica los validadores de Django a la nueva contraseña."""
-        validate_password(value)
+        """Aplica los validadores de Django (también los que miran los datos del usuario) y exige una distinta."""
+        user: User = self.context["request"].user
+        validate_password(value, user=user)
+        if user.check_password(value):
+            raise serializers.ValidationError("La nueva contraseña debe ser diferente a la actual.")
         return value
 
+    @transaction.atomic
     def save(self, **kwargs: Any) -> User:
-        """Setea la nueva contraseña encriptada y la persiste."""
-        user: User = self.context["request"].user
+        """Revalida con la fila bloqueada, cambia la contraseña y cierra todas las sesiones."""
+        sesion: User = self.context["request"].user
+        user = User.objects.select_for_update().get(pk=sesion.pk)
+        if not user.is_active or user.token_version != sesion.token_version:
+            raise AuthenticationFailed("La sesión ya no es válida. Inicia sesión nuevamente.")
+        if not user.check_password(self.validated_data["current_password"]):
+            raise serializers.ValidationError({"current_password": ["La contraseña actual es incorrecta."]})
         user.set_password(self.validated_data["new_password"])
-        user.save(update_fields=["password"])
+        user.token_version += 1  # cierra todas las sesiones (access y refresh)
+        user.save(update_fields=["password", "token_version", "fecha_actualizacion"])
+        # Un cambio de correo pendiente lo pudo iniciar quien tenía la sesión: no sobrevive al cambio.
+        EmailChangeRequest.objects.filter(usuario=user).delete()
         return user
 
 

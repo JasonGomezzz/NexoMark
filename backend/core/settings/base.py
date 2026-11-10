@@ -300,6 +300,9 @@ PASSWORD_RESET_TIMEOUT = 1800
 RECOVERY_EMAIL_COOLDOWN_SECONDS = 60
 RECOVERY_EMAIL_HOURLY_LIMIT = 5
 RECOVERY_IP_HOURLY_LIMIT = 20
+# Cambio de contraseña con sesión iniciada: intentos por hora (cuentan aunque fallen).
+PASSWORD_CHANGE_ACCOUNT_HOURLY_LIMIT = 5
+PASSWORD_CHANGE_IP_HOURLY_LIMIT = 20
 
 # ─────────────────────────────────────────────
 # META — publicación en Instagram y Facebook (Fase 3)
