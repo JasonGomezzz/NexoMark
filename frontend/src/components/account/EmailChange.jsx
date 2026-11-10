@@ -145,11 +145,12 @@ export default function EmailChange({ usuario }) {
             Cambiar correo
           </Button>
         )}
+        {/* Mientras se consulta si hay un cambio en curso, ocupa el lugar del botón: al llegar la
+            respuesta no se mueve nada (la fila que había debajo desaparecía y subía todo lo demás). */}
+        {pendiente === undefined && usuario.has_password && (
+          <span className="esqueleto block h-11 w-[139px] rounded-[10px]" aria-hidden="true" />
+        )}
       </div>
-
-      {pendiente === undefined && (
-        <div className="mt-4 h-10 rounded-lg esqueleto" aria-hidden="true" />
-      )}
 
       {falloCarga && (
         <p role="alert" className="mt-3 text-sm text-error">

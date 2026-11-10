@@ -7,6 +7,7 @@ import AuthField from '@/components/auth/AuthField'
 import GoogleIcon from '@/components/auth/GoogleIcon'
 import { cuentaApi } from '../../services/cuentaApi'
 import { googleApi } from '../../services/googleApi'
+import { LineasEsqueleto } from '@/components/ui/esqueleto'
 import { mensajeApi } from '../../services/cuenta'
 import { clearSession } from '../../services/session'
 
@@ -37,6 +38,16 @@ export default function GoogleLink({ usuario }) {
   }, [])
 
   const vinculado = Boolean(usuario.google_connected)
+  // Mientras se consulta si el servidor tiene Google, ocupa el lugar del bloque: antes aparecía de golpe
+  // y empujaba hacia abajo todo lo que había debajo.
+  if (!vinculado && configurado === null) {
+    return (
+      <div aria-hidden="true">
+        <span className="esqueleto block h-6 w-20 rounded" />
+        <LineasEsqueleto className="mt-1" lineas={2} movil={4} />
+      </div>
+    )
+  }
   if (!vinculado && !configurado) return null
 
   async function desvincular(e) {
