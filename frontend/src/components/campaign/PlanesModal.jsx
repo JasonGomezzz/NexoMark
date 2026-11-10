@@ -5,6 +5,7 @@ import { Info, X, Coins, Loader2, CircleCheck, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '../../services/api'
 import CreditRequestButton from '@/components/campaign/CreditRequestButton'
+import EnlaceLegal from '@/components/legal/EnlaceLegal'
 import { GENERATION_CREDIT_COST, PLANS, creditosConGeneraciones } from '@/lib/credits'
 
 /**
@@ -147,6 +148,11 @@ export default function PlanesModal({ open, onClose }) {
                 Ver mis créditos
               </button>
             </div>
+            <p className="mt-4 text-[13px] leading-relaxed text-on-surface-variant">
+              Compra simulada: no se cobra nada. <EnlaceLegal clave="compras">Condiciones de compra</EnlaceLegal> ·{' '}
+              <EnlaceLegal clave="arrepentimiento">Arrepentimiento de compra</EnlaceLegal> ·{' '}
+              <EnlaceLegal clave="reclamos">Reclamos</EnlaceLegal>
+            </p>
           </>
         ) : step === 'exito' ? (
           <div className="flex flex-col items-center gap-4 py-10">
@@ -278,6 +284,11 @@ export default function PlanesModal({ open, onClose }) {
 
             <p className="mt-4 text-center text-[13px] font-medium text-on-surface-variant">
               Pasarela de pago simulada — no se procesa ningún cargo real
+            </p>
+            <p className="mt-2 text-center text-[13px] leading-relaxed text-on-surface-variant">
+              No escribas tu tarjeta real: lo que pongas aquí no se envía ni se guarda; solo llega el plan elegido.{' '}
+              <EnlaceLegal clave="compras">Condiciones de compra</EnlaceLegal> ·{' '}
+              <EnlaceLegal clave="arrepentimiento">Arrepentimiento</EnlaceLegal>
             </p>
           </div>
         )}

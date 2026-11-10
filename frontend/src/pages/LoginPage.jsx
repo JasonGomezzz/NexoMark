@@ -10,6 +10,7 @@ import AuthField from '@/components/auth/AuthField'
 import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import GoogleAccess from '@/components/auth/GoogleAccess'
+import EnlaceLegal from '@/components/legal/EnlaceLegal'
 import { useAuthBrandContent } from '../hooks/useAuthBrandContent'
 import { destinoTrasLogin, setAuthItem, startSession } from '../services/session'
 
@@ -146,6 +147,11 @@ export default function LoginPage() {
               <Link to="/register" className="-my-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
                 Regístrate
               </Link>
+            </p>
+            <p className="mt-2 text-[13px] leading-relaxed text-on-surface-variant">
+              Al continuar aceptas los <EnlaceLegal clave="terminos">Términos de servicio</EnlaceLegal> y la{' '}
+              <EnlaceLegal clave="privacidad">Política de privacidad</EnlaceLegal>. ¿Dudas o reclamos?{' '}
+              <EnlaceLegal clave="reclamos">Escríbenos</EnlaceLegal>.
             </p>
           </div>
         </div>

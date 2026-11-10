@@ -7,6 +7,7 @@ import { ArrowLeft, Check, Mic, Users } from 'lucide-react'
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
 import AuthBrandPanel from '@/components/auth/AuthBrandPanel'
+import EnlaceLegal from '@/components/legal/EnlaceLegal'
 import AuthField from '@/components/auth/AuthField'
 import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
@@ -199,6 +200,12 @@ export default function RegisterPage() {
               <Button type="submit" size="lg" disabled={loading} className="w-full">
                 {loading ? 'Creando cuenta…' : 'Crear cuenta'}
               </Button>
+              <p className="text-[13px] leading-relaxed text-on-surface-variant">
+                Al crear tu cuenta, con tu correo o con Google, aceptas los{' '}
+                <EnlaceLegal clave="terminos">Términos de servicio</EnlaceLegal> y la{' '}
+                <EnlaceLegal clave="privacidad">Política de privacidad</EnlaceLegal>. Qué guarda la web:{' '}
+                <EnlaceLegal clave="cookies">cookies y almacenamiento</EnlaceLegal>.
+              </p>
             </form>
 
             <div className="mt-6">

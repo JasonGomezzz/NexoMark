@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { ButtonLink } from '@/components/ui/button'
+import { DOCUMENTOS_LEGALES, urlLegal } from '@/lib/legal'
 
 const LINKS = [
   { href: '#como-funciona', label: 'Cómo funciona' },
@@ -66,8 +67,22 @@ export default function LandingFooter() {
               NexoMark
             </span>
           </div>
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pb-8 pt-4 text-[13px] text-on-navy-muted">
+          <nav aria-label="Documentos legales" className="mt-6 flex flex-wrap gap-x-6 border-t border-cama-line pt-2 text-[13px]">
+            {DOCUMENTOS_LEGALES.map(({ clave, titulo }) => (
+              <a
+                key={clave}
+                href={urlLegal(clave)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center text-on-navy-muted transition-colors hover:text-on-navy"
+              >
+                {titulo}
+              </a>
+            ))}
+          </nav>
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-8 pt-2 text-[13px] text-on-navy-muted">
             <span>© {new Date().getFullYear()} NexoMark IA</span>
+            <span>Proyecto académico de Tecsup · la compra de créditos es simulada</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react'
 import { ButtonLink } from '@/components/ui/button'
+import EnlaceLegal from '@/components/legal/EnlaceLegal'
 import { cn } from '@/lib/utils'
 import { GENERATION_CREDIT_COST, PLANS as CREDIT_PLANS, creditosConGeneraciones } from '@/lib/credits'
 
@@ -77,7 +78,10 @@ export default function PricingSection() {
             </p>
             <p className="mt-4 inline-flex items-start gap-2 rounded-lg bg-tertiary-container px-3 py-2 text-[15px] font-medium text-on-tertiary-container">
               <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              Precios de lanzamiento por mes, sin IGV. Pago simulado: todavía no hay cobro real.
+              <span>
+                Precios de lanzamiento por mes, sin IGV. Pago simulado: todavía no hay cobro real.{' '}
+                <EnlaceLegal clave="compras" className="text-inherit">Condiciones de compra</EnlaceLegal>
+              </span>
             </p>
           </div>
         </div>
