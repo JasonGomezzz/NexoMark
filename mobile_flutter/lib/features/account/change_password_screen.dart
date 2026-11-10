@@ -40,9 +40,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     });
     try {
       final mensaje = await ref.read(authRepositoryProvider).changePassword(_actual.text, _nueva.text);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
-      Navigator.of(context).pop();
+      // El servidor cerró todas las sesiones (también esta): se vuelve al inicio con el aviso.
+      await ref.read(sessionProvider.notifier).logout(mensaje);
     } on ApiException catch (e) {
       String? campo;
       for (final v in e.data.values) {
