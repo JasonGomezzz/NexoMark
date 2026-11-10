@@ -15,6 +15,13 @@
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
+/* Alto de la ventana: el panel de marca de las pantallas de acceso nunca hace scroll,
+   se compacta según el alto disponible (medio: sin descripciones salvo la primera;
+   corto: sin datos de ejemplo ni descripciones; mínimo: sin testimonio). */
+@custom-variant alto-medio (@media (max-height: 1100px));
+@custom-variant alto-corto (@media (max-height: 820px));
+@custom-variant alto-minimo (@media (max-height: 700px));
+
 @theme {
   /* --- Tipografía --- */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;

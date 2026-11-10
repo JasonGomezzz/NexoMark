@@ -60,7 +60,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen bg-background">
       <AppToaster />
-      <main className="flex min-h-screen flex-1 flex-col px-4 py-5 sm:px-8 lg:px-16">
+      <main className="flex min-h-screen flex-1 flex-col px-4 py-5 sm:px-8 lg:px-16 alto-corto:py-3">
         <div className="flex items-center justify-between">
           <Link
             to="/"
@@ -72,19 +72,20 @@ export default function LoginPage() {
           <ThemeToggle />
         </div>
 
-        <div className="flex flex-1 items-center justify-center py-10">
+        {/* En ventanas bajas (laptops) el formulario se compacta para caber sin scroll. */}
+        <div className="flex flex-1 items-center justify-center py-10 alto-corto:py-3">
           <div className="w-full max-w-[26rem]">
             <Link to="/" aria-label="NexoMark IA, ir al inicio" className="inline-block text-2xl">
               <BrandLogo />
             </Link>
-            <h1 className="mt-10 text-[2.375rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface">
+            <h1 className="mt-10 text-[2.375rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface alto-corto:mt-5 alto-corto:text-[2rem]">
               Inicia sesión
             </h1>
-            <p className="mt-2 text-base text-on-surface-variant">
+            <p className="mt-2 text-base text-on-surface-variant alto-minimo:hidden">
               Entra a tu panel para dictar campañas, revisarlas o ver cómo rinden.
             </p>
 
-            <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-5 alto-corto:mt-5 alto-corto:space-y-3.5">
               <AuthField
                 id="email"
                 type="email"
@@ -136,11 +137,11 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6">
+            <div className="mt-6 alto-corto:mt-4">
               <GoogleAccess proposito="login" onSesion={entrarConGoogle} />
             </div>
 
-            <p className="mt-8 text-[15px] text-on-surface-variant">
+            <p className="mt-8 text-[15px] text-on-surface-variant alto-corto:mt-4">
               ¿No tienes una cuenta?{' '}
               <Link to="/register" className="-my-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline">
                 Regístrate

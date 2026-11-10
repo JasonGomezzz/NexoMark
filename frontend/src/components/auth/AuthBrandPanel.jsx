@@ -34,14 +34,17 @@ export default function AuthBrandPanel({
   const ejemplos = highlights.filter((h) => h.demo)
 
   return (
-    <aside className="relative hidden min-h-screen w-[46%] max-w-[680px] shrink-0 flex-col gap-10 overflow-hidden bg-cama px-12 py-12 text-on-navy md:flex lg:px-16">
+    // Pegado a la ventana (alto exacto, sin scroll propio): si el formulario de al lado es
+    // largo, la página se desplaza y el panel se queda. Lo que no cabe se compacta por alto
+    // con las variantes alto-medio / alto-corto / alto-minimo (index.css).
+    <aside className="sticky top-0 hidden h-dvh w-[46%] max-w-[680px] shrink-0 flex-col justify-between gap-8 self-start overflow-hidden bg-cama px-12 py-12 text-on-navy md:flex lg:px-16 alto-medio:gap-6 alto-medio:py-8">
       <div>
-        <NexoN encajar retraso={0.15} className="h-14 w-14" titulo="NexoMark IA" />
+        <NexoN encajar retraso={0.15} className="h-14 w-14 alto-corto:h-11 alto-corto:w-11" titulo="NexoMark IA" />
         <motion.p
           initial={{ opacity: 0, transform: 'translateY(8px)' }}
           animate={{ opacity: 1, transform: 'translateY(0px)' }}
           transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1], delay: 0.3 }}
-          className="mt-8 max-w-md font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.03em] text-balance"
+          className="mt-8 max-w-md font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.03em] text-balance alto-medio:mt-6 alto-corto:mt-4 alto-corto:text-[2.1rem]"
         >
           De la idea dictada al post publicado.
         </motion.p>
@@ -49,16 +52,21 @@ export default function AuthBrandPanel({
 
       <ol className="max-w-md divide-y divide-cama-line border-y border-cama-line" aria-label="Orden de trabajo de una campaña">
         {ESTACIONES.map(({ nombre, icono: Icono, desc }, index) => (
-          <li key={nombre} className="grid grid-cols-[36px_1fr] gap-4 py-4">
+          <li key={nombre} className="grid grid-cols-[36px_1fr] items-start gap-4 py-4 alto-medio:py-3 alto-corto:py-2.5">
             <span className={`casilla mt-0.5 h-9 w-9 ${index === 0 ? 'casilla-actual' : ''}`} aria-hidden="true">
               <Icono className="h-[18px] w-[18px]" strokeWidth={index === 0 ? 2.25 : 1.75} />
             </span>
             <div>
               <p className="font-display text-lg font-extrabold leading-tight">{nombre}</p>
-              <p className="mt-1 text-[15px] leading-relaxed text-on-navy-muted">{desc}</p>
+              {/* En ventanas bajas solo se conserva la descripción del primer paso. */}
+              <p
+                className={`mt-1 text-[15px] leading-relaxed text-on-navy-muted ${index === 0 ? 'alto-corto:hidden' : 'alto-medio:hidden'}`}
+              >
+                {desc}
+              </p>
               {nombre === 'Generar' &&
                 ejemplos.map(({ titulo }) => (
-                  <p key={titulo} className="mt-2 flex flex-wrap items-center gap-2 text-[15px] text-on-navy">
+                  <p key={titulo} className="mt-2 flex flex-wrap items-center gap-2 text-[15px] text-on-navy alto-corto:hidden">
                     {titulo}
                     <span className="demo-tag demo-tag-on-navy">
                       <Info className="h-3 w-3" aria-hidden="true" />
@@ -71,13 +79,13 @@ export default function AuthBrandPanel({
         ))}
       </ol>
 
-      <figure className="relative mt-auto max-w-md pt-2">
+      <figure className="relative max-w-md pt-2 alto-minimo:hidden">
         <span className="demo-tag demo-tag-on-navy">
           <Info className="h-3 w-3" aria-hidden="true" />
           Testimonio de ejemplo, no es un cliente real
         </span>
-        <blockquote className="mt-4 text-[17px] font-medium leading-relaxed">«{quote}»</blockquote>
-        <figcaption className="mt-4 flex items-center gap-3">
+        <blockquote className="mt-4 text-[17px] font-medium leading-relaxed alto-corto:mt-3 alto-corto:text-base">«{quote}»</blockquote>
+        <figcaption className="mt-4 flex items-center gap-3 alto-corto:mt-3">
           <span
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-banda-2 text-sm font-bold text-on-navy"
             aria-hidden="true"
