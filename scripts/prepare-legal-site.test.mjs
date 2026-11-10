@@ -7,7 +7,10 @@ import { fileURLToPath } from 'node:url'
 import { prepareLegalSite, ROOT_FILES } from './prepare-legal-site.mjs'
 
 const REAL_SOURCE = fileURLToPath(new URL('../legal-site/', import.meta.url))
-const PAGES = ['index.html', 'privacidad.html', 'terminos.html', 'eliminacion-datos.html']
+const PAGES = [
+  'index.html', 'privacidad.html', 'terminos.html', 'cookies.html', 'compras.html', 'arrepentimiento.html',
+  'reclamos.html', 'responsables.html', 'eliminacion-datos.html',
+]
 
 async function fixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'nexomark-legal-test-'))
@@ -33,7 +36,7 @@ test('explicit draft preparation copies only the allowed public files', async ()
   const input = await fixture()
   const result = await prepareLegalSite({ ...input, allowDrafts: true })
   assert.equal(result.drafts, true)
-  assert.deepEqual((await readdir(input.target)).sort(), ['.nojekyll', 'eliminacion-datos.html', 'historial', 'index.html', 'privacidad.html', 'styles.css', 'terminos.html'])
+  assert.deepEqual((await readdir(input.target)).sort(), ['.nojekyll', ...PAGES, 'historial', 'styles.css'].sort())
   await assert.rejects(access(path.join(input.target, '.env')))
   await assert.rejects(access(path.join(input.target, 'README.md')))
 })
@@ -64,5 +67,28 @@ test('the real legal site prepares with valid links and the deletion page', asyn
   for (const name of ['index.html', 'privacidad.html', 'terminos.html']) {
     const html = await readFile(path.join(target, name), 'utf8')
     assert.match(html, /href="eliminacion-datos\.html"/, `${name} debe enlazar la eliminación de datos`)
+  }
+})
+test('todos los documentos actuales se enlazan entre sí en la navegación y nada apunta a una versión vieja', async () => {
+  const destinos = ['privacidad.html', 'terminos.html', 'cookies.html', 'compras.html', 'reclamos.html', 'responsables.html', 'eliminacion-datos.html']
+  for (const name of PAGES.filter(page => page !== 'index.html')) {
+    const html = await readFile(path.join(REAL_SOURCE, name), 'utf8')
+    const nav = html.match(/<nav aria-label="Documentos">(.*?)<\/nav>/s)?.[1] ?? ''
+    for (const destino of destinos) assert.ok(nav.includes(`href="${destino}"`), `${name} debe enlazar ${destino} en la navegación`)
+    assert.doesNotMatch(html, /BORRADOR v0\.1[0-3] /, `${name} conserva el aviso de una versión vieja`)
+  }
+})
+test('los documentos nuevos dicen que la compra es simulada y no inventan datos de empresa', async () => {
+  const compras = await readFile(path.join(REAL_SOURCE, 'compras.html'), 'utf8')
+  assert.match(compras, /La compra es simulada: no se cobra nada/)
+  const responsables = await readFile(path.join(REAL_SOURCE, 'responsables.html'), 'utf8')
+  assert.match(responsables, /no es una empresa ni un servicio comercial/)
+  assert.doesNotMatch(responsables, /RUC\s*(N\.?°|:)?\s*\d{11}/)
+})
+test('cada historial v0.13 conserva enlaces válidos dentro del sitio', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'nexomark-legal-historial-'))
+  const result = await prepareLegalSite({ source: REAL_SOURCE, target: path.join(root, 'output'), allowDrafts: true })
+  for (const name of ['historial/privacidad-v0.13-2026-10-22.html', 'historial/terminos-v0.13-2026-10-22.html']) {
+    assert.ok(result.files.includes(name), `${name} falta en el sitio`)
   }
 })

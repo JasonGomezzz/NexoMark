@@ -3,7 +3,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // eliminacion-datos.html is the "data deletion instructions URL" Meta asks for.
-export const ROOT_FILES = ['index.html', 'privacidad.html', 'terminos.html', 'eliminacion-datos.html', 'styles.css']
+export const ROOT_FILES = [
+  'index.html', 'privacidad.html', 'terminos.html', 'cookies.html', 'compras.html', 'arrepentimiento.html',
+  'reclamos.html', 'responsables.html', 'eliminacion-datos.html', 'styles.css',
+]
 
 export async function prepareLegalSite({ source, target, allowDrafts = false }) {
   source = path.resolve(source)

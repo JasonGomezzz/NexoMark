@@ -21,3 +21,7 @@ h3 { line-height: 1.35; margin-top: 24px; font-size: 1.05rem; }
 table { width: 100%; border-collapse: collapse; font-size: .95rem; }
 th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid #c9dadd; }
 th { background: #f7fbfb; font-weight: 650; }
+code { font-size: .92em; background: #f7fbfb; border: 1px solid #c9dadd; border-radius: 4px; padding: 0 4px; }
+.boton { display: inline-block; padding: 12px 22px; background: #087b75; color: #fff; border-radius: 10px; font-weight: 650; text-decoration: none; }
+.boton:hover { background: #086a65; color: #fff; }
+.boton:focus-visible { outline: 3px solid #087b75; outline-offset: 4px; }

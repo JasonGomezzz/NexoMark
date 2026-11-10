@@ -1,5 +1,32 @@
 # Historial de documentos — NexoMark
 
+## Borrador v0.14 — 10 de noviembre de 2026
+
+- Conservada la v0.13 de privacidad y términos en `historial/`.
+- Documentos nuevos (todos borradores sin asesoría legal; lo que no se puede afirmar queda como
+  «pendiente»): `cookies.html` (política de cookies y almacenamiento), `compras.html` (condiciones de
+  compra de créditos), `arrepentimiento.html` (con botón que abre un correo ya preparado),
+  `reclamos.html` (canal de reclamos y quejas por correo) y `responsables.html` (quiénes son los
+  responsables y cómo contactarlos). La navegación de los documentos actuales enlaza los siete.
+- Texto contrastado con el código de `remejora` al 09/11:
+  - Créditos (`frontend/src/lib/credits.js`): 4 créditos por generación o regeneración (antes decía 1);
+    planes Freelance S/59 · 100 créditos, Agencia S/149 · 400 y Agencia Plus S/299 · 1000 (próximamente),
+    mensuales y sin IGV; 100 créditos de prueba por cuenta; la generación fallida devuelve los créditos.
+  - Compra simulada (`PlanesModal.jsx`, `backend/apps/campaigns/views.py`): el formulario pide datos de
+    tarjeta pero solo se valida el formato en el navegador; el servidor recibe únicamente `plan`. Los
+    términos v0.13 decían «no tiene precio» y «no se piden datos de pago»; se corrigieron.
+  - Almacenamiento (`frontend/src/services/session.js`, `CampaignDetailPage.jsx`, `useTheme.js`): sesión en
+    `sessionStorage` o `localStorage` (con «Mantener sesión iniciada»), tema en `localStorage` y borrador
+    local del texto de una campaña (`campaign_<id>_draft`). La web no usa `document.cookie`; solo el panel
+    de administración de Django usa cookies de sesión y CSRF.
+  - Google Fonts: `frontend/index.html` pide las tipografías a `fonts.googleapis.com`; antes no se decía.
+- Pendientes que decidir con los responsables: plazo de respuesta a reclamos, conservación de los
+  mensajes, si corresponde un libro de reclamaciones formal, plazo de arrepentimiento si algún día se
+  cobra, vigencia de los créditos, razón social y RUC si el proyecto se constituye como empresa, y
+  alojar las tipografías en el propio sitio.
+- Los textos se sirven también desde la web en `/legal/` (copia en `frontend/public/legal/`, generada con
+  `npm run legal:sync` en `frontend/`; un test comprueba que no se desfasen).
+
 ## Borrador v0.13 — 22 de octubre de 2026
 
 - Conservada la v0.12 de privacidad y términos en `historial/` (a pedido; hasta ahora solo estaba la
