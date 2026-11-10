@@ -189,9 +189,15 @@ export default function GoogleAccess({ proposito = 'login', rol, rolEtiqueta, on
           style={{ width: ancho }}
           className="absolute inset-y-0 left-1/2 -translate-x-1/2 rounded-[4px] esqueleto"
         />
+        {/* El iframe de Google se dibuja en esquema claro. Si la página está en oscuro
+            (color-scheme: dark), el navegador le pinta detrás un fondo blanco opaco:
+            el cuadro blanco alrededor del botón. Con el contenedor en "light" los dos
+            esquemas coinciden y el iframe queda transparente; el botón mantiene su tema
+            (filled_black / outline) porque lo decide Google, no color-scheme. */}
         <div
           ref={contenedor}
           aria-busy={fase === 'verificando'}
+          style={{ colorScheme: 'light' }}
           className={`relative flex min-h-10 justify-center ${fase === 'verificando' ? 'pointer-events-none opacity-40' : ''}`}
         />
         {fase === 'verificando' && (

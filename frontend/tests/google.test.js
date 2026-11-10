@@ -59,3 +59,10 @@ test('Google access never stores the ID token and hides itself without a client 
   // Las rutas públicas de Google van sin el JWT de la sesión.
   assert.doesNotMatch(servicio, /from '\.\/api'/)
 })
+
+test('the Google button container stays in the light color scheme so dark mode has no white box', () => {
+  // El iframe de Google es claro: con la página en color-scheme dark el navegador le pinta
+  // un fondo blanco opaco detrás. El contenedor del botón fuerza "light" para evitarlo.
+  const componente = readFileSync(new URL('../src/components/auth/GoogleAccess.jsx', import.meta.url), 'utf8')
+  assert.match(componente, /ref=\{contenedor\}[^>]*\n?[^>]*style=\{\{ colorScheme: 'light' \}\}/s)
+})
