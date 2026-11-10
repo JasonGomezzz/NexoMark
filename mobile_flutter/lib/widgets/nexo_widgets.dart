@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:flutter/cupertino.dart' show CupertinoDialogAction;
+import 'package:flutter/cupertino.dart'
+    show CupertinoDialogAction, CupertinoDialogRoute, CupertinoDynamicColor, kCupertinoModalBarrierColor;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
@@ -309,6 +310,12 @@ class NetworkChip extends StatelessWidget {
 
 /// Confirmación nativa: alerta de iOS en iPhone y diálogo Material en Android.
 /// Solo para decisiones que de verdad deben interrumpir.
+///
+/// Si detrás de la decisión hay un trabajo (cerrar sesión llama al servidor),
+/// pásalo en [alConfirmar]: al confirmar el diálogo no se cierra, el botón pasa
+/// a [accionOcupada] con un indicador y no se puede cancelar ni descartar hasta
+/// que el trabajo termine. Si falla, el diálogo se queda abierto con el motivo.
+/// En Material el foco inicial está en «Cancelar»: confirmar exige un gesto a propósito.
 Future<bool> confirmarAccion(
   BuildContext context, {
   required String titulo,
@@ -316,35 +323,155 @@ Future<bool> confirmarAccion(
   required String accion,
   String cancelar = 'Cancelar',
   bool destructivo = false,
+  Future<void> Function()? alConfirmar,
+  String? accionOcupada,
 }) async {
-  final ios = Theme.of(context).platform == TargetPlatform.iOS;
-  Widget boton(BuildContext ctx, String texto, bool valor, {bool principal = false}) {
-    void cerrar() => Navigator.pop(ctx, valor);
-    if (ios) {
-      return CupertinoDialogAction(
-        isDefaultAction: principal && !destructivo,
-        isDestructiveAction: principal && destructivo,
-        onPressed: cerrar,
-        child: Text(texto),
+  Widget dialogo(BuildContext _) => _DialogoConfirmar(
+        titulo: titulo,
+        mensaje: mensaje,
+        accion: accion,
+        cancelar: cancelar,
+        destructivo: destructivo,
+        alConfirmar: alConfirmar,
+        accionOcupada: accionOcupada ?? accion,
       );
+  final ios = Theme.of(context).platform == TargetPlatform.iOS;
+  final r = ios && Motion.reduced(context)
+      // La alerta de iOS entra escalando de 1.3 a 1; con «reducir movimiento» solo se funde, como las del sistema.
+      ? await Navigator.of(context, rootNavigator: true).push(
+          CupertinoDialogRoute<bool>(
+            context: context,
+            builder: dialogo,
+            barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+            barrierColor: CupertinoDynamicColor.resolve(kCupertinoModalBarrierColor, context),
+            transitionDuration: Motion.llegada,
+            transitionBuilder: (_, animation, _, child) =>
+                FadeTransition(opacity: CurvedAnimation(parent: animation, curve: Motion.easeOut), child: child),
+          ),
+        )
+      : await showAdaptiveDialog<bool>(context: context, builder: dialogo);
+  return r ?? false;
+}
+
+class _DialogoConfirmar extends StatefulWidget {
+  const _DialogoConfirmar({
+    required this.titulo,
+    required this.mensaje,
+    required this.accion,
+    required this.cancelar,
+    required this.destructivo,
+    required this.accionOcupada,
+    this.alConfirmar,
+  });
+
+  final String titulo;
+  final String mensaje;
+  final String accion;
+  final String cancelar;
+  final bool destructivo;
+  final String accionOcupada;
+  final Future<void> Function()? alConfirmar;
+
+  @override
+  State<_DialogoConfirmar> createState() => _DialogoConfirmarState();
+}
+
+class _DialogoConfirmarState extends State<_DialogoConfirmar> {
+  bool _ocupado = false;
+  String? _fallo;
+
+  Future<void> _confirmar() async {
+    final trabajo = widget.alConfirmar;
+    if (trabajo == null) return Navigator.pop(context, true);
+    setState(() {
+      _ocupado = true;
+      _fallo = null;
+    });
+    try {
+      await trabajo();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _ocupado = false;
+          _fallo = 'No se pudo completar. Inténtalo otra vez.';
+        });
+      }
+      return;
     }
-    if (!principal) return TextButton(onPressed: cerrar, child: Text(texto));
-    return FilledButton(
-      onPressed: cerrar,
-      style: destructivo ? FilledButton.styleFrom(backgroundColor: ctx.colors.error, foregroundColor: ctx.colors.onError) : null,
-      child: Text(texto),
+    // Si la sesión se cerró, el router ya pudo quitar este diálogo con su pantalla.
+    if (mounted) Navigator.pop(context, true);
+  }
+
+  /// Indicador del botón principal mientras trabaja. Con «reducir movimiento» no
+  /// se dibuja (gira sin parar): el texto «…» ya dice que está en curso.
+  Widget _contenidoPrincipal(BuildContext context) {
+    if (!_ocupado) return Text(widget.accion);
+    return Semantics(
+      liveRegion: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!Motion.reduced(context)) ...[
+            const SizedBox.square(dimension: 18, child: CircularProgressIndicator.adaptive(strokeWidth: 2.5)),
+            const SizedBox(width: 10),
+          ],
+          Flexible(child: Text(widget.accionOcupada)),
+        ],
+      ),
     );
   }
 
-  final r = await showAdaptiveDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog.adaptive(
-      title: Text(titulo),
-      content: Text(mensaje),
-      actions: [boton(ctx, cancelar, false), boton(ctx, accion, true, principal: true)],
-    ),
-  );
-  return r ?? false;
+  @override
+  Widget build(BuildContext context) {
+    final ios = Theme.of(context).platform == TargetPlatform.iOS;
+    final destructivo = widget.destructivo;
+    final VoidCallback? cancelar = _ocupado ? null : () => Navigator.pop(context, false);
+    final VoidCallback? confirmar = _ocupado ? null : _confirmar;
+    final principal = _contenidoPrincipal(context);
+
+    final List<Widget> acciones = ios
+        ? [
+            CupertinoDialogAction(onPressed: cancelar, child: Text(widget.cancelar)),
+            CupertinoDialogAction(
+              isDefaultAction: !destructivo,
+              isDestructiveAction: destructivo,
+              onPressed: confirmar,
+              child: principal,
+            ),
+          ]
+        : [
+            TextButton(autofocus: true, onPressed: cancelar, child: Text(widget.cancelar)),
+            FilledButton(
+              onPressed: confirmar,
+              style: destructivo
+                  ? FilledButton.styleFrom(backgroundColor: context.colors.error, foregroundColor: context.colors.onError)
+                  : null,
+              child: principal,
+            ),
+          ];
+
+    return PopScope(
+      canPop: !_ocupado,
+      child: AlertDialog.adaptive(
+        title: Text(widget.titulo),
+        content: _fallo == null
+            ? Text(widget.mensaje)
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: ios ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                children: [
+                  Text(widget.mensaje),
+                  const SizedBox(height: 12),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(_fallo!, style: TextStyle(color: context.colors.error, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+        actions: acciones,
+      ),
+    );
+  }
 }
 
 // ── Superficies ────────────────────────────────────────────
