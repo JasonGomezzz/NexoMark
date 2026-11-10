@@ -98,39 +98,6 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  android:
-    name: Android unit tests and debug APK
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
-        with:
-          distribution: jetbrains
-          java-version: '21'
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
-        with:
-          validate-wrappers: true
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - name: Ensure the existing Android SDK target is installed
-        # sdkmanager is not on PATH in the hosted runner; resolve it from the SDK.
-        run: |
-          sdkmanager="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
-          test -x "$sdkmanager"
-          "$sdkmanager" 'platforms;android-36' 'build-tools;36.0.0'
-      - name: Test and assemble with the checked-in Gradle wrapper
-        working-directory: mobile
-        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
-      - name: Collect Android test reports
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: android-tests
-          path: mobile/app/build/test-results/testDebugUnitTest/TEST-*.xml
-          retention-days: 7
-
   workflows:
     name: n8n JSON and embedded-secret checks
     runs-on: ubuntu-24.04

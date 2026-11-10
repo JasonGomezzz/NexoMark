@@ -58,18 +58,6 @@ VITE_API_URL=http://127.0.0.1:8000 VITE_USER_API_URL=http://127.0.0.1:8080 npm r
 
 Se usa `package-lock.json` y las pruebas Node ya existentes. El build de CI fija URLs locales y no se publica. El aviso de tamaño de bundle permanece visible.
 
-## Android
-
-SDK Android 36/build-tools 36.0.0 y JVM JetBrains 21, según los criterios Gradle existentes. El runner Ubuntu provee `ANDROID_HOME`; localmente definirlo si no existe `mobile/local.properties`.
-
-Desde `mobile/`:
-
-```sh
-./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
-```
-
-Se conserva el wrapper Gradle 9.4.1 y su checksum. El JAR del wrapper, restaurado en el incremento anterior, debe incluirse en la futura base publicada. CI valida el wrapper y guarda JUnit; no firma releases, publica APK ni ejecuta emulador. `--rerun-tasks` permite comprobar localmente sin reutilizar resultados de tareas.
-
 ## n8n y sintaxis del workflow CI
 
 Desde la raíz:

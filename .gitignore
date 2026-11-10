@@ -39,10 +39,9 @@ CLAUDE.md
 .ai-context/
 .playwright-mcp/
 
-# Mobile
-mobile/.gradle/
-mobile/build/
-mobile/local.properties
+# App Android en Kotlin: retirada del repositorio el 10/11/2026 (queda en el historial y en una copia local).
+# Si se restaura la copia local en mobile/, que no se versione por error.
+/mobile/
 
 # Java / Spring Boot
 springboot/target/
