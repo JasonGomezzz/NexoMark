@@ -17,6 +17,7 @@ import StatusBadge from '@/components/StatusBadge'
 import PlanesModal from '@/components/campaign/PlanesModal'
 import { PLANS, costoGeneracion, creditosConGeneraciones } from '@/lib/credits'
 import CreditRequestButton from '@/components/campaign/CreditRequestButton'
+import { LineasEsqueleto } from '@/components/ui/esqueleto'
 
 /**
  * Detalle de créditos de IA (solo marketero/superadmin — ruta /credits).
@@ -40,7 +41,150 @@ const ESTADO_ICON = {
   rechazado: CircleAlert,
 }
 
+function Encabezado() {
+  return (
+    <header>
+      <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Créditos de IA</h1>
+      <p className="mt-2 text-base text-on-surface-variant">
+        Gestión y detalle de consumo de tu cuenta.
+      </p>
+    </header>
+  )
+}
+
+function NotaAdministrador() {
+  return (
+    <p className="flex items-center gap-2 text-sm text-on-surface-variant">
+      <ShieldQuestion className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+      ¿Necesitas más créditos? Pídelos al administrador: el SuperAdmin revisa la solicitud desde el
+      panel de Usuarios. No hay renovación automática por ciclo de facturación.
+    </p>
+  )
+}
+
+const FILAS_ESQUELETO = 6
+const KPIS = [
+  [Coins, 'Consumidos este mes'],
+  [Megaphone, 'Campañas generadas'],
+  [TrendingUp, 'Promedio / campaña'],
+]
+
+/**
+ * La forma de «Créditos de IA» mientras llega el detalle. Los títulos y rótulos son los de
+ * siempre; las cifras y las filas del historial son esqueleto con la medida del contenido real.
+ * El historial real trae todas las campañas: aquí van unas pocas filas, que llenan la pantalla.
+ * `conPedido`: el marketero que puede pedir créditos tiene un botón más bajo «Ver planes».
+ */
+function EsqueletoCreditos({ conPedido }) {
+  return (
+    <div role="status" aria-busy="true" aria-label="Cargando tus créditos" className="space-y-6">
+      <Encabezado />
+
+      <section className="grid grid-cols-1 gap-x-10 gap-y-6 lg:grid-cols-3">
+        <div className="regla relative pt-6 lg:col-span-2">
+          <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <div className="flex-1 space-y-4">
+              <div>
+                <p className="text-[13px] font-semibold text-outline">Saldo disponible</p>
+                <div className="mt-2 flex h-14 items-center">
+                  <span className="esqueleto block h-10 w-36 rounded-[8px]" />
+                </div>
+              </div>
+              <LineasEsqueleto lineas={6} movil={5} className="max-w-md" />
+              {/* Un relleno y no un margen: el botón real es en línea y su margen no se funde con el de arriba. */}
+              <div className="pt-2">
+                <span className="esqueleto block h-11 w-[146px] rounded-[10px]" />
+              </div>
+              {conPedido && (
+                <div className="py-2">
+                  <span className="esqueleto block h-11 w-[265px] max-w-full rounded-[10px]" />
+                </div>
+              )}
+            </div>
+
+            <div className="w-full max-w-xs shrink-0">
+              <div className="flex h-5 items-center justify-between text-sm">
+                <span className="text-on-surface-variant">Usado de la cuota inicial</span>
+                <span className="esqueleto block h-3 w-9 rounded" />
+              </div>
+              <div className="esqueleto mt-2 h-2.5 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        <div className="regla divide-y divide-hairline pt-2">
+          {KPIS.map(([Icon, label], i) => (
+            <div key={label} className="flex items-baseline justify-between gap-4 py-4">
+              <p className="flex items-center gap-2 text-sm text-on-surface-variant">
+                <Icon className="h-4 w-4 text-outline" aria-hidden="true" />
+                {label}
+              </p>
+              <span className={`flex items-center ${i === KPIS.length - 1 ? 'h-[33px]' : 'h-8'}`}>
+                <span className="esqueleto block h-6 w-10 rounded" />
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="regla pt-6">
+        <h2 className="text-2xl font-extrabold text-on-surface">Historial de consumo</h2>
+
+        <ul className="mt-4 divide-y divide-hairline border-y border-hairline sm:hidden">
+          {Array.from({ length: FILAS_ESQUELETO }, (_, i) => (
+            <li key={i} className="py-3">
+              <LineasEsqueleto alto={22.5} ancho="w-4/5" />
+              <div className="mt-1.5 flex h-[30px] items-center gap-3">
+                <span className="esqueleto block h-3 w-20 rounded" />
+                <span className="esqueleto block h-3 w-16 rounded" />
+                <span className="esqueleto block h-6 w-24 rounded-full" />
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 hidden overflow-x-auto sm:block">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-outline-variant text-[13px] text-on-surface-variant">
+                <th className="py-3 pr-4 font-semibold">Campaña</th>
+                <th className="px-4 py-3 font-semibold">Fecha</th>
+                <th className="px-4 py-3 text-right font-semibold">Créditos</th>
+                <th className="py-3 pl-4 font-semibold">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: FILAS_ESQUELETO }, (_, i) => (
+                <tr key={i} className="border-b border-hairline last:border-0">
+                  <td className="py-3 pr-4">
+                    <div className="flex h-[26.6px] items-center gap-3">
+                      <span className="esqueleto block h-4 w-4 shrink-0 rounded" />
+                      <span className="esqueleto block h-3 w-80 rounded" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="esqueleto block h-3 w-20 rounded" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="esqueleto ml-auto block h-3 w-6 rounded" />
+                  </td>
+                  <td className="py-3 pl-4">
+                    <span className="esqueleto block h-[26.6px] w-28 rounded-full" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <NotaAdministrador />
+    </div>
+  )
+}
+
 export default function CreditsDetailPage() {
+  // Misma condición con la que CreditRequestButton decide si se muestra (lee el rol guardado en el navegador).
+  const conPedido = localStorage.getItem('user_role') === 'marketero'
   const location = useLocation()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -76,15 +220,7 @@ export default function CreditsDetailPage() {
     return () => window.removeEventListener('credits-updated', onCreditsUpdated)
   }, [])
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 w-64 rounded esqueleto" />
-        <div className="h-40 rounded-[10px] esqueleto" />
-        <div className="h-64 rounded-[10px] esqueleto" />
-      </div>
-    )
-  }
+  if (loading) return <EsqueletoCreditos conPedido={conPedido} />
 
   if (error || !data) {
     return (
@@ -118,12 +254,7 @@ export default function CreditsDetailPage() {
     <div className="space-y-6">
       <PlanesModal open={showPlanes} onClose={() => setShowPlanes(false)} />
 
-      <header>
-        <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Créditos de IA</h1>
-        <p className="mt-2 text-base text-on-surface-variant">
-          Gestión y detalle de consumo de tu cuenta.
-        </p>
-      </header>
+      <Encabezado />
 
       {/* Saldo y uso de la cuota; a la derecha, el mes en filas finas */}
       <section className="grid grid-cols-1 gap-x-10 gap-y-6 lg:grid-cols-3">
@@ -262,11 +393,7 @@ export default function CreditsDetailPage() {
         )}
       </section>
 
-      <p className="flex items-center gap-2 text-sm text-on-surface-variant">
-        <ShieldQuestion className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-        ¿Necesitas más créditos? Pídelos al administrador: el SuperAdmin revisa la solicitud desde el
-        panel de Usuarios. No hay renovación automática por ciclo de facturación.
-      </p>
+      <NotaAdministrador />
     </div>
   )
 }
