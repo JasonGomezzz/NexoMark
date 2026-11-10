@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
 import { Coins, AlertCircle, KeyRound, Link2, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react'
@@ -9,7 +10,7 @@ import SocialConnectionsCard from '@/components/social/SocialConnectionsCard'
 import ProfilePhoto from '@/components/account/ProfilePhoto'
 import EmailChange, { SinContrasena } from '@/components/account/EmailChange'
 import GoogleLink from '@/components/account/GoogleLink'
-import { setAuthItem } from '../services/session'
+import { clearSession, setAuthItem } from '../services/session'
 import { PLANS, costoGeneracion, creditosConGeneraciones } from '@/lib/credits'
 import AuthField from '@/components/auth/AuthField'
 import { LineasEsqueleto } from '@/components/ui/esqueleto'
@@ -19,7 +20,7 @@ import { useVerifiedUser } from '@/hooks/useVerifiedUser'
  * Configuración de cuenta, sobre los endpoints reales de Django:
  * - GET/PATCH /api/auth/me/ → perfil, nombre y foto (multipart `avatar` o `remove_avatar`)
  * - /api/auth/me/change-email/ → cambio de correo con doble confirmación
- * - POST /api/auth/me/change-password/ → cambio de contraseña (exige la actual)
+ * - POST /api/auth/me/change-password/ → cambio de contraseña (exige la actual; cierra todas las sesiones)
  * - POST /api/auth/google/disconnect/ → desvincular Google (exige contraseña)
  * El rol lo administra el SuperAdmin. No hay planes ni facturación.
  */
@@ -173,6 +174,7 @@ function EsqueletoCuenta({ rol }) {
 
 export default function AccountSettingsPage() {
   const rolVerificado = useVerifiedUser()?.rol
+  const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -238,15 +240,14 @@ export default function AccountSettingsPage() {
     }
     setSavingPassword(true)
     try {
-      await api.post('/api/auth/me/change-password/', {
+      const { data } = await api.post('/api/auth/me/change-password/', {
         current_password: currentPassword,
         new_password: newPassword,
       })
-      toast.success('Contraseña actualizada')
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
-      setTocados({})
+      // El servidor subió token_version: todas las sesiones (también esta) quedaron cerradas.
+      clearSession({ redirect: false })
+      toast.success(data?.message || 'Contraseña actualizada. Entra de nuevo con la nueva.')
+      navigate('/login', { replace: true })
     } catch (err) {
       const data = err.response?.data?.data
       const fieldError = data?.current_password?.[0] || data?.new_password?.[0]
