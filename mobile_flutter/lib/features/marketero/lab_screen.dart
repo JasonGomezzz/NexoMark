@@ -464,7 +464,8 @@ class _LabScreenState extends ConsumerState<LabScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(titulo, style: context.text.headlineSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  // Dos líneas: «Toca y cuenta la campaña» es la instrucción del paso y no puede quedar cortada.
+                  Text(titulo, style: context.text.headlineSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
                   Text(detalle, style: context.text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                   if (hayTexto && !_dictado.escuchando) ...[const SizedBox(height: 10), completar],
