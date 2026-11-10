@@ -181,7 +181,13 @@ class StatsScreen extends ConsumerWidget {
                 const Padding(padding: EdgeInsets.all(Nexo.gutter), child: Skeleton(height: 96, radius: Nexo.radiusSurface)),
               ],
               error: (e, _) => [
-                Padding(padding: const EdgeInsets.all(Nexo.gutter), child: ErrorBanner(message: toApiException(e).message)),
+                Padding(
+                  padding: const EdgeInsets.all(Nexo.gutter),
+                  child: ErrorBanner(
+                    message: toApiException(e).message,
+                    onRetry: () => ref.invalidate(_publicacionesProvider(anio)),
+                  ),
+                ),
               ],
             ),
           ],

@@ -97,7 +97,7 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
               const SizedBox(height: 20),
               ...solicitudes.when(
                 loading: () => [const Skeleton(height: 120)],
-                error: (e, _) => [ErrorBanner(message: toApiException(e).message)],
+                error: (e, _) => [ErrorBanner(message: toApiException(e).message, onRetry: () => ref.invalidate(_solicitudesProvider))],
                 data: (d) => [
                   if (d.pendiente != null)
                     InfoBanner(

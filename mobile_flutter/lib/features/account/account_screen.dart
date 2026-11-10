@@ -173,23 +173,32 @@ class _Perfil extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InkWell(
-                  onTap: () => _editarNombre(context, ref),
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          user.nombre,
-                          style: context.text.titleLarge?.copyWith(color: Nexo.onNavy),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                Semantics(
+                  button: true,
+                  label: 'Cambiar nombre: ${user.nombre}',
+                  excludeSemantics: true,
+                  // El toque llega a 48 de alto (la línea sola mide ~23); el correo se pega debajo.
+                  child: InkWell(
+                    onTap: () => _editarNombre(context, ref),
+                    borderRadius: BorderRadius.circular(Nexo.radiusField),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              user.nombre,
+                              style: context.text.titleLarge?.copyWith(color: Nexo.onNavy),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(LucideIcons.pencil, size: 16, color: Nexo.onNavyMuted),
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                      const Icon(LucideIcons.pencil, size: 16, color: Nexo.onNavyMuted),
-                    ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 2),
                 Text(user.email, style: context.text.bodySmall?.copyWith(color: Nexo.onNavyMuted), overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 8),
                 Container(
@@ -348,7 +357,8 @@ class _Tema extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Container(
-        height: 48,
+        // 4 + 48 + 4: cada opción conserva el toque de 48.
+        height: 56,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(color: context.colors.surfaceContainer, borderRadius: BorderRadius.circular(Nexo.radiusField + 2)),
         child: LayoutBuilder(
