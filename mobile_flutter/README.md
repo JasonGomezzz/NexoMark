@@ -3,8 +3,8 @@
 App móvil de NexoMark IA para **marketeros** (dictar, generar, enviar, ver
 estadísticas) y **clientes** (revisar, aprobar o pedir cambios, conectar sus
 redes). Habla con el mismo backend que la web: Django (`:8000`) y Spring
-(`:8080`, solo la revisión del cliente). La app Kotlin de `mobile/` sigue
-intacta; esta es la versión multiplataforma decidida el 21/10/2026.
+(`:8080`, solo la revisión del cliente). Es la versión multiplataforma decidida
+el 21/10/2026; la app Android en Kotlin anterior se retiró del repositorio el 10/11/2026.
 
 ## Correrla
 

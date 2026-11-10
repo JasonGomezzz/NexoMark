@@ -2,7 +2,7 @@
 MarketMind Voice — Cuentas sociales conectadas y publicaciones.
 
 Django es dueño de la identidad social: los tokens de Meta y de X se guardan
-cifrados aquí y nunca salen hacia n8n, React ni Kotlin.
+cifrados aquí y nunca salen hacia n8n, React ni Flutter.
 
 Una Publication congela el copy y la imagen en el momento de la aprobación:
 se publica exactamente lo que el cliente aprobó, aunque la campaña cambie

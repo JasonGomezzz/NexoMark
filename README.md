@@ -19,8 +19,6 @@ Arquitectura políglota distribuida sobre una misma base de datos PostgreSQL:
 - **React** — frontend web (SuperAdmin, Marketero, Cliente).
 - **Flutter** — app móvil principal para Android e iOS (Marketero y Cliente),
   en `mobile_flutter/`.
-- **Android/Kotlin** — app móvil anterior en `mobile/`, congelada desde el
-  21/10/2026 como respaldo.
 - **n8n** — orquesta la generación asíncrona de copy + imagen con Gemini.
 
 ## Índice
@@ -47,7 +45,7 @@ Arquitectura políglota distribuida sobre una misma base de datos PostgreSQL:
 - Git.
 - Java 25 (solo si vas a compilar Spring Boot fuera de Docker).
 - Flutter 3.47 con Xcode (iOS) o Android SDK (solo si vas a correr la app
-  móvil). Android Studio solo hace falta para la app Kotlin congelada.
+  móvil).
 
 > **Windows:** si usas WSL, ejecuta todos los comandos desde la terminal de
 > WSL. Evita mezclar un `venv` creado en Windows (PowerShell/CMD) con
@@ -359,42 +357,6 @@ Requisitos, comandos (`flutter run`) y configuración están en
 backend que la web: Django y Spring Boot deben estar corriendo antes de
 abrirla.
 
-### App Kotlin (congelada)
-
-`mobile/` es la app Android nativa anterior. Está congelada desde el
-21/10/2026 como respaldo: no recibe funciones nuevas ni la identidad
-«C · Conforme» de la web y de Flutter.
-
-1. Abre la carpeta `mobile/` en **Android Studio** (Gradle sync automático).
-2. Crea un emulador (AVD) desde Android Studio, API 28 o superior (`minSdk 24`,
-   pero el cleartext/network config está pensado para el emulador estándar).
-3. Corre la app (▶️) en modo `debug`.
-
-La app ya trae las URLs configuradas por variante de build — **no hay que
-tocar nada a mano**:
-
-| Variante | Django | Spring Boot |
-|---|---|---|
-| `debug` (emulador local) | `http://10.0.2.2:8000/` | `http://10.0.2.2:8080/` |
-| `release` (producción) | `https://marketmind-django.onrender.com/` | `https://marketmind-springboot.onrender.com/` |
-
-`10.0.2.2` es el alias que el emulador Android usa para referirse a
-`localhost` de tu Mac/PC — **nunca uses `localhost` ni `127.0.0.1`** dentro
-del emulador, da timeout porque el emulador tiene su propia red virtual.
-
-Requisitos para que el modo `debug` funcione:
-
-- Django (`runserver`, paso 8) y Spring Boot (paso 9) deben estar corriendo en
-  tu máquina **antes** de abrir la app.
-- El emulador debe tener acceso a internet (para el tráfico normal); el
-  tráfico HTTP hacia `10.0.2.2` está permitido explícitamente en
-  `network_security_config.xml` (Android bloquea HTTP sin cifrar desde API 28
-  por defecto — este archivo es la excepción puntual solo para el host del
-  emulador, no un `usesCleartextTraffic` global).
-- Usa las mismas credenciales de [Usuarios de prueba](#usuarios-de-prueba-3-roles):
-  el login móvil de marketero/cliente pega contra Django (`:8000`), y las
-  pantallas de campañas del cliente pegan contra Spring Boot (`:8080`).
-
 ## Usuarios de prueba (3 roles)
 
 Después de correr el paso 7, estas son las credenciales para las 3 vistas
@@ -446,7 +408,6 @@ despliegue:
 | n8n | Render | PostgreSQL propio (Neon, schema separado `n8n`) en vez de SQLite, para sobrevivir el disco efímero de Render |
 | React (frontend) | [Vercel](https://vercel.com) | `vercel.json` con rewrites SPA (obligatorio para que las rutas de React Router no den 404) |
 | PostgreSQL | [Neon.tech](https://neon.tech) | Única base de datos compartida entre Django y Spring Boot |
-| APK Android (app Kotlin congelada) | Build local firmado | Variante `release` apunta a las URLs de Render |
 
 ### Pasos generales para desplegar cada bloque
 
@@ -500,13 +461,6 @@ despliegue:
    URLs de Render de Django y Spring Boot respectivamente.
 3. `vercel.json` ya trae los rewrites necesarios para SPA — sin esto, cualquier
    ruta que no sea `/` da 404 al refrescar o compartir un link directo.
-
-**APK Android de la app Kotlin congelada (release):**
-
-1. Las URLs de producción ya están en `mobile/app/build.gradle.kts` (variante
-   `release`), no requieren configuración adicional.
-2. Compilar el APK firmado con el keystore del proyecto:
-   `Build > Generate Signed Bundle / APK` en Android Studio.
 
 ## Problemas comunes (Mac y Windows)
 
@@ -582,12 +536,11 @@ viejo (de antes de este fix) o te lo pasó un compañero, actualízalo a mano.
 
 ### La app móvil no conecta (emulador Android)
 
-- Usa `10.0.2.2`, nunca `localhost` ni `127.0.0.1` — ya viene configurado así
-  por defecto en la variante `debug`, no debería tocarse.
+- En el emulador de Android usa `10.0.2.2`, nunca `localhost` ni `127.0.0.1`: el
+  emulador tiene su propia red virtual y da timeout. La configuración de la app
+  está en [`mobile_flutter/README.md`](mobile_flutter/README.md).
 - Confirma que Django (`:8000`) y Spring Boot (`:8080`) estén corriendo en tu
   Mac/PC antes de abrir la app.
-- Si ves errores de "cleartext traffic not permitted", revisa que no se haya
-  modificado `network_security_config.xml` ni el manifiesto de la app.
 
 ### Error instalando `psycopg2`
 

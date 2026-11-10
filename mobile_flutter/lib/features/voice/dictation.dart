@@ -8,7 +8,7 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 /// Dónde se transcribe la voz. Se muestra al usuario, así que describe lo
-/// que de verdad hace el reconocedor elegido (misma regla que la app Kotlin).
+/// que de verdad hace el reconocedor elegido.
 enum ModoDictado {
   /// El reconocedor del propio teléfono tiene el español: el audio no sale del equipo.
   enDispositivo,

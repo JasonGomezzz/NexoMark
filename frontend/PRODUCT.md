@@ -6,7 +6,7 @@
 
 web
 
-La web (React) es una de las interfaces. La app móvil principal es Flutter (`mobile_flutter/`, Android e iOS); la app Android nativa en Kotlin (`mobile/`) está congelada desde el 21/10 como respaldo. Este registro cubre la web.
+La web (React) es una de las interfaces. La app móvil principal es Flutter (`mobile_flutter/`, Android e iOS); la app Android nativa en Kotlin se retiró del repositorio el 10/11/2026 (queda en el historial de git). Este registro cubre la web.
 
 ## Users
 
