@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { AlertCircle, Info, Link2, Loader2 } from 'lucide-react'
+import { AlertCircle, Info, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { leerRetornoMeta } from '../../services/social'
 
@@ -57,8 +57,12 @@ export default function RetornoConexion({ titulo, textoConectando, mensajeMotivo
         </h1>
 
         {estado.fase === 'conectando' ? (
-          <p className="mt-4 flex items-center gap-3 text-sm text-on-surface-variant" role="status">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          // Ocupa el lugar y la forma del aviso que dará el resultado (aviso + botón), sin girar nada.
+          <p
+            className="esqueleto mt-4 rounded-lg px-4 py-3 text-sm text-on-surface-variant"
+            role="status"
+            aria-busy="true"
+          >
             {textoConectando}
           </p>
         ) : (
