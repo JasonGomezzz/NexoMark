@@ -8,12 +8,39 @@ import { useClientCampaignSocket } from '../hooks/useClientCampaignSocket'
 import { campaignSentAt, relativeTimeFrom } from '../utils/date'
 import { getAuthItem } from '../services/session'
 import { etiquetaIndustria, etiquetaPlataforma } from '@/lib/etiquetas'
+import { LineasEsqueleto } from '@/components/ui/esqueleto'
 
 // La estación de la línea fija el estado: Aprobar = pendientes, Publicar = aprobadas.
 const ESTADO_DE_ETAPA = { aprobar: 'pendiente_aprobacion', publicar: 'aprobado' }
 const TITULO_DE_ETAPA = {
   aprobar: ['Por aprobar', 'Revisa cada pieza: lo que apruebes es exactamente lo que se publica.'],
   publicar: ['Aprobadas', 'Las campañas que aprobaste. En Medir ves dónde se publicaron y cómo les va.'],
+}
+
+// Antes de saber cuántas campañas llegan, el esqueleto llena una pantalla; con una lista ya vista, tiene sus filas.
+const FILAS_INICIALES = 5
+
+/**
+ * Las filas de la lista mientras llegan: miniatura de 64 px, tres renglones y el botón, como las reales.
+ * Las aprobadas llevan además la valoración (una línea más), por eso `conValoracion`.
+ */
+function EsqueletoLista({ filas, conValoracion }) {
+  return (
+    <div role="status" aria-busy="true" aria-label="Cargando tus campañas" className="divide-y divide-hairline border-y border-hairline">
+      {Array.from({ length: filas }, (_, i) => (
+        <div key={i} className="flex items-center gap-4 py-4">
+          <span className="esqueleto block h-16 w-16 shrink-0 rounded-[10px]" />
+          <div className="min-w-0 flex-1">
+            <LineasEsqueleto alto={22} ancho="w-3/5" />
+            <LineasEsqueleto alto={20} ancho="w-4/5" />
+            <LineasEsqueleto className="mt-1" alto={19.5} ancho="w-24" />
+            {conValoracion && <LineasEsqueleto className="mt-1" alto={23.3} ancho="w-12" />}
+          </div>
+          <span className="esqueleto block h-11 w-16 shrink-0 rounded-[10px] sm:w-[129px]" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export default function ClientCampaignsPage() {
@@ -197,11 +224,7 @@ export default function ClientCampaignsPage() {
       </section>
 
       {loading ? (
-        <div className="space-y-3">
-          {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-24 rounded-[14px] esqueleto" />
-          ))}
-        </div>
+        <EsqueletoLista filas={campaigns.length || FILAS_INICIALES} conValoracion={filters.estado === 'aprobado'} />
       ) : campaigns.length === 0 ? (
         <div className="regla flex flex-col items-start gap-2 pt-6">
           <Inbox className="h-8 w-8 text-outline" aria-hidden="true" />
