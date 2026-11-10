@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Política de cookies y almacenamiento — NexoMark IA</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header><a href="index.html">NexoMark IA</a><nav aria-label="Documentos"><a href="privacidad.html">Privacidad</a><a href="terminos.html">Términos</a><a href="cookies.html" aria-current="page">Cookies</a><a href="compras.html">Compras</a><a href="reclamos.html">Reclamos</a><a href="responsables.html">Responsables</a><a href="eliminacion-datos.html">Eliminación de datos</a></nav></header>
+  <main>
+    <aside class="notice">BORRADOR v0.14 PARA REVISIÓN · Pendiente de aprobación de los responsables. NexoMark IA es un proyecto académico de demostración (Tecsup, Perú), no un servicio comercial. Este texto no constituye asesoría legal.</aside>
+    <h1>Política de cookies y almacenamiento</h1>
+    <p>Borrador v0.14 · Actualizado el 10 de noviembre de 2026. Explica qué guarda NexoMark IA en tu navegador o en tu teléfono, para qué y cómo borrarlo. Completa la <a href="privacidad.html">Política de privacidad</a>.</p>
+
+    <div class="summary">
+      <strong>En resumen</strong>
+      <ul>
+        <li>La web de NexoMark no pone cookies propias: guarda lo mínimo para funcionar en el almacenamiento del navegador (<code>sessionStorage</code> y <code>localStorage</code>).</li>
+        <li>No usamos cookies de publicidad ni de seguimiento, ni herramientas de analítica de terceros.</li>
+        <li>Como solo guardamos lo necesario para que el servicio funcione, no mostramos un aviso para aceptar o rechazar cookies.</li>
+        <li>Cerrar sesión borra los datos de sesión. Puedes borrar el resto desde la configuración de tu navegador.</li>
+      </ul>
+    </div>
+
+    <h2>1. Qué guarda la web y para qué</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dato</th><th>Dónde</th><th>Para qué</th><th>Hasta cuándo</th></tr></thead>
+        <tbody>
+          <tr><td>Tokens de sesión, tu correo, tu nombre y tu rol</td><td><code>sessionStorage</code> (solo esta pestaña) o <code>localStorage</code> si marcas «Mantener sesión iniciada»</td><td>Mantenerte dentro de tu cuenta y mostrar tu nombre</td><td>Hasta que cierres sesión o, sin «Mantener sesión iniciada», hasta que cierres la pestaña. En el servidor, el acceso vence a los 60 minutos y la renovación a los 7 días</td></tr>
+          <tr><td>Tu preferencia de tema claro u oscuro</td><td><code>localStorage</code></td><td>Recordar el tema que elegiste</td><td>Hasta que borres los datos del sitio. Se mantiene al cerrar sesión</td></tr>
+          <tr><td>Borrador del texto de una campaña que estás editando</td><td><code>localStorage</code></td><td>No perder lo que escribes si recargas la página</td><td>Hasta que guardes o descartes el texto, o borres los datos del sitio</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Las apps para Android e iPhone no usan cookies: guardan los tokens de sesión en el almacenamiento cifrado del sistema (Keystore en Android, Keychain en iPhone) y tu preferencia de tema en el teléfono. Ver la sección 3 de la <a href="privacidad.html">Política de privacidad</a>.</p>
+
+    <h2>2. Servicios de terceros que cargan al usar la web</h2>
+    <ul>
+      <li><strong>Google Fonts.</strong> Las tipografías de la web (Inter y Bricolage Grotesque) se piden a <code>fonts.googleapis.com</code> y <code>fonts.gstatic.com</code>. Al cargarlas, Google recibe tu dirección IP y los datos normales de una petición web, bajo la <a href="https://policies.google.com/privacy">Política de privacidad de Google</a>.</li>
+      <li><strong>Acceso con Google.</strong> En el inicio de sesión y el registro se carga el botón oficial «Continuar con Google» desde <code>accounts.google.com</code>. Google puede guardar cookies o datos propios en tu navegador al mostrarlo; se rigen por su política, no por esta.</li>
+      <li><strong>Instagram, Facebook, TikTok y X.</strong> Al conectar una cuenta, te redirigimos al sitio de la red social, que usa sus propias cookies. NexoMark no las controla.</li>
+    </ul>
+    <p class="pending">Pendiente: comprobar en el navegador qué cookies de Google aparecen al cargar el botón y, si se decide, alojar las tipografías en el propio sitio para no pedirlas a Google.</p>
+
+    <h2>3. Panel técnico de administración</h2>
+    <p>Los responsables usan un panel de administración técnico (Django) que sí usa cookies de sesión y de protección contra falsificación de peticiones (CSRF). Los marketeros y clientes no entran ahí.</p>
+
+    <h2>4. Cómo borrar o bloquear lo que se guarda</h2>
+    <ul>
+      <li><strong>Cerrar sesión</strong> en NexoMark borra los tokens, tu correo, tu nombre y tu rol de este dispositivo.</li>
+      <li>En tu navegador puedes borrar los datos del sitio o bloquear el almacenamiento (en Chrome, Brave, Firefox o Safari: Configuración → Privacidad → Datos del sitio). Si lo bloqueas del todo, no podrás iniciar sesión.</li>
+      <li>El tema y el borrador de un texto solo viven en este navegador: NexoMark no los recibe.</li>
+    </ul>
+
+    <h2>5. Cambios</h2>
+    <p>Si NexoMark empieza a usar cookies no esenciales (por ejemplo, analítica), esta política cambiará antes y pediremos tu consentimiento. Cada versión indica su número y fecha.</p>
+  </main>
+  <footer><a href="mailto:nexomarkia@gmail.com">nexomarkia@gmail.com</a> · Proyecto académico · Borrador pendiente de aprobación de los responsables.</footer>
+</body>
+</html>

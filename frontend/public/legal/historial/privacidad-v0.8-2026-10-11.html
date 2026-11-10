@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Política de privacidad — NexoMark</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header><a href="../index.html">NexoMark</a><nav aria-label="Documentos"><a href="privacidad-v0.8-2026-10-11.html" aria-current="page">Privacidad</a><a href="terminos-v0.8-2026-10-11.html">Términos</a></nav></header>
+  <main>
+    <aside class="notice">BORRADOR PARA REVISIÓN · No publicado ni vigente. Revisar las prácticas de tratamiento, conservación y proveedores antes de publicarlo. No constituye una certificación de cumplimiento legal.</aside>
+    <h1>Política de privacidad</h1>
+    <p>Borrador v0.8 · Actualizado el 11 de octubre de 2026 · Sin fecha de vigencia. <a href="privacidad-v0.7-2026-10-11.html">Consultar borrador anterior</a>.</p>
+    <h2>1. Responsables y contacto</h2>
+    <p>NexoMark es un proyecto desarrollado por Jason Percy Jordan Gomez Mancha y Piero Fernando Huaytalla Otarola. El contacto para consultas de privacidad y solicitudes relativas a datos es <a href="mailto:nexomarkia@gmail.com">nexomarkia@gmail.com</a>.</p>
+    <h2>2. Datos que maneja el proyecto</h2>
+    <ul>
+      <li>Cuenta: nombre, correo electrónico, rol, contraseña almacenada mediante un hash, fechas de registro y datos de sesión.</li>
+      <li>Campañas: datos del cliente o negocio, correo del cliente, instrucciones, textos, imágenes, versiones, aprobaciones, rechazos y comentarios.</li>
+      <li>Uso: créditos de generación, solicitudes de créditos, estados de procesamiento y registros de publicación y errores.</li>
+      <li>Funciones de voz: audio enviado para transcripción y texto resultante cuando el usuario utiliza esa función.</li>
+      <li>Redes conectadas: identificadores y nombres de las cuentas o páginas autorizadas, permisos y credenciales de acceso de las integraciones habilitadas. Las credenciales sociales se almacenan cifradas en el servidor; no se solicita la contraseña de la red social.</li>
+    </ul>
+    <h2>3. Para qué se utilizan</h2>
+    <p>Para autenticar usuarios, aplicar permisos según su rol, crear y versionar campañas, generar contenido asistido por IA, gestionar la revisión por clientes, enviar notificaciones y atender solicitudes de publicación confirmadas por el usuario. Conectar una red no publica contenido automáticamente.</p>
+    <h2>4. Quién puede recibir los datos</h2>
+    <p>El marketero y el cliente asociado acceden al contenido necesario para gestionar y revisar sus campañas. Los administradores tienen acceso según sus funciones. Los datos necesarios para generar contenido y transcribir audio pueden enviarse a Google Gemini cuando se utilizan esas funciones.</p>
+    <p>Las redes sociales reciben los datos necesarios para autorizar conexiones y procesar las publicaciones solicitadas. Las notificaciones y el funcionamiento del servicio pueden involucrar proveedores de correo y alojamiento, según el despliegue. Sus políticas también regulan el tratamiento que realizan.</p>
+    <p>Para la etapa actual de pruebas, los responsables han decidido ejecutar NexoMark en su laptop; no se ha acordado un despliegue público de la aplicación. Cuando se utiliza ngrok para la conexión HTTPS de pruebas, las solicitudes dirigidas a ese enlace pasan por su servicio de túnel hasta el servidor local. Ejecutar la aplicación localmente no significa que todas sus funciones procesen datos sin conexión o sin proveedores externos.</p>
+    <p>La configuración local comprobada utiliza PostgreSQL dentro de Docker en la laptop, compartido por los servicios de la aplicación. Los datos de esa base se guardan en un volumen persistente local. Apagar los contenedores no elimina por sí mismo los datos; ese volumen no constituye una copia de seguridad independiente.</p>
+    <p>La recuperación de contraseñas está configurada para enviar correos mediante el servicio SMTP de Gmail. Las notificaciones de campañas se derivan a n8n ejecutado localmente; su workflow publicado y activo tiene configurado Resend como proveedor de envío. Ese flujo utiliza los correos de los destinatarios y datos de la campaña para preparar el mensaje.</p>
+    <p class="pending">Antes de publicar: organizar la frecuencia, custodia y conservación de respaldos y documentar las ubicaciones y condiciones de procesamiento de los proveedores externos. La configuración de Gmail y Resend no demuestra por sí sola una entrega exitosa: esta revisión no envió correos de prueba. Cualquier despliegue futuro requerirá revisar esta información antes de trasladar datos; no se afirma que exista alojamiento público de la aplicación.</p>
+    <p>Para esta etapa se han identificado Google Gemini para las funciones de IA y Meta (Instagram/Facebook) y X para las conexiones habilitadas. TikTok se incluirá conforme a las funciones que efectivamente se implementen y autoricen. GitHub Pages es el alojamiento previsto para estas páginas informativas, no para la base de datos ni las campañas.</p>
+    <h3>Referencias de proveedores</h3>
+    <ul>
+      <li>Google Gemini: instrucciones, contenido y audio necesarios para las funciones de IA. <a href="https://ai.google.dev/gemini-api/terms">Condiciones de Gemini API</a>.</li>
+      <li>Gmail: destinatarios y contenido de correos de recuperación y consultas enviadas al buzón del proyecto. <a href="https://policies.google.com/privacy">Política de Google</a>.</li>
+      <li>Resend: destinatarios y contenido de notificaciones de campañas. <a href="https://resend.com/legal/privacy-policy">Política de Resend</a>.</li>
+      <li>ngrok: tráfico del enlace HTTPS de pruebas, cuando se utiliza. <a href="https://ngrok.com/tos">Condiciones de ngrok</a> y <a href="https://ngrok.com/dpa">Acuerdo de tratamiento de datos</a>.</li>
+      <li>GitHub Pages, si se publica este sitio: documentos informativos y datos técnicos de las visitas, no la base de campañas. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">Declaración de privacidad de GitHub</a>.</li>
+    </ul>
+    <p class="pending">Pendiente de confirmar en las cuentas de proveedores: modalidad gratuita o de pago de Gemini, condiciones aplicables de conservación y ubicaciones de procesamiento. Google distingue el uso de datos entre servicios gratuitos y de pago; este documento no promete que el proveedor nunca utilice entradas para mejorar sus modelos. No enviar datos personales, sensibles o confidenciales a los servicios gratuitos de Gemini. Los enlaces anteriores no sustituyen la evaluación del tratamiento que realizan los responsables.</p>
+    <h2>5. Estado de la integración con TikTok</h2>
+    <p>TikTok está en preparación y pruebas; este borrador no afirma que su conexión o envío mediante API ya estén implementados. El flujo previsto solicitará información básica del perfil y permiso para enviar contenido aprobado para que el usuario termine la publicación en TikTok. Esta sección debe actualizarse conforme a la integración real antes de publicarse como política vigente.</p>
+    <h2>6. Almacenamiento del navegador</h2>
+    <p>La aplicación utiliza almacenamiento de sesión o almacenamiento local para conservar la sesión, el rol y datos de la cuenta, según la opción de recordar el inicio de sesión. Cerrar sesión elimina las credenciales de sesión de ese navegador. Estas páginas informativas no incluyen formularios, rastreadores ni scripts de analítica propios; GitHub Pages puede procesar datos técnicos de las visitas conforme a sus políticas.</p>
+    <h2>7. Conservación y seguridad</h2>
+    <p>El proyecto conserva cuentas, campañas e historial de operaciones en su base de datos. El código actual no establece una eliminación automática general por antigüedad. Se aplican controles de autenticación, permisos y cifrado de credenciales sociales; ninguna medida garantiza seguridad absoluta.</p>
+    <p>Se dispone de un procedimiento manual de respaldo de PostgreSQL. Se creó una copia local y se comprobó su restauración en una base de prueba separada sin sobrescribir la base de la aplicación. Estas copias contienen datos personales y requieren acceso restringido. Una copia guardada en la misma laptop no protege ante pérdida o fallo de todo el equipo; no se ha configurado respaldo periódico ni copia externa cifrada.</p>
+    <p>El criterio acordado para las pruebas de tesis es conservar solo los datos necesarios para esas pruebas y revisar su necesidad al concluir la tesis. Las evidencias académicas deberán utilizar datos anonimizados; no se establece una conservación indefinida de datos personales.</p>
+    <p>Al 11 de octubre de 2026, la evaluación académica está prevista en aproximadamente nueve semanas. Después de esa evaluación, los responsables decidirán si el proyecto continúa y revisarán qué datos deben conservarse, eliminarse o anonimizarse. Esa revisión no equivale a un borrado automático ni impide atender solicitudes sobre datos antes de la evaluación. La continuidad del proyecto no se ha decidido.</p>
+    <p class="pending">Pendiente de ejecución y verificación: confirmar la fecha de evaluación y el cierre de las pruebas, inventariar datos y respaldos, documentar la eliminación o anonimización y comprobar la configuración del entorno público. Se propone una rotación de respaldos de 30 días, pero todavía no está implementada ni verificada y no constituye un plazo de eliminación garantizado.</p>
+    <h2>8. Acceso, rectificación, cancelación y oposición</h2>
+    <p>Puede contactar a <a href="mailto:nexomarkia@gmail.com">nexomarkia@gmail.com</a> para consultar los datos asociados a su cuenta, pedir correcciones o solicitar su eliminación. Se verificará su identidad de manera proporcional antes de atender una solicitud; no envíe contraseñas ni tokens. La atención será manual, conforme a las obligaciones aplicables y a las limitaciones que deban explicarse al solicitante.</p>
+    <p>También puede solicitar información sobre el tratamiento de sus datos o manifestar oposición a ese tratamiento. Indique el tipo de solicitud y el correo de su cuenta; no adjunte documentos sensibles salvo que se le explique por qué resultan necesarios. Los responsables deberán registrar la recepción, verificar la identidad proporcionalmente, evaluar los datos involucrados y comunicar la respuesta y sus motivos. Esta propuesta no sustituye los plazos ni requisitos legales aplicables.</p>
+    <p>Jason Percy Jordan Gomez Mancha y Piero Fernando Huaytalla Otarola atenderán conjuntamente las consultas y solicitudes recibidas en <a href="mailto:nexomarkia@gmail.com">nexomarkia@gmail.com</a>. Para cada solicitud coordinarán quién la gestiona, verificarán la identidad de forma proporcional y revisarán los datos afectados antes de responder. No es necesario escribir a sus correos personales o institucionales.</p>
+    <ol>
+      <li>Recibir y registrar de forma privada la solicitud, su fecha y el responsable de seguimiento.</li>
+      <li>Identificar la cuenta y el alcance solicitado sin pedir contraseñas, claves ni tokens.</li>
+      <li>Evaluar datos de la cuenta, campañas compartidas, conexiones y respaldos, evitando afectar datos o derechos de otros usuarios.</li>
+      <li>Ejecutar la medida que corresponda, registrar su resolución y comunicar una respuesta motivada al solicitante dentro de los requisitos aplicables.</li>
+    </ol>
+    <p class="pending">Este es el procedimiento manual acordado para organizar la atención. Antes de publicar debe comprobarse que ambos puedan acceder al buzón de forma segura y que exista un registro privado y un procedimiento de eliminación probado, incluidos los respaldos. No se ha creado un registro con datos de solicitudes ni una función de borrado automático de cuenta mediante este documento.</p>
+    <p>Desconectar una red desde Configuración elimina la credencial local de esa conexión; no elimina por sí mismo las campañas ni las publicaciones ya realizadas. También puede revocar la autorización desde la red social. Las publicaciones externas deben gestionarse en la plataforma correspondiente.</p>
+    <h2>9. Precauciones y cambios</h2>
+    <p>En las pruebas se priorizarán datos ficticios. Evite incluir datos sensibles o información de terceros que no tenga autorización para usar en las instrucciones, audios o campañas.</p>
+    <p>Las versiones de este documento conservarán su fecha e historial. Antes de modificar datos recopilados, finalidades o destinatarios, los responsables deberán evaluar las obligaciones de información y si corresponde obtener una nueva autorización. Los cambios relevantes se comunicarán a los usuarios afectados; actualizar el texto no autoriza por sí mismo un nuevo tratamiento ni reemplaza los requisitos de las redes sociales.</p>
+  </main>
+  <footer><a href="mailto:nexomarkia@gmail.com">nexomarkia@gmail.com</a> · Documento pendiente de aprobación de los responsables.</footer>
+</body>
+</html>
