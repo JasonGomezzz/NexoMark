@@ -334,6 +334,14 @@ html[data-theme='dark'] select option {
     transform: translateY(6px);
   }
 }
+/* Diálogo de confirmación (<dialog>): la cortina aparece con un fundido corto.
+   La hoja usa .entra-hoja. Al cerrar no hay animación: salir puede ser más rápido que entrar. */
+.dialogo::backdrop {
+  transition: opacity 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+  }
+}
 .entra-hoja {
   transition:
     opacity 220ms var(--ease-out),

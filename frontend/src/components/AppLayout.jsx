@@ -21,6 +21,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useVerifiedUser } from '../hooks/useVerifiedUser'
 import BrandLogo from '@/components/BrandLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Avatar from '@/components/account/Avatar'
 import OrdenTrabajo, { PasoActual } from '@/components/linea/OrdenTrabajo'
 import { EstacionContext } from '@/components/linea/EstacionContext'
@@ -139,6 +140,8 @@ export default function AppLayout() {
   // Foto de perfil: se descarga una vez y cambia en el acto si se sube otra en Configuración.
   const foto = useFotoPerfil(verified)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [confirmaSalida, setConfirmaSalida] = useState(false)
+  const [saliendo, setSaliendo] = useState(false)
   const menuButtonRef = useRef(null)
   const drawerRef = useRef(null)
 
@@ -222,8 +225,14 @@ export default function AppLayout() {
     }
   }, [drawerOpen])
 
-  async function handleLogout() {
+  // «Cerrar sesión» primero pregunta: un toque sin querer no debe sacarte del panel.
+  function pedirSalida() {
     setDrawerOpen(false)
+    setConfirmaSalida(true)
+  }
+
+  async function handleLogout() {
+    setSaliendo(true)
     await logout()
     navigate('/login', { replace: true })
   }
@@ -263,7 +272,7 @@ export default function AppLayout() {
         </div>
         <div className="h-px bg-cama-line" aria-hidden="true" />
         <nav aria-label="Más opciones">
-          <ListaSecundaria role={role} tono="navy" onLogout={handleLogout} />
+          <ListaSecundaria role={role} tono="navy" onLogout={pedirSalida} />
         </nav>
         <div className="mt-auto space-y-3">
           {showCredits && (
@@ -359,12 +368,24 @@ export default function AppLayout() {
                 </nav>
               </div>
               <div className="h-px bg-cama-line" aria-hidden="true" />
-              <ListaSecundaria role={role} tono="navy" onNavigate={() => setDrawerOpen(false)} onLogout={handleLogout} />
+              <ListaSecundaria role={role} tono="navy" onNavigate={() => setDrawerOpen(false)} onLogout={pedirSalida} />
               <div className="mt-auto">{usuario}</div>
             </motion.aside>
           </div>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={confirmaSalida}
+        icono={LogOut}
+        titulo="¿Cerrar sesión?"
+        descripcion="Saldrás de NexoMark en este dispositivo. Para volver a entrar tendrás que iniciar sesión otra vez."
+        confirmar="Cerrar sesión"
+        textoOcupado="Cerrando sesión…"
+        ocupado={saliendo}
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmaSalida(false)}
+      />
     </div>
   )
 }
