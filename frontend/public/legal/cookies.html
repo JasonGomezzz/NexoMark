@@ -19,6 +19,7 @@
       <ul>
         <li>La web de NexoMark no pone cookies propias: guarda lo mínimo para funcionar en el almacenamiento del navegador (<code>sessionStorage</code> y <code>localStorage</code>).</li>
         <li>No usamos cookies de publicidad ni de seguimiento, ni herramientas de analítica de terceros.</li>
+        <li>La única cookie que aparece es de Google: al mostrar el botón «Continuar con Google», su script deja una cookie llamada <code>g_state</code>.</li>
         <li>Como solo guardamos lo necesario para que el servicio funcione, no mostramos un aviso para aceptar o rechazar cookies.</li>
         <li>Cerrar sesión borra los datos de sesión. Puedes borrar el resto desde la configuración de tu navegador.</li>
       </ul>
@@ -40,10 +41,10 @@
     <h2>2. Servicios de terceros que cargan al usar la web</h2>
     <ul>
       <li><strong>Google Fonts.</strong> Las tipografías de la web (Inter y Bricolage Grotesque) se piden a <code>fonts.googleapis.com</code> y <code>fonts.gstatic.com</code>. Al cargarlas, Google recibe tu dirección IP y los datos normales de una petición web, bajo la <a href="https://policies.google.com/privacy">Política de privacidad de Google</a>.</li>
-      <li><strong>Acceso con Google.</strong> En el inicio de sesión y el registro se carga el botón oficial «Continuar con Google» desde <code>accounts.google.com</code>. Google puede guardar cookies o datos propios en tu navegador al mostrarlo; se rigen por su política, no por esta.</li>
+      <li><strong>Acceso con Google.</strong> En el inicio de sesión y el registro se carga el botón oficial «Continuar con Google» desde <code>accounts.google.com</code>. Al mostrarlo, el script de Google deja en tu navegador una cookie llamada <code>g_state</code> (recuerda si cerraste su ventana de acceso). La pone y la gestiona Google, bajo su política, no esta.</li>
       <li><strong>Instagram, Facebook, TikTok y X.</strong> Al conectar una cuenta, te redirigimos al sitio de la red social, que usa sus propias cookies. NexoMark no las controla.</li>
     </ul>
-    <p class="pending">Pendiente: comprobar en el navegador qué cookies de Google aparecen al cargar el botón y, si se decide, alojar las tipografías en el propio sitio para no pedirlas a Google.</p>
+    <p class="pending">Pendiente: comprobar en la web publicada si Google deja alguna otra cookie además de <code>g_state</code> (se vio en el entorno local, en el servidor, que la recibe en la cabecera de la petición) y, si se decide, alojar las tipografías en el propio sitio para no pedirlas a Google.</p>
 
     <h2>3. Panel técnico de administración</h2>
     <p>Los responsables usan un panel de administración técnico (Django) que sí usa cookies de sesión y de protección contra falsificación de peticiones (CSRF). Los marketeros y clientes no entran ahí.</p>

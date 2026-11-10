@@ -20,6 +20,9 @@
     local del texto de una campaña (`campaign_<id>_draft`). La web no usa `document.cookie`; solo el panel
     de administración de Django usa cookies de sesión y CSRF.
   - Google Fonts: `frontend/index.html` pide las tipografías a `fonts.googleapis.com`; antes no se decía.
+  - Cookie de Google: al cargar el botón «Continuar con Google», el script deja la cookie `g_state` (el
+    servidor la recibió en la cabecera `Cookie` de una petición desde `localhost`, 10/11); la página de
+    cookies la nombra y deja pendiente comprobar si hay otras en la web publicada.
 - Pendientes que decidir con los responsables: plazo de respuesta a reclamos, conservación de los
   mensajes, si corresponde un libro de reclamaciones formal, plazo de arrepentimiento si algún día se
   cobra, vigencia de los créditos, razón social y RUC si el proyecto se constituye como empresa, y
