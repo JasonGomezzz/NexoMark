@@ -5,6 +5,7 @@ import api from '../services/api'
 import MedicionVozFormulario from '@/components/analytics/MedicionVozFormulario'
 import { STATES } from '@/lib/campaignStates'
 import { etiquetaPlataforma } from '@/lib/etiquetas'
+import { BarrasEsqueleto } from '@/components/ui/esqueleto'
 
 /**
  * Analytics del SuperAdmin (diseño NexoMark). Consume Django /api/admin/analytics/.
@@ -101,14 +102,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Loading skeleton */}
-      {loading && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-28 rounded-[10px] esqueleto" />
-          ))}
-        </div>
-      )}
+      {loading && <EsqueletoAnalitica periodLabel={periodLabel} />}
 
       {error && (
         <div className="flex items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
@@ -234,6 +228,58 @@ export default function AnalyticsPage() {
 
       <MedicionVozFormulario />
     </div>
+  )
+}
+
+/**
+ * La forma de la analítica mientras llega: las tarjetas reales con la cifra en esqueleto y los
+ * títulos de cada gráfico. Los gráficos y las filas de barras tienen la altura de los de verdad;
+ * de estados y de plataformas se suponen los de la base de desarrollo (2 y 1; cada fila de más suma
+ * 50 px, y sin plataformas la tarjeta no aparece). En escritorio el gráfico de al lado fija la altura.
+ */
+function EsqueletoAnalitica({ periodLabel }) {
+  const cifra = <span className="esqueleto block h-9 w-20 rounded-[8px]" />
+  return (
+    <div role="status" aria-busy="true" aria-label="Cargando la analítica" className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Total campañas" value={cifra} sub={`Últimos ${periodLabel}`} />
+        <StatCard label="Tasa de aprobación" value={cifra} sub="Aprobadas / total" />
+        <StatCard label="Tiempo prom. aprobación" value={cifra} sub="De creación a aprobado" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="regla pt-5">
+          <h3 className="mb-4 text-sm font-semibold text-on-surface">Campañas por marketero</h3>
+          <BarrasEsqueleto alto={250} />
+        </div>
+        <div className="regla pt-5">
+          <h3 className="mb-5 text-sm font-semibold text-on-surface">Distribución por estado</h3>
+          <FilasBarrasEsqueleto filas={2} />
+        </div>
+      </div>
+
+      <div className="regla pt-5">
+        <h3 className="mb-5 text-sm font-semibold text-on-surface">Campañas por plataforma</h3>
+        <FilasBarrasEsqueleto filas={1} />
+      </div>
+    </div>
+  )
+}
+
+/** Las filas de `Barras` sin datos: rótulo de 20 px, barra de 8 y 16 px entre filas. */
+function FilasBarrasEsqueleto({ filas }) {
+  return (
+    <ul className="space-y-4" aria-hidden="true">
+      {Array.from({ length: filas }, (_, i) => (
+        <li key={i}>
+          <div className="mb-1.5 flex h-5 items-center justify-between gap-3">
+            <span className="esqueleto block h-3 w-28 rounded" />
+            <span className="esqueleto block h-3 w-12 rounded" />
+          </div>
+          <div className="esqueleto h-2 w-full rounded-full" />
+        </li>
+      ))}
+    </ul>
   )
 }
 

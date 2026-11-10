@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { Download, Mic, Keyboard } from 'lucide-react'
 import api from '../../services/api'
 import { Button } from '@/components/ui/button'
+import { BarrasEsqueleto, LineasEsqueleto } from '@/components/ui/esqueleto'
 import { formatoNumero, formatoSegundos, formatoTasa, sinDato } from './medicionFormato'
 
 const CAMPO_LABEL = {
@@ -29,6 +30,63 @@ const FILAS = [
   { clave: 'campos_vacios_ia_promedio', label: 'Campos que la IA no encontró', fmt: (v) => formatoNumero(v) },
   { clave: 'palabras_mediana', label: 'Palabras del brief (mediana)', fmt: (v) => formatoNumero(v) },
 ]
+
+function CabeceraMedicion() {
+  return (
+    <thead>
+      <tr className="border-b border-outline-variant text-left text-on-surface-variant">
+        <th scope="col" className="py-2 pr-4 font-medium">
+          Métrica
+        </th>
+        <th scope="col" className="py-2 pr-4 font-medium">
+          <span className="inline-flex items-center gap-1.5">
+            <Mic className="h-4 w-4 text-primary" aria-hidden="true" /> Voz
+          </span>
+        </th>
+        <th scope="col" className="py-2 font-medium">
+          <span className="inline-flex items-center gap-1.5">
+            <Keyboard className="h-4 w-4 text-secondary" aria-hidden="true" /> Formulario
+          </span>
+        </th>
+      </tr>
+    </thead>
+  )
+}
+
+/**
+ * La tabla de la medición mientras llega: los rótulos de las filas son los de siempre; los valores,
+ * esqueleto. Después van la nota y el gráfico, con la altura que tendrán.
+ */
+function EsqueletoMedicion() {
+  return (
+    <div role="status" aria-busy="true" aria-label="Cargando la medición">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px] text-sm">
+          <CabeceraMedicion />
+          <tbody>
+            {FILAS.map((f) => (
+              <tr key={f.clave} className="border-b border-outline-variant/60 last:border-0">
+                <th scope="row" className="py-2.5 pr-4 text-left font-normal text-on-surface-variant">
+                  {f.label}
+                </th>
+                {[0, 1].map((i) => (
+                  <td key={i} className="py-2.5 pr-4">
+                    <span className="flex h-5 items-center">
+                      <span className="esqueleto block h-3 w-12 rounded" />
+                    </span>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <LineasEsqueleto className="mt-2" alto={19.5} lineas={1} movil={2} ancho="w-4/5" />
+      <h3 className="mb-2 mt-6 text-base font-semibold text-on-surface">Qué campos corrigió la persona</h3>
+      <BarrasEsqueleto alto={256} />
+    </div>
+  )
+}
 
 /**
  * Voz contra formulario (medición de la tesis). Los dos caminos pasan por la
@@ -103,30 +161,14 @@ export default function MedicionVozFormulario() {
         </p>
       )}
 
-      {!datos && !error && <div className="h-48 rounded-lg esqueleto" />}
+      {!datos && !error && <EsqueletoMedicion />}
 
       {datos && (
         <>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[520px] text-sm">
               <caption className="sr-only">Métricas de voz y de formulario</caption>
-              <thead>
-                <tr className="border-b border-outline-variant text-left text-on-surface-variant">
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    Métrica
-                  </th>
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Mic className="h-4 w-4 text-primary" aria-hidden="true" /> Voz
-                    </span>
-                  </th>
-                  <th scope="col" className="py-2 font-medium">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Keyboard className="h-4 w-4 text-secondary" aria-hidden="true" /> Formulario
-                    </span>
-                  </th>
-                </tr>
-              </thead>
+              <CabeceraMedicion />
               <tbody>
                 {FILAS.map((f) => (
                   <tr key={f.clave} className="border-b border-outline-variant/60 last:border-0">
