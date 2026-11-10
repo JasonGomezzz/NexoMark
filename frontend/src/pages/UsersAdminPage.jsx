@@ -13,6 +13,8 @@ import CreditRequestsAdminPanel from '@/components/CreditRequestsAdminPanel'
  * Reglas de seguridad: nombre/email por escapado JSX (sin HTML crudo).
  */
 const PAGE_SIZE = 20
+// Antes de saber cuántos usuarios hay, el esqueleto llena una pantalla; ya sabiéndolo, tiene las filas exactas.
+const FILAS_INICIALES = 10
 
 const ROL_BADGES = {
   superadmin: 'bg-primary-fixed text-on-primary-fixed',
@@ -48,6 +50,81 @@ function EstadoChip({ activo }) {
       <span className="h-1.5 w-1.5 rounded-full bg-error" />
       Suspendido
     </span>
+  )
+}
+
+function CabeceraTabla() {
+  return (
+    <thead>
+      <tr className="border-b border-outline-variant">
+        <th className="py-3 pl-2 pr-4 text-left text-[13px] font-semibold text-on-surface-variant">Nombre</th>
+        <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Email</th>
+        <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Rol</th>
+        <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Estado</th>
+        <th className="px-4 py-3 text-right text-[13px] font-semibold text-on-surface-variant">Créditos</th>
+        <th className="py-3 pl-4 pr-2 text-right text-[13px] font-semibold text-on-surface-variant">Acciones</th>
+      </tr>
+    </thead>
+  )
+}
+
+/** La tabla y su paginación mientras llegan los usuarios: mismas columnas y filas de 69 px. */
+function EsqueletoUsuarios({ filas }) {
+  return (
+    <div role="status" aria-busy="true" aria-label="Cargando los usuarios" className="space-y-6">
+      <div className="border-y border-outline-variant">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <CabeceraTabla />
+            <tbody>
+              {Array.from({ length: filas }, (_, i) => (
+                <tr key={i} className="border-b border-hairline last:border-0">
+                  <td className="py-3 pl-2 pr-4">
+                    <div className="flex h-11 items-center">
+                      <span className="esqueleto block h-3.5 w-24 rounded" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex h-11 items-center">
+                      <span className="esqueleto block h-3.5 w-[214px] rounded" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex h-11 items-center">
+                      <span className="esqueleto block h-[23.5px] w-[97px] rounded-full" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex h-11 items-center">
+                      <span className="esqueleto block h-[23.5px] w-[70px] rounded-full" />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex h-11 items-center justify-end">
+                      <span className="esqueleto block h-3.5 w-6 rounded" />
+                    </div>
+                  </td>
+                  <td className="py-3 pl-4 pr-2">
+                    <div className="flex justify-end gap-2">
+                      <span className="esqueleto block h-11 w-[100px] rounded-[10px]" />
+                      <span className="esqueleto block h-11 w-[126px] rounded-[10px]" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-sm">
+        <span className="esqueleto block h-3.5 w-24 rounded" />
+        <div className="flex gap-2">
+          <span className="esqueleto block h-11 w-[117px] rounded-[10px]" />
+          <span className="esqueleto block h-11 w-[117px] rounded-[10px]" />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -140,10 +217,17 @@ export default function UsersAdminPage() {
             Gestiona cuentas, roles y la cuota de créditos de cada usuario.
           </p>
         </div>
-        {count > 0 && (
+        {count > 0 ? (
           <span className="text-sm text-on-surface-variant">
             {count} {count === 1 ? 'usuario' : 'usuarios'} en total
           </span>
+        ) : (
+          loading && (
+            // En el teléfono este texto baja a su propia línea: sin el esqueleto, el encabezado crecía al llegar.
+            <span className="flex h-5 items-center" aria-hidden="true">
+              <span className="esqueleto block h-3 w-36 rounded" />
+            </span>
+          )
         )}
       </div>
 
@@ -155,32 +239,15 @@ export default function UsersAdminPage() {
       )}
 
       {loading ? (
-        <div className="border-y border-outline-variant">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 border-b border-hairline py-4 last:border-0"
-            >
-              <div className="h-4 flex-1 rounded esqueleto" />
-              <div className="h-6 w-20 rounded-full esqueleto" />
-            </div>
-          ))}
-        </div>
+        <EsqueletoUsuarios
+          filas={count > 0 ? Math.min(PAGE_SIZE, Math.max(1, count - (page - 1) * PAGE_SIZE)) : FILAS_INICIALES}
+        />
       ) : !error ? (
         <>
           <div className="border-y border-outline-variant">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-outline-variant">
-                    <th className="py-3 pl-2 pr-4 text-left text-[13px] font-semibold text-on-surface-variant">Nombre</th>
-                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Email</th>
-                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Rol</th>
-                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-on-surface-variant">Estado</th>
-                    <th className="px-4 py-3 text-right text-[13px] font-semibold text-on-surface-variant">Créditos</th>
-                    <th className="py-3 pl-4 pr-2 text-right text-[13px] font-semibold text-on-surface-variant">Acciones</th>
-                  </tr>
-                </thead>
+                <CabeceraTabla />
                 <tbody>
                   {users.length === 0 && (
                     <tr>

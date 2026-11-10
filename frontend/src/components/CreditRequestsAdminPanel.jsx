@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import { AlertCircle, Check, HandCoins, X } from 'lucide-react'
 import api from '@/services/api'
 import { Button } from '@/components/ui/button'
+import { LineasEsqueleto } from '@/components/ui/esqueleto'
 import {
   CREDITOS_SUGERIDOS,
   MAX_CREDITOS,
@@ -25,6 +26,37 @@ function fecha(valor) {
   return valor
     ? new Date(valor).toLocaleString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
     : '—'
+}
+
+/**
+ * Una solicitud pendiente mientras llegan las solicitudes: quién pide y cuándo, los dos campos
+ * de la decisión y sus dos botones, con la medida de la fila real. Si no hay ninguna, el aviso
+ * que la reemplaza es más bajo; es lo último de la página, así que nada se mueve.
+ */
+function EsqueletoSolicitud() {
+  return (
+    <div role="status" aria-busy="true" aria-label="Cargando las solicitudes" className="mt-4 divide-y divide-hairline border-y border-hairline">
+      <div className="flex flex-col gap-3 py-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <LineasEsqueleto alto={24} ancho="w-72 max-w-full" />
+          <LineasEsqueleto className="mt-1" alto={19.5} ancho="w-56 max-w-full" />
+          <LineasEsqueleto className="mt-1" ancho="w-80 max-w-full" />
+        </div>
+        <div className="flex flex-wrap items-end gap-2">
+          <div>
+            <LineasEsqueleto alto={19.5} ancho="w-14" />
+            <span className="esqueleto mt-1 block h-11 w-24 rounded-[10px]" />
+          </div>
+          <div>
+            <LineasEsqueleto alto={19.5} ancho="w-24" />
+            <span className="esqueleto mt-1 block h-11 w-44 rounded-[10px]" />
+          </div>
+          <span className="esqueleto block h-11 w-[108px] rounded-[10px]" />
+          <span className="esqueleto block h-11 w-[113px] rounded-[10px]" />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 /**
@@ -125,10 +157,7 @@ export default function CreditRequestsAdminPanel({ onResolved }) {
       </p>
 
       {cargando ? (
-        <div className="mt-4 space-y-2">
-          <div className="h-14 rounded-lg esqueleto" />
-          <div className="h-14 rounded-lg esqueleto" />
-        </div>
+        <EsqueletoSolicitud />
       ) : error ? (
         <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[10px] bg-error-container px-4 py-3 text-sm text-on-error-container">
           <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
