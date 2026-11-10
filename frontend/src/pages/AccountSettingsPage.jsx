@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import AppToaster from '@/components/ui/AppToaster'
-import { Coins, AlertCircle, KeyRound, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react'
+import { Coins, AlertCircle, KeyRound, Link2, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react'
 import api from '../services/api'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '../hooks/useTheme'
@@ -12,6 +12,8 @@ import GoogleLink from '@/components/account/GoogleLink'
 import { setAuthItem } from '../services/session'
 import { PLANS, costoGeneracion, creditosConGeneraciones } from '@/lib/credits'
 import AuthField from '@/components/auth/AuthField'
+import { LineasEsqueleto } from '@/components/ui/esqueleto'
+import { useVerifiedUser } from '@/hooks/useVerifiedUser'
 
 /**
  * Configuración de cuenta, sobre los endpoints reales de Django:
@@ -30,7 +32,147 @@ const ROLE_LABEL = {
 // La barra se mide contra la cuota del plan (Freelance 100 por defecto).
 const cuotaDelPlan = (planKey) => (PLANS.find((p) => p.key === planKey) ?? PLANS[0]).creditos
 
+function Encabezado() {
+  return (
+    <header>
+      <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Configuración</h1>
+      <p className="mt-2 text-base text-on-surface-variant">
+        Tu perfil, cómo entras a NexoMark y las redes donde se publica.
+      </p>
+    </header>
+  )
+}
+
+/**
+ * La forma de «Configuración» mientras llega el perfil. Los títulos son los de siempre; lo que
+ * depende del usuario es esqueleto con la medida del contenido real. El rol (ya verificado al
+ * entrar) decide qué secciones hay: las redes son de marketero y cliente, los créditos de
+ * marketero y superadmin.
+ */
+function EsqueletoCuenta({ rol }) {
+  const conRedes = rol === 'marketero' || rol === 'cliente'
+  const conCreditos = rol === 'marketero' || rol === 'superadmin'
+  return (
+    <div role="status" aria-busy="true" aria-label="Cargando tu configuración" className="max-w-3xl space-y-6">
+      <Encabezado />
+
+      <section className="regla pt-5">
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-on-surface">
+          <UserRound className="h-5 w-5 text-primary" aria-hidden="true" />
+          Perfil
+        </h2>
+        <LineasEsqueleto className="mt-1" lineas={1} movil={rol === 'cliente' ? 2 : 3} ancho="w-4/5" />
+        <div className="mt-6 flex items-center gap-4 sm:gap-5">
+          <span className="esqueleto h-20 w-20 shrink-0 rounded-full sm:h-24 sm:w-24" />
+          <div className="min-w-0 flex-1">
+            <span className="esqueleto block h-11 w-36 rounded-[10px]" />
+            <LineasEsqueleto className="mt-2" alto={19.5} ancho="w-56 max-w-full" />
+          </div>
+        </div>
+        <div className="mt-6 flex flex-col gap-3 border-t border-outline-variant/60 pt-6 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <LineasEsqueleto className="mb-1.5" ancho="w-16" />
+            <span className="esqueleto block h-[42px] rounded-lg" />
+          </div>
+          <span className="esqueleto block h-11 rounded-[10px] sm:w-[174px]" />
+        </div>
+      </section>
+
+      <section className="regla pt-5">
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-on-surface">
+          <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+          Acceso y seguridad
+        </h2>
+        <p className="mt-1 text-sm text-on-surface-variant">Cómo entras a NexoMark en la web y en la app.</p>
+        <div className="mt-6 divide-y divide-outline-variant/60 [&>*]:py-6 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <span className="esqueleto block h-6 w-20 rounded" />
+              <LineasEsqueleto className="mt-1" ancho="w-56 max-w-full" />
+            </div>
+            <span className="esqueleto block h-11 w-[139px] rounded-[10px]" />
+          </div>
+          <div>
+            <span className="esqueleto block h-6 w-28 rounded" />
+            <div className="mt-4 space-y-4">
+              <div className="space-y-1.5 sm:max-w-sm">
+                <span className="esqueleto block h-5 w-32 rounded" />
+                <span className="esqueleto block h-12 rounded-[10px]" />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <span className="esqueleto block h-5 w-32 rounded" />
+                  <span className="esqueleto block h-12 rounded-[10px]" />
+                  <span className="esqueleto block h-[19.5px] w-40 rounded" />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="esqueleto block h-5 w-40 rounded" />
+                  <span className="esqueleto block h-12 rounded-[10px]" />
+                </div>
+              </div>
+              <span className="esqueleto block h-11 w-[182px] rounded-[10px]" />
+            </div>
+          </div>
+          <div>
+            <span className="esqueleto block h-6 w-20 rounded" />
+            <LineasEsqueleto className="mt-1" lineas={2} movil={4} />
+          </div>
+        </div>
+      </section>
+
+      {conRedes && (
+        <section className="regla pt-5">
+          <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold text-on-surface">
+            <Link2 className="h-5 w-5 text-primary" aria-hidden="true" />
+            Redes conectadas
+          </h2>
+          <LineasEsqueleto className="mb-5" lineas={2} movil={4} />
+          {/* Igual que el esqueleto propio de la tarjeta: al pasar de uno a otro no se mueve nada. */}
+          <div className="mb-5 divide-y divide-outline-variant rounded-lg border border-outline-variant">
+            {[0, 1].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3">
+                <span className="esqueleto h-9 w-9 shrink-0 rounded-full" />
+                <span className="flex-1 space-y-1.5">
+                  <span className="esqueleto block h-3.5 w-40 max-w-full rounded" />
+                  <span className="esqueleto block h-3 w-20 rounded" />
+                </span>
+              </div>
+            ))}
+          </div>
+          <span className="esqueleto block h-11 w-[250px] max-w-full rounded-[10px]" />
+        </section>
+      )}
+
+      <section className="regla pt-5">
+        <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold text-on-surface">
+          <Sun className="h-5 w-5 text-primary" aria-hidden="true" />
+          Apariencia
+        </h2>
+        <p className="mb-5 text-sm text-on-surface-variant">
+          Cambia entre tema claro y oscuro. Tu elección se guarda en este navegador.
+        </p>
+        <span className="esqueleto block h-[46px] w-[207px] rounded-xl" />
+      </section>
+
+      {conCreditos && (
+        <section className="regla pt-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-on-surface">
+              <Coins className="h-5 w-5 text-primary" aria-hidden="true" />
+              Créditos de IA
+            </h2>
+            <span className="esqueleto block h-5 w-16 rounded" />
+          </div>
+          <span className="esqueleto block h-2.5 w-full rounded-full" />
+          <LineasEsqueleto className="mt-3" lineas={2} movil={4} alto={19.5} />
+        </section>
+      )}
+    </div>
+  )
+}
+
 export default function AccountSettingsPage() {
+  const rolVerificado = useVerifiedUser()?.rol
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -114,15 +256,7 @@ export default function AccountSettingsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="max-w-3xl space-y-4">
-        <div className="h-10 w-64 rounded esqueleto" />
-        <div className="h-72 rounded-[10px] esqueleto" />
-        <div className="h-96 rounded-[10px] esqueleto" />
-      </div>
-    )
-  }
+  if (loading) return <EsqueletoCuenta rol={rolVerificado} />
 
   if (error || !user) {
     return (
@@ -155,12 +289,7 @@ export default function AccountSettingsPage() {
     <>
       <AppToaster />
       <div className="max-w-3xl space-y-6">
-        <header>
-          <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">Configuración</h1>
-          <p className="mt-2 text-base text-on-surface-variant">
-            Tu perfil, cómo entras a NexoMark y las redes donde se publica.
-          </p>
-        </header>
+        <Encabezado />
 
         {/* Perfil: foto y nombre */}
         <section aria-labelledby="perfil-titulo" className="regla pt-5">
