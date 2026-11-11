@@ -8,6 +8,7 @@ import { getAuthItem } from '../services/session'
 import { conteosDeLinea, etapaDeEstado, urlDeEtapa } from '@/components/linea/estaciones'
 import { cn } from '@/lib/utils'
 import { etiquetaPlataforma } from '@/lib/etiquetas'
+import { totalDeCampanas } from '@/lib/listaCampanas'
 
 /**
  * Campañas por paso de la orden de trabajo (Marketero/SuperAdmin). Consume Django con
@@ -21,7 +22,6 @@ const ETAPAS = {
   publicar: { titulo: 'En Publicar', desc: 'Aprobadas por el cliente: se publican en las cuentas elegidas.' },
 }
 const ORDEN = ['dictar', 'generar', 'aprobar', 'publicar', 'medir']
-const ENTERO = new Intl.NumberFormat('es-PE')
 
 /** Cinco casillas mínimas: en qué paso de la orden va la campaña. */
 function MiniRecorrido({ estado }) {
@@ -137,6 +137,7 @@ export default function CampaignListPage() {
     )
   }, [campaigns, busqueda])
   const sinCampanas = !etapa && count === 0
+  const total = totalDeCampanas({ cargando, error, count })
 
   const elegirEtapa = (id) => setParams(id ? { etapa: id } : {})
 
@@ -147,8 +148,10 @@ export default function CampaignListPage() {
           <h1 className="text-[30px] font-extrabold leading-[1.05] tracking-[-0.02em] text-on-surface sm:text-[38px]">
             {etapa ? ETAPAS[etapa].titulo : 'Todas las campañas'}
           </h1>
-          <p className="mt-2 text-[15px] text-on-surface-variant">
-            {etapa ? ETAPAS[etapa].desc : count > 0 ? `${ENTERO.format(count)} ${count === 1 ? 'campaña' : 'campañas'} en total.` : 'Todavía no hay campañas.'}
+          <p className="mt-2 min-h-[1.5em] text-[15px] text-on-surface-variant">
+            {etapa
+              ? ETAPAS[etapa].desc
+              : (total ?? (cargando && <span className="esqueleto inline-block h-4 w-40 rounded align-middle" aria-hidden="true" />))}
           </p>
         </div>
         {role === 'marketero' && (
